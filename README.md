@@ -1,0 +1,48 @@
+# Focus Plan
+
+一个使用原生 HTML、CSS 和 JavaScript 制作的计划管理与专注计时 Web
+项目，也是从零学习前端开发的课程项目。
+
+## 功能
+
+- 创建、编辑、删除、筛选和批量管理计划
+- 标签、优先级、截止时间、重复计划、提前提醒和子任务
+- 自定义专注时间、短休息、长休息和自动开始
+- 计时状态恢复、专注历史、统计图表、每日目标和成就系统
+- 浏览器通知、提示音、音量和静音设置
+- 深色模式、数据备份导入和响应式布局
+
+## 本地运行
+
+需要先安装 Node.js，然后在项目目录执行：
+
+```powershell
+npm.cmd run dev
+```
+
+打开：
+
+```text
+http://127.0.0.1:5500
+```
+
+## 自动测试
+
+```powershell
+npm.cmd run check
+```
+
+该命令会检查 JavaScript 语法并运行全部模块测试。
+
+## 代码结构
+
+- `index.html`：页面结构
+- `style.css`：页面样式和响应式布局
+- `script.js`：界面事件和应用流程
+- `*-tools.js`：可独立测试的业务规则模块
+- `tests/`：Node.js 自动测试
+- `assets/sounds/`：采用 CC0 1.0 许可的计时提示音
+- `tools/dev-server.cjs`：本地静态文件服务器
+
+音效来源与许可证说明见
+[`assets/sounds/README.md`](assets/sounds/README.md)。

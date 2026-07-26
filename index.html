@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的计划表</title>
+  <script src="theme-tools.js"></script>
+  <script>
+    document.documentElement.dataset.theme = window.ThemeTools.loadTheme(
+      localStorage,
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="startupError" class="startup-error" role="alert" hidden></div>
+
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <h1>我的计划表</h1>
+        <p>安排计划，保持专注，记录每一次进步。</p>
+      </div>
+
+      <div class="header-actions">
+        <label class="theme-switch" for="themeToggle">
+          <span id="themeLabel">深色模式</span>
+          <input id="themeToggle" type="checkbox" role="switch">
+          <span class="theme-switch-track" aria-hidden="true">
+            <span class="theme-switch-thumb"></span>
+          </span>
+        </label>
+        <button id="notificationButton" class="secondary-button" type="button">
+          开启提醒
+        </button>
+        <button
+          id="createPlanButton"
+          class="primary-button"
+          type="button"
+          aria-keyshortcuts="N"
+        >
+          创建计划
+        </button>
+      </div>
+    </header>
+
+    <div class="workspace-grid">
+      <section class="panel plans-panel" aria-labelledby="plansHeading">
+        <div class="section-heading">
+          <div>
+            <h2 id="plansHeading">今日计划</h2>
+            <p id="planSummary">0 项计划</p>
+          </div>
+          <button id="batchModeButton" class="secondary-button" type="button">
+            批量管理
+          </button>
+        </div>
+
+        <div class="plan-toolbar">
+          <label class="plan-search-field" for="planSearchInput">
+            <span>搜索计划</span>
+            <input
+              id="planSearchInput"
+              type="search"
+              placeholder="输入计划名称"
+              autocomplete="off"
+              aria-keyshortcuts="/"
+            >
+          </label>
+
+          <div class="plan-status-filter">
+            <span>状态</span>
+            <div class="segmented-control plan-status-control">
+              <button class="plan-status-button is-active" type="button" data-status="all">
+                全部
+              </button>
+              <button class="plan-status-button" type="button" data-status="active">
+                待完成
+              </button>
+              <button class="plan-status-button" type="button" data-status="completed">
+                已完成
+              </button>
+            </div>
+          </div>
+
+          <label class="plan-sort-field" for="planSortSelect">
+            <span>排序</span>
+            <select id="planSortSelect">
+              <option value="created-desc">最新创建</option>
+              <option value="due-asc">截止时间</option>
+              <option value="priority-desc">优先级</option>
+            </select>
+          </label>
+
+          <label class="plan-tag-filter" for="planTagFilter">
+            <span>标签</span>
+            <select id="planTagFilter">
+              <option value="">全部标签</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="batchActionBar" class="batch-action-bar" hidden>
+          <label class="batch-select-all" for="batchSelectAll">
+            <input id="batchSelectAll" type="checkbox">
+            <span>选择当前显示</span>
+          </label>
+          <span id="batchSelectionSummary" class="batch-selection-summary">
+            已选择 0 项
+          </span>
+          <div class="batch-actions">
+            <button id="batchCompleteButton" class="primary-button" type="button">
+              标记完成
+            </button>
+            <button id="batchDeleteButton" class="danger-button" type="button">
+              删除所选
+            </button>
+            <button id="batchCancelButton" class="secondary-button" type="button">
+              退出
+            </button>
+          </div>
+        </div>
+
+        <form id="planForm" class="plan-form" hidden>
+          <div class="form-field form-field-wide">
+            <label for="planTitle">计划名称</label>
+            <input
+              id="planTitle"
+              name="title"
+              type="text"
+              placeholder="例如：学习 JavaScript 30 分钟"
+              maxlength="40"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="planPriority">优先级</label>
+            <select id="planPriority" name="priority">
+              <option value="low">低</option>
+              <option value="medium" selected>中</option>
+              <option value="high">高</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="planTag">标签</label>
+            <input
+              id="planTag"
+              name="tag"
+              type="text"
+              placeholder="例如：课程"
+              maxlength="16"
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="planDueAt">计划时间</label>
+            <input id="planDueAt" name="dueAt" type="datetime-local">
+          </div>
+
+          <div class="form-field">
+            <label for="planRepeat">重复</label>
+            <select id="planRepeat" name="repeat">
+              <option value="none">不重复</option>
+              <option value="daily">每天</option>
+              <option value="weekly">每周</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="planReminderMinutes">提醒</label>
+            <select id="planReminderMinutes" name="reminderMinutes">
+              <option value="0">到点提醒</option>
+              <option value="5">提前 5 分钟</option>
+              <option value="15">提前 15 分钟</option>
+              <option value="30">提前 30 分钟</option>
+              <option value="60">提前 1 小时</option>
+            </select>
+          </div>
+
+          <div class="form-field form-field-wide">
+            <label for="planNotes">备注</label>
+            <textarea
+              id="planNotes"
+              name="notes"
+              rows="4"
+              maxlength="500"
+              placeholder="记录计划目标、资料或注意事项"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button id="savePlanButton" class="primary-button" type="submit">
+              保存计划
+            </button>
+            <button id="cancelPlanButton" class="secondary-button" type="button">
+              取消
+            </button>
+          </div>
+        </form>
+
+        <ul id="planList" class="plan-list"></ul>
+        <p id="planEmptyMessage" class="empty-message">还没有计划，创建一个试试吧。</p>
+      </section>
+
+      <section class="panel timer-panel" aria-labelledby="timerHeading">
+        <div class="section-heading">
+          <div>
+            <div class="timer-heading-row">
+              <h2 id="timerHeading">专注计时</h2>
+              <span id="timerPhaseBadge" class="timer-phase-badge">专注</span>
+            </div>
+            <p id="timerStatus">准备开始</p>
+          </div>
+        </div>
+
+        <div class="timer-settings">
+          <div class="form-field">
+            <label for="timerPlanSelect">关联计划</label>
+            <select id="timerPlanSelect">
+              <option value="">不关联计划</option>
+            </select>
+          </div>
+
+          <fieldset class="duration-fieldset">
+            <legend>快捷时长</legend>
+            <div class="duration-options">
+              <button class="duration-button" type="button" data-minutes="15">15</button>
+              <button class="duration-button is-active" type="button" data-minutes="25">25</button>
+              <button class="duration-button" type="button" data-minutes="45">45</button>
+              <button class="duration-button" type="button" data-minutes="60">60</button>
+            </div>
+          </fieldset>
+
+          <div class="form-field custom-duration-field">
+            <label for="customMinutes">自定义分钟</label>
+            <input id="customMinutes" type="number" min="1" max="180" value="25">
+          </div>
+
+          <div class="form-field break-duration-field">
+            <label for="breakMinutes">休息分钟</label>
+            <input id="breakMinutes" type="number" min="1" max="60" value="5">
+          </div>
+
+          <div class="form-field long-break-duration-field">
+            <label for="longBreakMinutes">长休息分钟</label>
+            <input
+              id="longBreakMinutes"
+              type="number"
+              min="1"
+              max="60"
+              value="15"
+            >
+          </div>
+
+          <div class="timer-cycle">
+            <span id="timerCycleStatus">本轮 0 / 4</span>
+            <div id="timerCycleIndicators" class="timer-cycle-indicators" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <div class="timer-auto-options">
+            <label for="autoStartBreak">
+              <input id="autoStartBreak" type="checkbox" role="switch">
+              <span>专注结束后自动休息</span>
+            </label>
+            <label for="autoStartFocus">
+              <input id="autoStartFocus" type="checkbox" role="switch">
+              <span>休息结束后自动专注</span>
+            </label>
+          </div>
+
+          <div class="timer-sound-settings">
+            <label class="sound-toggle" for="soundMuted">
+              <input id="soundMuted" type="checkbox" role="switch">
+              <span>静音提示音</span>
+            </label>
+            <div class="sound-volume-row">
+              <label for="soundVolume">
+                提示音量
+                <output id="soundVolumeOutput" for="soundVolume">45%</output>
+              </label>
+              <input
+                id="soundVolume"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="45"
+              >
+            </div>
+            <div class="sound-preview-row">
+              <select id="soundPreviewSelect" aria-label="选择要试听的提示音">
+                <option value="focusComplete">专注完成</option>
+                <option value="shortBreakComplete">短休息结束</option>
+                <option value="longBreakComplete">长休息结束</option>
+              </select>
+              <button
+                id="previewSoundButton"
+                class="secondary-button"
+                type="button"
+              >
+                试听
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
+
+        <div class="timer-actions">
+          <button id="startTimerButton" class="primary-button" type="button">开始</button>
+          <button id="pauseTimerButton" class="secondary-button" type="button" disabled>暂停</button>
+          <button id="resetTimerButton" class="secondary-button" type="button">重置</button>
+          <button id="skipBreakButton" class="secondary-button" type="button" hidden>
+            跳过休息
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel statistics-panel" aria-labelledby="statisticsHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="statisticsHeading">专注统计</h2>
+          <p>根据已完成的专注记录实时计算</p>
+        </div>
+      </div>
+
+      <div class="statistics-grid">
+        <div class="statistic-item">
+          <span>今日专注</span>
+          <strong id="todayFocusTime">0 分钟</strong>
+        </div>
+        <div class="statistic-item">
+          <span>今日次数</span>
+          <strong id="todaySessionCount">0 次</strong>
+        </div>
+        <div class="statistic-item">
+          <span>累计专注</span>
+          <strong id="totalFocusTime">0 分钟</strong>
+        </div>
+        <div class="statistic-item">
+          <span>最长单次</span>
+          <strong id="longestFocusTime">0 分钟</strong>
+        </div>
+      </div>
+
+      <section class="daily-goal-section" aria-labelledby="dailyGoalHeading">
+        <div class="daily-goal-heading">
+          <div>
+            <h3 id="dailyGoalHeading">每日专注目标</h3>
+            <p id="dailyGoalSummary">今日 0 / 120 分钟</p>
+          </div>
+          <form id="dailyGoalForm" class="daily-goal-form">
+            <label for="dailyGoalMinutes">目标分钟</label>
+            <input
+              id="dailyGoalMinutes"
+              type="number"
+              min="15"
+              max="720"
+              step="15"
+              value="120"
+              required
+            >
+            <button class="secondary-button" type="submit">保存</button>
+          </form>
+        </div>
+        <div
+          id="dailyGoalProgress"
+          class="daily-goal-progress"
+          role="progressbar"
+          aria-label="今日专注目标进度"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div id="dailyGoalProgressBar" class="daily-goal-progress-bar"></div>
+        </div>
+        <p id="dailyGoalStreak" class="daily-goal-streak">连续达标 0 天</p>
+      </section>
+
+      <div class="focus-trend">
+        <div class="focus-trend-heading">
+          <h3>最近 7 天</h3>
+          <p id="focusTrendSummary">暂无专注记录</p>
+        </div>
+        <div
+          id="focusTrendChart"
+          class="focus-trend-chart"
+          role="img"
+          aria-label="最近七天专注趋势"
+        ></div>
+      </div>
+
+      <div class="weekly-comparison" aria-label="本周与上周专注对比">
+        <div class="weekly-comparison-item">
+          <span>本周专注</span>
+          <strong id="currentWeekFocusTime">0 分钟</strong>
+        </div>
+        <div class="weekly-comparison-item">
+          <span>上周专注</span>
+          <strong id="previousWeekFocusTime">0 分钟</strong>
+        </div>
+        <div class="weekly-comparison-item">
+          <span>周度变化</span>
+          <strong id="weeklyFocusChange">暂无变化</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel achievements-panel" aria-labelledby="achievementsHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="achievementsHeading">专注成就</h2>
+          <p id="achievementSummary">0 / 5 已解锁</p>
+        </div>
+      </div>
+
+      <div id="achievementList" class="achievement-list"></div>
+    </section>
+
+    <section class="panel history-panel" aria-labelledby="historyHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="historyHeading">专注历史</h2>
+          <p id="sessionSummary">0 条记录</p>
+        </div>
+      </div>
+
+      <div class="history-toolbar">
+        <div class="segmented-control" aria-label="记录时间范围">
+          <button class="history-period-button is-active" type="button" data-period="today" aria-pressed="true">
+            今天
+          </button>
+          <button class="history-period-button" type="button" data-period="week" aria-pressed="false">
+            本周
+          </button>
+          <button class="history-period-button" type="button" data-period="all" aria-pressed="false">
+            全部
+          </button>
+        </div>
+
+        <div class="history-plan-filter">
+          <label for="historyPlanFilter">关联计划</label>
+          <select id="historyPlanFilter">
+            <option value="">全部计划</option>
+          </select>
+        </div>
+      </div>
+
+      <ul id="sessionList" class="session-list"></ul>
+      <p id="sessionEmptyMessage" class="empty-message">
+        完成一次专注后，记录会出现在这里。
+      </p>
+      <button id="loadMoreSessionsButton" class="secondary-button load-more-button" type="button" hidden>
+        显示更多
+      </button>
+    </section>
+
+    <section class="panel data-panel" aria-labelledby="dataHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="dataHeading">数据管理</h2>
+          <p>备份保存在本机，导入会替换当前应用数据。</p>
+        </div>
+      </div>
+
+      <div class="data-actions">
+        <button id="exportDataButton" class="secondary-button" type="button">
+          导出备份
+        </button>
+        <button id="importDataButton" class="secondary-button" type="button">
+          导入备份
+        </button>
+        <button id="clearHistoryButton" class="danger-button" type="button">
+          清除专注历史
+        </button>
+        <button id="resetAppButton" class="danger-button" type="button">
+          重置全部数据
+        </button>
+      </div>
+
+      <input id="importDataInput" type="file" accept="application/json,.json" hidden>
+      <p id="dataManagementStatus" class="data-status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <dialog id="planDetailsDialog" class="plan-details-dialog" aria-labelledby="planDetailsTitle">
+    <div class="plan-details-header">
+      <div>
+        <h2 id="planDetailsTitle">计划详情</h2>
+        <p id="planDetailsMeta"></p>
+      </div>
+      <button id="closePlanDetailsButton" class="secondary-button" type="button">
+        关闭
+      </button>
+    </div>
+
+    <section class="plan-details-section" aria-labelledby="planNotesHeading">
+      <h3 id="planNotesHeading">备注</h3>
+      <p id="planDetailsNotes" class="plan-details-notes"></p>
+    </section>
+
+    <section class="plan-details-section subtask-section" aria-labelledby="subtaskHeading">
+      <div class="subtask-heading">
+        <h3 id="subtaskHeading">子任务</h3>
+        <span id="subtaskProgress">0 / 0</span>
+      </div>
+      <ul id="subtaskList" class="subtask-list"></ul>
+      <p id="subtaskEmptyMessage" class="subtask-empty-message">
+        暂无子任务。
+      </p>
+      <form id="subtaskForm" class="subtask-form">
+        <input
+          id="subtaskInput"
+          type="text"
+          maxlength="60"
+          placeholder="添加一个子任务"
+          aria-label="子任务名称"
+          required
+        >
+        <button id="addSubtaskButton" class="primary-button" type="submit">
+          添加
+        </button>
+      </form>
+    </section>
+
+    <div class="plan-details-actions">
+      <button id="editPlanFromDetailsButton" class="primary-button" type="button">
+        编辑计划
+      </button>
+    </div>
+  </dialog>
+
+  <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite" hidden></div>
+  <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden>
+    <span id="actionToastMessage"></span>
+    <button id="undoActionButton" type="button">撤销</button>
+  </div>
+
+  <script src="achievement-rules.js"></script>
+  <script src="backup-tools.js"></script>
+  <script src="session-tools.js"></script>
+  <script src="storage-tools.js"></script>
+  <script src="timer-tools.js"></script>
+  <script src="plan-tools.js"></script>
+  <script src="undo-tools.js"></script>
+  <script src="shortcut-tools.js"></script>
+  <script src="recurrence-tools.js"></script>
+  <script src="reminder-tools.js"></script>
+  <script src="text-tools.js"></script>
+  <script src="subtask-tools.js"></script>
+  <script src="goal-tools.js"></script>
+  <script src="pomodoro-tools.js"></script>
+  <script src="timer-state-tools.js"></script>
+  <script src="sound-tools.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

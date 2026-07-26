@@ -1,0 +1,10 @@
+{
+  "name": "focus-plan",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node tools/dev-server.cjs",
+    "test": "node tests/achievement-rules.test.cjs && node tests/backup-tools.test.cjs && node tests/session-tools.test.cjs && node tests/storage-tools.test.cjs && node tests/timer-tools.test.cjs && node tests/theme-tools.test.cjs && node tests/plan-tools.test.cjs && node tests/undo-tools.test.cjs && node tests/shortcut-tools.test.cjs && node tests/recurrence-tools.test.cjs && node tests/reminder-tools.test.cjs && node tests/text-tools.test.cjs && node tests/subtask-tools.test.cjs && node tests/goal-tools.test.cjs && node tests/pomodoro-tools.test.cjs && node tests/timer-state-tools.test.cjs && node tests/sound-tools.test.cjs",
+    "check": "node --check achievement-rules.js && node --check backup-tools.js && node --check session-tools.js && node --check storage-tools.js && node --check timer-tools.js && node --check theme-tools.js && node --check plan-tools.js && node --check undo-tools.js && node --check shortcut-tools.js && node --check recurrence-tools.js && node --check reminder-tools.js && node --check text-tools.js && node --check subtask-tools.js && node --check goal-tools.js && node --check pomodoro-tools.js && node --check timer-state-tools.js && node --check sound-tools.js && node --check script.js && node --check tools/dev-server.cjs && npm test"
+  }
+}

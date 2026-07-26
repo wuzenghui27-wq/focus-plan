@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Local editor settings
+.idea/
+.vscode/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.local
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
