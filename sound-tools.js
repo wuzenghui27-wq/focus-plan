@@ -8,14 +8,36 @@
   root.SoundTools = tools;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const SOUND_SETTINGS_STORAGE_KEY = "focus-plan-sound-settings";
+  const DEFAULT_SOUND_THEME = "bright";
   const DEFAULT_SOUND_SETTINGS = {
     muted: false,
-    volume: 0.45
+    volume: 0.45,
+    theme: DEFAULT_SOUND_THEME
   };
-  const SOUND_SOURCES = {
-    focusComplete: "assets/sounds/focus-complete.wav",
-    shortBreakComplete: "assets/sounds/short-break-complete.wav",
-    longBreakComplete: "assets/sounds/long-break-complete.wav"
+  const SOUND_EVENT_LABELS = {
+    focusComplete: "专注完成",
+    shortBreakComplete: "短休息结束",
+    longBreakComplete: "长休息结束"
+  };
+  const SOUND_THEMES = {
+    bright: {
+      label: "轻盈和弦",
+      sources: {
+        focusComplete: "assets/sounds/focus-complete.wav",
+        shortBreakComplete: "assets/sounds/short-break-complete.wav",
+        longBreakComplete: "assets/sounds/long-break-complete.wav"
+      }
+    },
+    calm: {
+      label: "柔和低音",
+      sources: {
+        focusComplete: "assets/sounds/calm-focus-complete.wav",
+        shortBreakComplete:
+          "assets/sounds/calm-short-break-complete.wav",
+        longBreakComplete:
+          "assets/sounds/calm-long-break-complete.wav"
+      }
+    }
   };
 
   function normalizeVolume(value) {
@@ -35,7 +57,10 @@
 
     return {
       muted: Boolean(value.muted),
-      volume: normalizeVolume(value.volume)
+      volume: normalizeVolume(value.volume),
+      theme: Object.hasOwn(SOUND_THEMES, value.theme)
+        ? value.theme
+        : DEFAULT_SOUND_THEME
     };
   }
 
@@ -90,18 +115,30 @@
     }
   }
 
-  function getSoundSource(eventName) {
-    return SOUND_SOURCES[eventName] || null;
+  function getSoundTheme(themeName) {
+    return SOUND_THEMES[themeName] || SOUND_THEMES[DEFAULT_SOUND_THEME];
+  }
+
+  function getSoundSource(eventName, themeName) {
+    return getSoundTheme(themeName).sources[eventName] || null;
+  }
+
+  function getSoundEventLabel(eventName) {
+    return SOUND_EVENT_LABELS[eventName] || "";
   }
 
   return {
     SOUND_SETTINGS_STORAGE_KEY: SOUND_SETTINGS_STORAGE_KEY,
+    DEFAULT_SOUND_THEME: DEFAULT_SOUND_THEME,
     DEFAULT_SOUND_SETTINGS: DEFAULT_SOUND_SETTINGS,
-    SOUND_SOURCES: SOUND_SOURCES,
+    SOUND_EVENT_LABELS: SOUND_EVENT_LABELS,
+    SOUND_THEMES: SOUND_THEMES,
     normalizeVolume: normalizeVolume,
     normalizeSoundSettings: normalizeSoundSettings,
     loadSoundSettings: loadSoundSettings,
     saveSoundSettings: saveSoundSettings,
-    getSoundSource: getSoundSource
+    getSoundTheme: getSoundTheme,
+    getSoundSource: getSoundSource,
+    getSoundEventLabel: getSoundEventLabel
   };
 });

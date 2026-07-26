@@ -1,11 +1,14 @@
 const assert = require("assert");
 const {
   SOUND_SETTINGS_STORAGE_KEY,
+  DEFAULT_SOUND_THEME,
   DEFAULT_SOUND_SETTINGS,
+  SOUND_THEMES,
   normalizeVolume,
   normalizeSoundSettings,
   loadSoundSettings,
   saveSoundSettings,
+  getSoundTheme,
   getSoundSource
 } = require("../sound-tools.js");
 
@@ -45,8 +48,12 @@ assert.deepStrictEqual(
   DEFAULT_SOUND_SETTINGS
 );
 assert.deepStrictEqual(
-  normalizeSoundSettings({ muted: 1, volume: 0.7 }),
-  { muted: true, volume: 0.7 }
+  normalizeSoundSettings({ muted: 1, volume: 0.7, theme: "calm" }),
+  { muted: true, volume: 0.7, theme: "calm" }
+);
+assert.deepStrictEqual(
+  normalizeSoundSettings({ muted: false, volume: 0.4, theme: "unknown" }),
+  { muted: false, volume: 0.4, theme: DEFAULT_SOUND_THEME }
 );
 
 const emptyResult = loadSoundSettings(createStorage(null));
@@ -55,11 +62,12 @@ assert.strictEqual(emptyResult.recovered, false);
 
 const storedResult = loadSoundSettings(createStorage(JSON.stringify({
   muted: true,
-  volume: 0.62
+  volume: 0.62,
+  theme: "calm"
 })));
 assert.deepStrictEqual(
   storedResult.settings,
-  { muted: true, volume: 0.62 }
+  { muted: true, volume: 0.62, theme: "calm" }
 );
 
 const corruptStorage = createStorage("{broken");
@@ -75,7 +83,7 @@ assert.strictEqual(
 );
 assert.deepStrictEqual(
   JSON.parse(writableStorage.value()),
-  { muted: false, volume: 1 }
+  { muted: false, volume: 1, theme: DEFAULT_SOUND_THEME }
 );
 assert.strictEqual(
   saveSoundSettings({
@@ -87,9 +95,14 @@ assert.strictEqual(
 );
 
 assert.strictEqual(
-  getSoundSource("focusComplete"),
+  getSoundSource("focusComplete", "bright"),
   "assets/sounds/focus-complete.wav"
 );
-assert.strictEqual(getSoundSource("unknown"), null);
+assert.strictEqual(
+  getSoundSource("focusComplete", "calm"),
+  "assets/sounds/calm-focus-complete.wav"
+);
+assert.strictEqual(getSoundSource("unknown", "calm"), null);
+assert.strictEqual(getSoundTheme("unknown"), SOUND_THEMES.bright);
 
 console.log("Sound tools: all tests passed");

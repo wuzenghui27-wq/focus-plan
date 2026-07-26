@@ -66,7 +66,7 @@ const restoredTimerResult = window.TimerStateTools.loadTimerState(
 );
 const restoredSoundResult = window.SoundTools.loadSoundSettings(localStorage);
 let timerAudioContext = null;
-let timerSoundBuffersPromise = null;
+const timerSoundBufferPromises = new Map();
 
 const PRIORITY_LABELS = {
   low: "低",
@@ -198,11 +198,13 @@ const elements = {
   ),
   autoStartBreakInput: document.querySelector("#autoStartBreak"),
   autoStartFocusInput: document.querySelector("#autoStartFocus"),
+  soundThemeSelect: document.querySelector("#soundThemeSelect"),
   soundMutedInput: document.querySelector("#soundMuted"),
   soundVolumeInput: document.querySelector("#soundVolume"),
   soundVolumeOutput: document.querySelector("#soundVolumeOutput"),
   soundPreviewSelect: document.querySelector("#soundPreviewSelect"),
   previewSoundButton: document.querySelector("#previewSoundButton"),
+  soundPlaybackStatus: document.querySelector("#soundPlaybackStatus"),
   startTimerButton: document.querySelector("#startTimerButton"),
   pauseTimerButton: document.querySelector("#pauseTimerButton"),
   resetTimerButton: document.querySelector("#resetTimerButton"),
@@ -1816,12 +1818,25 @@ function refreshTimeBasedStates() {
 function updateSoundControls() {
   const volumePercent = Math.round(state.sound.volume * 100);
 
+  elements.soundThemeSelect.value = state.sound.theme;
   elements.soundMutedInput.checked = state.sound.muted;
   elements.soundVolumeInput.value = String(volumePercent);
   elements.soundVolumeOutput.value = volumePercent + "%";
   elements.soundVolumeInput.disabled = state.sound.muted;
   elements.soundPreviewSelect.disabled = state.sound.muted;
   elements.previewSoundButton.disabled = state.sound.muted;
+}
+
+function setSoundPlaybackStatus(message, statusType) {
+  elements.soundPlaybackStatus.textContent = message;
+  elements.soundPlaybackStatus.classList.toggle(
+    "is-success",
+    statusType === "success"
+  );
+  elements.soundPlaybackStatus.classList.toggle(
+    "is-error",
+    statusType === "error"
+  );
 }
 
 function persistSoundSettings() {
@@ -1851,7 +1866,31 @@ function getTimerAudioContext() {
   return timerAudioContext;
 }
 
-async function prepareTimerSounds() {
+async function loadTimerSoundBuffer(audioContext, sourcePath) {
+  if (!timerSoundBufferPromises.has(sourcePath)) {
+    const bufferPromise = fetch(sourcePath)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("提示音加载失败：" + sourcePath);
+        }
+
+        return response.arrayBuffer();
+      })
+      .then(function (arrayBuffer) {
+        return audioContext.decodeAudioData(arrayBuffer);
+      })
+      .catch(function (error) {
+        timerSoundBufferPromises.delete(sourcePath);
+        throw error;
+      });
+
+    timerSoundBufferPromises.set(sourcePath, bufferPromise);
+  }
+
+  return timerSoundBufferPromises.get(sourcePath);
+}
+
+async function prepareTimerSounds(eventNames) {
   const audioContext = getTimerAudioContext();
 
   if (audioContext === null) {
@@ -1862,35 +1901,29 @@ async function prepareTimerSounds() {
     await audioContext.resume();
   }
 
-  if (timerSoundBuffersPromise === null) {
-    const soundEntries = Object.entries(window.SoundTools.SOUND_SOURCES);
+  const requestedEvents = eventNames ||
+    Object.keys(window.SoundTools.SOUND_EVENT_LABELS);
+  const loadedEntries = await Promise.all(
+    requestedEvents.map(async function (eventName) {
+      const sourcePath = window.SoundTools.getSoundSource(
+        eventName,
+        state.sound.theme
+      );
 
-    timerSoundBuffersPromise = Promise.all(
-      soundEntries.map(async function ([eventName, sourcePath]) {
-        const response = await fetch(sourcePath);
+      if (sourcePath === null) {
+        throw new Error("没有找到对应的提示音资源。");
+      }
 
-        if (!response.ok) {
-          throw new Error("提示音加载失败：" + sourcePath);
-        }
-
-        const audioBuffer = await audioContext.decodeAudioData(
-          await response.arrayBuffer()
-        );
-        return [eventName, audioBuffer];
-      })
-    )
-      .then(function (loadedEntries) {
-        return new Map(loadedEntries);
-      })
-      .catch(function (error) {
-        timerSoundBuffersPromise = null;
-        throw error;
-      });
-  }
+      return [
+        eventName,
+        await loadTimerSoundBuffer(audioContext, sourcePath)
+      ];
+    })
+  );
 
   return {
     audioContext: audioContext,
-    buffers: await timerSoundBuffersPromise
+    buffers: new Map(loadedEntries)
   };
 }
 
@@ -1901,16 +1934,24 @@ function warmUpTimerSounds() {
 
   prepareTimerSounds().catch(function (error) {
     console.warn("提示音预加载失败：", error);
+    setSoundPlaybackStatus("提示音加载失败，请稍后重试", "error");
   });
 }
 
-async function playTimerSound(eventName) {
+async function playTimerSound(eventName, announcePlayback) {
   if (state.sound.muted) {
+    if (announcePlayback) {
+      setSoundPlaybackStatus("提示音当前已静音", "");
+    }
     return;
   }
 
   try {
-    const preparedSounds = await prepareTimerSounds();
+    if (announcePlayback) {
+      setSoundPlaybackStatus("正在加载提示音...", "");
+    }
+
+    const preparedSounds = await prepareTimerSounds([eventName]);
     const audioBuffer = preparedSounds.buffers.get(eventName);
 
     if (!audioBuffer) {
@@ -1925,8 +1966,23 @@ async function playTimerSound(eventName) {
     sourceNode.connect(gainNode);
     gainNode.connect(preparedSounds.audioContext.destination);
     sourceNode.start();
+
+    if (announcePlayback) {
+      const themeLabel =
+        window.SoundTools.getSoundTheme(state.sound.theme).label;
+      const eventLabel =
+        window.SoundTools.getSoundEventLabel(eventName);
+      setSoundPlaybackStatus(
+        "正在试听：" + themeLabel + " · " + eventLabel,
+        "success"
+      );
+    }
   } catch (error) {
     console.warn("播放提示音失败：", error);
+    setSoundPlaybackStatus(
+      error.message || "提示音播放失败，请稍后重试",
+      "error"
+    );
   }
 }
 
@@ -2546,10 +2602,30 @@ function bindEvents() {
     state.timer.autoStartFocus = elements.autoStartFocusInput.checked;
     persistTimerState();
   });
+  elements.soundThemeSelect.addEventListener("change", function () {
+    state.sound.theme = window.SoundTools.normalizeSoundSettings({
+      ...state.sound,
+      theme: elements.soundThemeSelect.value
+    }).theme;
+    persistSoundSettings();
+    setSoundPlaybackStatus(
+      "已切换至" +
+        window.SoundTools.getSoundTheme(state.sound.theme).label,
+      "success"
+    );
+    warmUpTimerSounds();
+  });
   elements.soundMutedInput.addEventListener("change", function () {
     state.sound.muted = elements.soundMutedInput.checked;
     updateSoundControls();
     persistSoundSettings();
+
+    if (state.sound.muted) {
+      setSoundPlaybackStatus("提示音已静音", "");
+    } else {
+      setSoundPlaybackStatus("提示音已开启", "success");
+      warmUpTimerSounds();
+    }
   });
   elements.soundVolumeInput.addEventListener("input", function () {
     state.sound.volume = window.SoundTools.normalizeVolume(
@@ -2559,7 +2635,7 @@ function bindEvents() {
   });
   elements.soundVolumeInput.addEventListener("change", persistSoundSettings);
   elements.previewSoundButton.addEventListener("click", function () {
-    playTimerSound(elements.soundPreviewSelect.value);
+    playTimerSound(elements.soundPreviewSelect.value, true);
   });
   elements.startTimerButton.addEventListener("click", startTimer);
   elements.pauseTimerButton.addEventListener("click", pauseTimer);
@@ -2575,6 +2651,10 @@ function initializeApp() {
   renderSessionData();
   checkAndUnlockAchievements(false);
   updateSoundControls();
+  setSoundPlaybackStatus(
+    state.sound.muted ? "提示音已静音" : "提示音已就绪",
+    state.sound.muted ? "" : "success"
+  );
   if (restoredTimerResult.timer === null) {
     setTimerDuration(DEFAULT_TIMER_MINUTES);
   } else {

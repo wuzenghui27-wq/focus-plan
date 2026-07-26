@@ -1214,6 +1214,17 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   border-top: 1px solid #e5e8eb;
 }
 
+.sound-theme-row {
+  display: grid;
+  gap: 8px;
+}
+
+.sound-theme-row label {
+  color: #303841;
+  font-size: 13px;
+  font-weight: bold;
+}
+
 .sound-toggle,
 .sound-volume-row label {
   display: flex;
@@ -1262,6 +1273,21 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
 
 .sound-preview-row button {
   min-width: 72px;
+}
+
+.sound-playback-status {
+  min-height: 20px;
+  margin: 0;
+  color: #687078;
+  font-size: 12px;
+}
+
+.sound-playback-status.is-success {
+  color: #16734b;
+}
+
+.sound-playback-status.is-error {
+  color: #b42318;
 }
 
 .timer-cycle {
@@ -1905,12 +1931,22 @@ html[data-theme="dark"] .timer-cycle-indicators span.is-completed {
 
 html[data-theme="dark"] .timer-auto-options label,
 html[data-theme="dark"] .sound-toggle,
-html[data-theme="dark"] .sound-volume-row label {
+html[data-theme="dark"] .sound-volume-row label,
+html[data-theme="dark"] .sound-theme-row label {
   color: #dbe1e7;
 }
 
-html[data-theme="dark"] .sound-volume-row output {
+html[data-theme="dark"] .sound-volume-row output,
+html[data-theme="dark"] .sound-playback-status {
   color: #aeb7c0;
+}
+
+html[data-theme="dark"] .sound-playback-status.is-success {
+  color: #69c99b;
+}
+
+html[data-theme="dark"] .sound-playback-status.is-error {
+  color: #ff9b93;
 }
 
 html[data-theme="dark"] .timer-panel.is-break .timer-display {

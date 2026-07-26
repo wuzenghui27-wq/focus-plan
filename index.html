@@ -279,6 +279,13 @@
           </div>
 
           <div class="timer-sound-settings">
+            <div class="sound-theme-row">
+              <label for="soundThemeSelect">声音主题</label>
+              <select id="soundThemeSelect">
+                <option value="bright">轻盈和弦</option>
+                <option value="calm">柔和低音</option>
+              </select>
+            </div>
             <label class="sound-toggle" for="soundMuted">
               <input id="soundMuted" type="checkbox" role="switch">
               <span>静音提示音</span>
@@ -311,6 +318,14 @@
                 试听
               </button>
             </div>
+            <p
+              id="soundPlaybackStatus"
+              class="sound-playback-status"
+              role="status"
+              aria-live="polite"
+            >
+              提示音已就绪
+            </p>
           </div>
         </div>
 
