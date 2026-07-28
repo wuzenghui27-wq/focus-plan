@@ -3,7 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
   <title>我的计划表</title>
   <script src="theme-tools.js"></script>
   <script>
@@ -20,22 +23,28 @@
 
   <main class="app">
     <header class="app-header">
-      <div>
-        <h1>我的计划表</h1>
-        <p>安排计划，保持专注，记录每一次进步。</p>
+      <div class="app-brand">
+        <span class="app-brand-mark" aria-hidden="true">FP</span>
+        <div>
+          <h1>Focus Plan</h1>
+          <p>今天也向目标靠近一点。</p>
+        </div>
       </div>
+    </header>
 
-      <div class="header-actions">
-        <label class="theme-switch" for="themeToggle">
-          <span id="themeLabel">深色模式</span>
-          <input id="themeToggle" type="checkbox" role="switch">
-          <span class="theme-switch-track" aria-hidden="true">
-            <span class="theme-switch-thumb"></span>
-          </span>
-        </label>
-        <button id="notificationButton" class="secondary-button" type="button">
-          开启提醒
-        </button>
+    <div class="app-pages">
+      <section
+        id="plansPage"
+        class="app-page is-active"
+        data-page="plans"
+        role="tabpanel"
+        aria-labelledby="plansPageHeading"
+      >
+        <div class="page-heading">
+          <div>
+            <p>计划</p>
+            <h2 id="plansPageHeading">我的计划表</h2>
+          </div>
         <button
           id="createPlanButton"
           class="primary-button"
@@ -44,10 +53,8 @@
         >
           创建计划
         </button>
-      </div>
-    </header>
+        </div>
 
-    <div class="workspace-grid">
       <section class="panel plans-panel" aria-labelledby="plansHeading">
         <div class="section-heading">
           <div>
@@ -206,7 +213,22 @@
         <ul id="planList" class="plan-list"></ul>
         <p id="planEmptyMessage" class="empty-message">还没有计划，创建一个试试吧。</p>
       </section>
+      </section>
 
+      <section
+        id="focusPage"
+        class="app-page"
+        data-page="focus"
+        role="tabpanel"
+        aria-labelledby="focusPageHeading"
+        hidden
+      >
+        <div class="page-heading">
+          <div>
+            <p>专注</p>
+            <h2 id="focusPageHeading">专注时长</h2>
+          </div>
+        </div>
       <section class="panel timer-panel" aria-labelledby="timerHeading">
         <div class="section-heading">
           <div>
@@ -278,49 +300,6 @@
             </label>
           </div>
 
-          <div class="timer-sound-settings">
-            <p class="sound-melody-name">提示旋律：卡农</p>
-            <label class="sound-toggle" for="soundMuted">
-              <input id="soundMuted" type="checkbox" role="switch">
-              <span>静音提示音</span>
-            </label>
-            <div class="sound-volume-row">
-              <label for="soundVolume">
-                提示音量
-                <output id="soundVolumeOutput" for="soundVolume">45%</output>
-              </label>
-              <input
-                id="soundVolume"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="45"
-              >
-            </div>
-            <div class="sound-preview-row">
-              <select id="soundPreviewSelect" aria-label="选择要试听的提示音">
-                <option value="focusComplete">专注完成</option>
-                <option value="shortBreakComplete">短休息结束</option>
-                <option value="longBreakComplete">长休息结束</option>
-              </select>
-              <button
-                id="previewSoundButton"
-                class="secondary-button"
-                type="button"
-              >
-                试听
-              </button>
-            </div>
-            <p
-              id="soundPlaybackStatus"
-              class="sound-playback-status"
-              role="status"
-              aria-live="polite"
-            >
-              卡农提示音已就绪
-            </p>
-          </div>
         </div>
 
         <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
@@ -334,7 +313,6 @@
           </button>
         </div>
       </section>
-    </div>
 
     <section class="panel statistics-panel" aria-labelledby="statisticsHeading">
       <div class="section-heading">
@@ -436,7 +414,22 @@
 
       <div id="achievementList" class="achievement-list"></div>
     </section>
+      </section>
 
+      <section
+        id="historyPage"
+        class="app-page"
+        data-page="history"
+        role="tabpanel"
+        aria-labelledby="historyPageHeading"
+        hidden
+      >
+        <div class="page-heading">
+          <div>
+            <p>记录</p>
+            <h2 id="historyPageHeading">专注历史</h2>
+          </div>
+        </div>
     <section class="panel history-panel" aria-labelledby="historyHeading">
       <div class="section-heading">
         <div>
@@ -474,6 +467,106 @@
         显示更多
       </button>
     </section>
+      </section>
+
+      <section
+        id="settingsPage"
+        class="app-page"
+        data-page="settings"
+        role="tabpanel"
+        aria-labelledby="settingsPageHeading"
+        hidden
+      >
+        <div class="page-heading">
+          <div>
+            <p>偏好与数据</p>
+            <h2 id="settingsPageHeading">设置</h2>
+          </div>
+        </div>
+
+        <section class="panel settings-panel" aria-labelledby="preferencesHeading">
+          <div class="section-heading">
+            <div>
+              <h2 id="preferencesHeading">应用设置</h2>
+              <p>管理外观、提醒与卡农提示旋律。</p>
+            </div>
+          </div>
+
+          <div class="settings-list">
+            <div class="setting-row">
+              <div>
+                <strong>外观模式</strong>
+                <p>切换浅色与深色界面</p>
+              </div>
+              <label class="theme-switch" for="themeToggle">
+                <span id="themeLabel">深色模式</span>
+                <input id="themeToggle" type="checkbox" role="switch">
+                <span class="theme-switch-track" aria-hidden="true">
+                  <span class="theme-switch-thumb"></span>
+                </span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <strong>计划提醒</strong>
+                <p>允许浏览器发送到期通知</p>
+              </div>
+              <button id="notificationButton" class="secondary-button" type="button">
+                开启提醒
+              </button>
+            </div>
+
+            <div class="setting-row setting-row-sound">
+              <div>
+                <strong>卡农提示音</strong>
+                <p>专注与休息结束时播放</p>
+              </div>
+              <div class="timer-sound-settings">
+                <label class="sound-toggle" for="soundMuted">
+                  <input id="soundMuted" type="checkbox" role="switch">
+                  <span>静音提示音</span>
+                </label>
+                <div class="sound-volume-row">
+                  <label for="soundVolume">
+                    提示音量
+                    <output id="soundVolumeOutput" for="soundVolume">45%</output>
+                  </label>
+                  <input
+                    id="soundVolume"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="45"
+                  >
+                </div>
+                <div class="sound-preview-row">
+                  <select id="soundPreviewSelect" aria-label="选择要试听的提示音">
+                    <option value="focusComplete">专注完成</option>
+                    <option value="shortBreakComplete">短休息结束</option>
+                    <option value="longBreakComplete">长休息结束</option>
+                  </select>
+                  <button
+                    id="previewSoundButton"
+                    class="secondary-button"
+                    type="button"
+                  >
+                    试听
+                  </button>
+                </div>
+                <p
+                  id="soundPlaybackStatus"
+                  class="sound-playback-status"
+                  role="status"
+                  aria-live="polite"
+                >
+                  卡农提示音已就绪
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
     <section class="panel data-panel" aria-labelledby="dataHeading">
       <div class="section-heading">
@@ -501,6 +594,51 @@
       <input id="importDataInput" type="file" accept="application/json,.json" hidden>
       <p id="dataManagementStatus" class="data-status" role="status" aria-live="polite"></p>
     </section>
+      </section>
+    </div>
+
+    <nav class="app-tabbar" role="tablist" aria-label="主要页面">
+      <button
+        class="app-tab is-active"
+        type="button"
+        role="tab"
+        data-page-target="plans"
+        aria-controls="plansPage"
+        aria-selected="true"
+      >
+        计划
+      </button>
+      <button
+        class="app-tab"
+        type="button"
+        role="tab"
+        data-page-target="focus"
+        aria-controls="focusPage"
+        aria-selected="false"
+      >
+        专注
+      </button>
+      <button
+        class="app-tab"
+        type="button"
+        role="tab"
+        data-page-target="history"
+        aria-controls="historyPage"
+        aria-selected="false"
+      >
+        历史
+      </button>
+      <button
+        class="app-tab"
+        type="button"
+        role="tab"
+        data-page-target="settings"
+        aria-controls="settingsPage"
+        aria-selected="false"
+      >
+        设置
+      </button>
+    </nav>
   </main>
 
   <dialog id="planDetailsDialog" class="plan-details-dialog" aria-labelledby="planDetailsTitle">
@@ -572,6 +710,7 @@
   <script src="pomodoro-tools.js"></script>
   <script src="timer-state-tools.js"></script>
   <script src="sound-tools.js"></script>
+  <script src="navigation-tools.js"></script>
   <script src="script.js"></script>
 </body>
 

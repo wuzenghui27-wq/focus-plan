@@ -17,7 +17,8 @@ const REQUIRED_MODULES = [
   "GoalTools",
   "PomodoroTools",
   "TimerStateTools",
-  "SoundTools"
+  "SoundTools",
+  "NavigationTools"
 ];
 const missingModules = REQUIRED_MODULES.filter(function (moduleName) {
   return !window[moduleName];
@@ -109,6 +110,8 @@ if (restoredSoundResult.recovered) {
 /* ===== DOM references ===== */
 
 const elements = {
+  appPages: document.querySelectorAll(".app-page"),
+  appTabs: document.querySelectorAll(".app-tab"),
   themeToggle: document.querySelector("#themeToggle"),
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
@@ -213,6 +216,9 @@ const elements = {
 
 const state = {
   theme: document.documentElement.dataset.theme,
+  activePage: window.NavigationTools.getPageFromHash(
+    window.location.hash
+  ),
   plans: loadPlans(),
   focusSessions: loadFocusSessions(),
   achievementUnlocks: loadAchievementUnlocks(),
@@ -378,6 +384,79 @@ function saveStoredArray(key, value) {
       "error"
     );
   }
+}
+
+/* ===== Page navigation ===== */
+
+function renderAppPage(pageName, shouldScroll) {
+  const activePage = window.NavigationTools.normalizePage(pageName);
+
+  state.activePage = activePage;
+  elements.appPages.forEach(function (page) {
+    const isActive = page.dataset.page === activePage;
+
+    page.hidden = !isActive;
+    page.classList.toggle("is-active", isActive);
+  });
+  elements.appTabs.forEach(function (tab) {
+    const isActive = tab.dataset.pageTarget === activePage;
+
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+    tab.tabIndex = isActive ? 0 : -1;
+  });
+  document.title =
+    window.NavigationTools.getPageTitle(activePage) + " · Focus Plan";
+
+  if (shouldScroll) {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+}
+
+function navigateToPage(pageName) {
+  const normalizedPage = window.NavigationTools.normalizePage(pageName);
+  const nextHash = window.NavigationTools.createPageHash(normalizedPage);
+
+  renderAppPage(normalizedPage, true);
+
+  if (window.location.hash === nextHash) {
+    return;
+  }
+
+  window.location.hash = nextHash;
+}
+
+function handlePageHashChange() {
+  renderAppPage(
+    window.NavigationTools.getPageFromHash(window.location.hash),
+    true
+  );
+}
+
+function handleAppTabKeydown(event) {
+  const supportedKeys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+
+  if (!supportedKeys.includes(event.key)) {
+    return;
+  }
+
+  const tabs = Array.from(elements.appTabs);
+  const currentIndex = tabs.indexOf(event.currentTarget);
+  let nextIndex = currentIndex;
+
+  if (event.key === "ArrowLeft") {
+    nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+  } else if (event.key === "ArrowRight") {
+    nextIndex = (currentIndex + 1) % tabs.length;
+  } else if (event.key === "Home") {
+    nextIndex = 0;
+  } else if (event.key === "End") {
+    nextIndex = tabs.length - 1;
+  }
+
+  event.preventDefault();
+  tabs[nextIndex].focus();
+  navigateToPage(tabs[nextIndex].dataset.pageTarget);
 }
 
 /* ===== Shared helpers ===== */
@@ -2453,12 +2532,14 @@ function handleApplicationShortcut(event) {
 
   if (action === "create-plan") {
     event.preventDefault();
+    navigateToPage("plans");
     openCreatePlanForm();
     return;
   }
 
   if (action === "focus-search") {
     event.preventDefault();
+    navigateToPage("plans");
     elements.planSearchInput.focus();
     elements.planSearchInput.select();
     return;
@@ -2485,6 +2566,13 @@ function handleApplicationShortcut(event) {
 
 function bindEvents() {
   document.addEventListener("keydown", handleApplicationShortcut);
+  window.addEventListener("hashchange", handlePageHashChange);
+  elements.appTabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      navigateToPage(tab.dataset.pageTarget);
+    });
+    tab.addEventListener("keydown", handleAppTabKeydown);
+  });
   elements.themeToggle.addEventListener("change", function () {
     applyTheme(
       elements.themeToggle.checked
@@ -2494,7 +2582,10 @@ function bindEvents() {
     );
   });
   elements.notificationButton.addEventListener("click", requestNotificationPermission);
-  elements.createPlanButton.addEventListener("click", openCreatePlanForm);
+  elements.createPlanButton.addEventListener("click", function () {
+    navigateToPage("plans");
+    openCreatePlanForm();
+  });
   elements.cancelPlanButton.addEventListener("click", closePlanForm);
   elements.planForm.addEventListener("submit", handlePlanSubmit);
   elements.closePlanDetailsButton.addEventListener(
@@ -2641,6 +2732,14 @@ function bindEvents() {
 function initializeApp() {
   applyTheme(state.theme, false);
   bindEvents();
+  renderAppPage(state.activePage, false);
+  const expectedPageHash = window.NavigationTools.createPageHash(
+    state.activePage
+  );
+
+  if (window.location.hash !== expectedPageHash) {
+    window.history.replaceState(null, "", expectedPageHash);
+  }
   updateNotificationButton();
   renderPlans();
   renderSessionData();

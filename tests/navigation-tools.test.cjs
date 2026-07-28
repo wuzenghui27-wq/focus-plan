@@ -1,0 +1,27 @@
+const assert = require("assert");
+const {
+  DEFAULT_PAGE,
+  PAGE_NAMES,
+  normalizePage,
+  getPageFromHash,
+  createPageHash,
+  getPageTitle
+} = require("../navigation-tools.js");
+
+assert.deepStrictEqual(
+  PAGE_NAMES,
+  ["plans", "focus", "history", "settings"]
+);
+assert.strictEqual(normalizePage("focus"), "focus");
+assert.strictEqual(normalizePage("unknown"), DEFAULT_PAGE);
+assert.strictEqual(normalizePage(null), DEFAULT_PAGE);
+assert.strictEqual(getPageFromHash("#plans"), "plans");
+assert.strictEqual(getPageFromHash("#/history"), "history");
+assert.strictEqual(getPageFromHash("#bad-page"), DEFAULT_PAGE);
+assert.strictEqual(getPageFromHash(""), DEFAULT_PAGE);
+assert.strictEqual(createPageHash("settings"), "#settings");
+assert.strictEqual(createPageHash("bad-page"), "#plans");
+assert.strictEqual(getPageTitle("focus"), "专注时长");
+assert.strictEqual(getPageTitle("invalid"), "我的计划表");
+
+console.log("Navigation tools: all tests passed");
