@@ -1157,7 +1157,7 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
 /* ===== Account and data management ===== */
 
 .account-panel {
-  margin-top: 20px;
+  margin: 0;
   padding: 24px;
 }
 
@@ -1195,7 +1195,7 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
 }
 
 .data-panel {
-  margin-top: 20px;
+  margin: 0;
   padding: 24px;
 }
 
@@ -1210,6 +1210,11 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   margin: 14px 0 0;
   color: #687078;
   font-size: 13px;
+}
+
+.data-status:empty {
+  min-height: 0;
+  margin: 0;
 }
 
 .data-status.is-success {

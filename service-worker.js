@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v3";
+const CACHE_NAME = "focus-plan-shell-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -80,12 +80,8 @@ function handleNavigationRequest(request) {
 }
 
 function handleAssetRequest(request) {
-  return caches.match(request).then(function (cachedResponse) {
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    return fetch(request).then(function (response) {
+  return fetch(request)
+    .then(function (response) {
       if (response.ok) {
         const responseCopy = response.clone();
 
@@ -95,8 +91,10 @@ function handleAssetRequest(request) {
       }
 
       return response;
+    })
+    .catch(function () {
+      return caches.match(request);
     });
-  });
 }
 
 self.addEventListener("fetch", function (event) {
