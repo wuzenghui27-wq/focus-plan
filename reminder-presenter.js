@@ -28,6 +28,7 @@
     const timers = new Map();
     const displayDuration = options?.displayDuration || 8000;
     const maximumVisible = options?.maximumVisible || 3;
+    const onActivate = options?.onActivate;
 
     function dismiss(item) {
       if (!item || item.dataset.dismissing === "true") {
@@ -44,6 +45,7 @@
 
     function attachSwipe(item) {
       let startY = null;
+      let suppressActivation = false;
 
       item.addEventListener("pointerdown", function (event) {
         if (getReminderPlacement(window.innerWidth) !== "mobile-top") {
@@ -70,6 +72,7 @@
           startY,
           event.clientY
         );
+        suppressActivation = Math.abs(event.clientY - startY) > 8;
         startY = null;
         item.style.transform = "";
         item.style.opacity = "";
@@ -77,6 +80,21 @@
         if (dismissFromSwipe) {
           dismiss(item);
         }
+      });
+
+      item.addEventListener("click", function (event) {
+        if (
+          suppressActivation ||
+          event.target.closest(".app-reminder-close")
+        ) {
+          suppressActivation = false;
+          return;
+        }
+
+        if (typeof onActivate === "function") {
+          onActivate(item.reminderData);
+        }
+        dismiss(item);
       });
     }
 
@@ -96,15 +114,31 @@
       }
 
       const item = document.createElement("article");
+      const appIcon = document.createElement("span");
       const content = document.createElement("div");
+      const meta = document.createElement("div");
+      const appName = document.createElement("span");
+      const time = document.createElement("time");
       const title = document.createElement("strong");
       const body = document.createElement("p");
       const closeButton = document.createElement("button");
 
       item.className = "app-reminder";
       item.dataset.reminderTag = reminder.tag;
+      item.reminderData = reminder;
       item.setAttribute("role", "alert");
+      item.setAttribute(
+        "aria-label",
+        reminder.title + "：" + reminder.body + "。点击查看"
+      );
+      item.tabIndex = 0;
+      appIcon.className = "app-reminder-icon";
+      appIcon.textContent = "FP";
       content.className = "app-reminder-content";
+      meta.className = "app-reminder-meta";
+      appName.textContent = "Focus Plan";
+      time.dateTime = new Date().toISOString();
+      time.textContent = "现在";
       title.textContent = reminder.title;
       body.textContent = reminder.body;
       closeButton.type = "button";
@@ -114,9 +148,22 @@
       closeButton.addEventListener("click", function () {
         dismiss(item);
       });
+      item.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          if (typeof onActivate === "function") {
+            onActivate(item.reminderData);
+          }
+          dismiss(item);
+        }
+      });
 
+      meta.appendChild(appName);
+      meta.appendChild(time);
+      content.appendChild(meta);
       content.appendChild(title);
       content.appendChild(body);
+      item.appendChild(appIcon);
       item.appendChild(content);
       item.appendChild(closeButton);
       attachSwipe(item);

@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v5";
+const CACHE_NAME = "focus-plan-shell-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -119,16 +119,21 @@ self.addEventListener("fetch", function (event) {
 
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
+  const relativeTarget = event.notification.data?.url || "./#plans";
+  const targetUrl = new URL(relativeTarget, self.location.origin).href;
+
   event.waitUntil(
     self.clients.matchAll({
       type: "window",
       includeUncontrolled: true
     }).then(function (windowClients) {
       if (windowClients.length > 0) {
-        return windowClients[0].focus();
+        return windowClients[0].navigate(targetUrl).then(function (client) {
+          return client.focus();
+        });
       }
 
-      return self.clients.openWindow("./#plans");
+      return self.clients.openWindow(targetUrl);
     })
   );
 });

@@ -284,7 +284,11 @@ const syncApi = window.SyncApi.createSyncApi(
 );
 const reminderPresenter = window.ReminderPresenter.createPresenter(
   elements.reminderRegion,
-  { displayDuration: 8000, maximumVisible: 3 }
+  {
+    displayDuration: 8000,
+    maximumVisible: 3,
+    onActivate: activateReminder
+  }
 );
 
 /* ===== Storage ===== */
@@ -1658,7 +1662,8 @@ function checkAndUnlockAchievements(shouldNotify) {
         newlyUnlocked.map(function (achievement) {
           return achievement.title;
         }).join("、"),
-        "achievement-unlocked"
+        "achievement-unlocked",
+        { targetPage: "focus" }
       );
     }
   }
@@ -2045,19 +2050,48 @@ function updateNotificationButton() {
   elements.notificationButton.disabled = false;
 }
 
-async function showSystemNotification(title, body, tag) {
+function activateReminder(reminder) {
+  const targetPage = reminder.targetPage || "plans";
+  navigateToPage(targetPage);
+
+  if (reminder.planId === undefined || reminder.planId === null) {
+    return;
+  }
+
+  const matchingPlan = state.plans.find(function (plan) {
+    return String(plan.id) === String(reminder.planId);
+  });
+
+  if (matchingPlan) {
+    openPlanDetails(matchingPlan);
+  }
+}
+
+async function showSystemNotification(title, body, tag, options) {
   if (!("Notification" in window) || Notification.permission !== "granted") {
     return false;
   }
 
+  const reminderOptions = options || {};
+  const notificationOptions = {
+    body,
+    tag,
+    icon: "./assets/icons/app-icon-192.png",
+    renotify: true,
+    data: {
+      url: "./#" + (reminderOptions.targetPage || "plans"),
+      planId: reminderOptions.planId ?? null
+    }
+  };
+
   try {
     if ("serviceWorker" in window.navigator) {
       const registration = await window.navigator.serviceWorker.ready;
-      await registration.showNotification(title, { body, tag });
+      await registration.showNotification(title, notificationOptions);
       return true;
     }
 
-    new Notification(title, { body, tag });
+    new Notification(title, notificationOptions);
     return true;
   } catch (error) {
     console.error("发送通知失败：", error);
@@ -2065,14 +2099,21 @@ async function showSystemNotification(title, body, tag) {
   }
 }
 
-async function deliverReminder(title, body, tag) {
+async function deliverReminder(title, body, tag, options) {
+  const reminderOptions = options || {};
+
   if (
     !window.ReminderPresenter.shouldUseSystemNotification(
       document.visibilityState
     )
   ) {
     try {
-      reminderPresenter.show({ title, body, tag });
+      reminderPresenter.show({
+        title,
+        body,
+        tag,
+        ...reminderOptions
+      });
       return true;
     } catch (error) {
       console.error("显示网页提醒失败：", error);
@@ -2080,7 +2121,7 @@ async function deliverReminder(title, body, tag) {
     }
   }
 
-  return showSystemNotification(title, body, tag);
+  return showSystemNotification(title, body, tag, reminderOptions);
 }
 
 function requestNotificationPermission() {
@@ -2095,7 +2136,8 @@ function requestNotificationPermission() {
       showSystemNotification(
         "计划提醒已开启",
         "计划或专注计时结束后，我们会在这里提醒你。",
-        "notifications-enabled"
+        "notifications-enabled",
+        { targetPage: "settings" }
       );
       checkPlanReminders();
     }
@@ -2122,7 +2164,11 @@ async function checkPlanReminders() {
           ? "计划即将到期"
           : "计划时间到了",
         plan.title,
-        "plan-" + plan.id
+        "plan-" + plan.id,
+        {
+          targetPage: "plans",
+          planId: plan.id
+        }
       );
 
       if (notificationSent) {
@@ -2501,7 +2547,8 @@ function finishTimer() {
       "专注计时完成",
       completedSession.plannedMinutes + " 分钟专注已完成：" +
         completedSession.planTitle,
-      "focus-timer-complete"
+      "focus-timer-complete",
+      { targetPage: "focus" }
     );
     playTimerSound("focusComplete");
     state.timer.completedFocusesInCycle += 1;
@@ -2528,7 +2575,8 @@ function finishTimer() {
   deliverReminder(
     "休息结束",
     "休息完成，可以开始下一轮专注。",
-    "focus-break-complete"
+    "focus-break-complete",
+    { targetPage: "focus" }
   );
   playTimerSound(completedBreakSound);
   prepareFocusPhase("休息完成 · 准备下一轮专注");

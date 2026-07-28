@@ -1050,8 +1050,8 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
 
 .app-reminder {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
-  min-height: 76px;
+  grid-template-columns: 34px minmax(0, 1fr) 32px;
+  min-height: 84px;
   align-items: start;
   gap: 10px;
   padding: 14px 12px 14px 16px;
@@ -1064,28 +1064,55 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   animation: reminder-slide-in-left 220ms ease-out;
   pointer-events: auto;
   touch-action: none;
+  cursor: pointer;
+}
+
+.app-reminder-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 7px;
+  color: #ffffff;
+  background-color: #041936;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .app-reminder-content {
   min-width: 0;
 }
 
+.app-reminder-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: #687078;
+  font-size: 11px;
+}
+
+.app-reminder-meta time {
+  white-space: nowrap;
+}
+
 .app-reminder strong {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .app-reminder p {
-  margin: 5px 0 0;
+  margin: 3px 0 0;
   overflow-wrap: anywhere;
   color: #4f5963;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
 .app-reminder-close {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: 5px;
@@ -2474,13 +2501,26 @@ html[data-theme="dark"] .app-reminder {
 }
 
 html[data-theme="dark"] .app-reminder p,
+html[data-theme="dark"] .app-reminder-meta,
 html[data-theme="dark"] .app-reminder-close {
   color: #bdc6ce;
+}
+
+html[data-theme="dark"] .app-reminder-icon {
+  color: #101820;
+  background-color: #8db8f0;
 }
 
 html[data-theme="dark"] .app-reminder-close:hover {
   color: #ffffff;
   background-color: #343b42;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-reminder,
+  .app-reminder.is-dismissing {
+    animation-duration: 1ms;
+  }
 }
 
 html[data-theme="dark"] .settings-list,
