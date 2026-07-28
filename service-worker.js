@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v4";
+const CACHE_NAME = "focus-plan-shell-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./plan-tools.js",
   "./pomodoro-tools.js",
   "./recurrence-tools.js",
+  "./reminder-presenter.js",
   "./reminder-tools.js",
   "./script.js",
   "./session-tools.js",
@@ -113,5 +114,21 @@ self.addEventListener("fetch", function (event) {
     request.mode === "navigate"
       ? handleNavigationRequest(request)
       : handleAssetRequest(request)
+  );
+});
+
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    }).then(function (windowClients) {
+      if (windowClients.length > 0) {
+        return windowClients[0].focus();
+      }
+
+      return self.clients.openWindow("./#plans");
+    })
   );
 });

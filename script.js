@@ -11,6 +11,7 @@ const REQUIRED_MODULES = [
   "ShortcutTools",
   "RecurrenceTools",
   "ReminderTools",
+  "ReminderPresenter",
   "TextTools",
   "SubtaskTools",
   "GoalTools",
@@ -68,6 +69,7 @@ const restoredTimerResult = window.TimerStateTools.loadTimerState(
 );
 const restoredSoundResult = window.SoundTools.loadSoundSettings(localStorage);
 let timerAudioContext = null;
+let planReminderCheckInProgress = false;
 
 const PRIORITY_LABELS = {
   low: "低",
@@ -108,6 +110,7 @@ const elements = {
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
   notificationButton: document.querySelector("#notificationButton"),
+  reminderRegion: document.querySelector("#reminderRegion"),
   accountSignedOut: document.querySelector("#accountSignedOut"),
   accountSignedIn: document.querySelector("#accountSignedIn"),
   phoneLoginForm: document.querySelector("#phoneLoginForm"),
@@ -278,6 +281,10 @@ const state = {
 const syncApi = window.SyncApi.createSyncApi(
   window.fetch.bind(window),
   "/api"
+);
+const reminderPresenter = window.ReminderPresenter.createPresenter(
+  elements.reminderRegion,
+  { displayDuration: 8000, maximumVisible: 3 }
 );
 
 /* ===== Storage ===== */
@@ -1646,7 +1653,7 @@ function checkAndUnlockAchievements(shouldNotify) {
 
     if (shouldNotify) {
       showAchievementToast(newlyUnlocked);
-      showNotification(
+      deliverReminder(
         "解锁新成就",
         newlyUnlocked.map(function (achievement) {
           return achievement.title;
@@ -2038,18 +2045,42 @@ function updateNotificationButton() {
   elements.notificationButton.disabled = false;
 }
 
-function showNotification(title, body, tag) {
+async function showSystemNotification(title, body, tag) {
   if (!("Notification" in window) || Notification.permission !== "granted") {
     return false;
   }
 
   try {
+    if ("serviceWorker" in window.navigator) {
+      const registration = await window.navigator.serviceWorker.ready;
+      await registration.showNotification(title, { body, tag });
+      return true;
+    }
+
     new Notification(title, { body, tag });
     return true;
   } catch (error) {
     console.error("发送通知失败：", error);
     return false;
   }
+}
+
+async function deliverReminder(title, body, tag) {
+  if (
+    !window.ReminderPresenter.shouldUseSystemNotification(
+      document.visibilityState
+    )
+  ) {
+    try {
+      reminderPresenter.show({ title, body, tag });
+      return true;
+    } catch (error) {
+      console.error("显示网页提醒失败：", error);
+      return false;
+    }
+  }
+
+  return showSystemNotification(title, body, tag);
 }
 
 function requestNotificationPermission() {
@@ -2061,7 +2092,7 @@ function requestNotificationPermission() {
     updateNotificationButton();
 
     if (permission === "granted") {
-      showNotification(
+      showSystemNotification(
         "计划提醒已开启",
         "计划或专注计时结束后，我们会在这里提醒你。",
         "notifications-enabled"
@@ -2071,31 +2102,40 @@ function requestNotificationPermission() {
   });
 }
 
-function checkPlanReminders() {
+async function checkPlanReminders() {
+  if (planReminderCheckInProgress) {
+    return;
+  }
+
+  planReminderCheckInProgress = true;
   let plansChanged = false;
   const now = Date.now();
 
-  state.plans.forEach(function (plan) {
-    if (!window.ReminderTools.isPlanReminderDue(plan, now)) {
-      return;
+  try {
+    for (const plan of state.plans) {
+      if (!window.ReminderTools.isPlanReminderDue(plan, now)) {
+        continue;
+      }
+
+      const notificationSent = await deliverReminder(
+        plan.reminderMinutes > 0
+          ? "计划即将到期"
+          : "计划时间到了",
+        plan.title,
+        "plan-" + plan.id
+      );
+
+      if (notificationSent) {
+        plan.reminded = true;
+        plansChanged = true;
+      }
     }
 
-    const notificationSent = showNotification(
-      plan.reminderMinutes > 0
-        ? "计划即将到期"
-        : "计划时间到了",
-      plan.title,
-      "plan-" + plan.id
-    );
-
-    if (notificationSent) {
-      plan.reminded = true;
-      plansChanged = true;
+    if (plansChanged) {
+      savePlans();
     }
-  });
-
-  if (plansChanged) {
-    savePlans();
+  } finally {
+    planReminderCheckInProgress = false;
   }
 }
 
@@ -2457,7 +2497,7 @@ function finishTimer() {
     state.timer.completionRecorded = true;
     const completedSession = recordCompletedFocusSession();
 
-    showNotification(
+    deliverReminder(
       "专注计时完成",
       completedSession.plannedMinutes + " 分钟专注已完成：" +
         completedSession.planTitle,
@@ -2485,7 +2525,7 @@ function finishTimer() {
     ? "longBreakComplete"
     : "shortBreakComplete";
 
-  showNotification(
+  deliverReminder(
     "休息结束",
     "休息完成，可以开始下一轮专注。",
     "focus-break-complete"
@@ -2784,6 +2824,7 @@ function bindEvents() {
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible") {
       reconcileCloudData();
+      checkPlanReminders();
     }
   });
   window.addEventListener("hashchange", handlePageHashChange);
