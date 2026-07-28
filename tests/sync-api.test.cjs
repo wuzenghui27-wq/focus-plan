@@ -22,7 +22,7 @@ assert.throws(() => api.getSocialLoginUrl("email"), /Unsupported/);
 (async function () {
   await api.sendPhoneCode("13800138000");
   await api.verifyPhoneCode("13800138000", "123456");
-  await api.uploadSnapshot({ schemaVersion: 1 });
+  await api.uploadSnapshot({ schemaVersion: 1 }, "2026-07-28T00:00:00Z");
   await api.downloadSnapshot();
 
   assert.equal(requests[0].url, "/api/auth/phone/code");
@@ -32,6 +32,10 @@ assert.throws(() => api.getSocialLoginUrl("email"), /Unsupported/);
     "/api/auth/phone/verify"
   );
   assert.equal(requests[2].options.method, "PUT");
+  assert.equal(
+    requests[2].options.headers["If-Match"],
+    "2026-07-28T00:00:00Z"
+  );
   assert.equal(requests[3].url, "/api/sync");
   assert.equal(requests[3].options.credentials, "include");
 

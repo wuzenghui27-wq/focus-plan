@@ -47,6 +47,7 @@ const MIN_TIMER_MINUTES = 1;
 const MAX_TIMER_MINUTES = 180;
 const REMINDER_CHECK_MS = 30000;
 const SESSION_PAGE_SIZE = 10;
+const AUTO_SYNC_DELAY_MS = 1500;
 const TIMER_STATE_OPTIONS = {
   minimumFocusMinutes: MIN_TIMER_MINUTES,
   maximumFocusMinutes: MAX_TIMER_MINUTES,
@@ -223,6 +224,13 @@ const state = {
   achievementUnlocks: loadAchievementUnlocks(),
   dailyGoalMinutes: window.GoalTools.loadDailyGoal(localStorage),
   account: null,
+  sync: {
+    metadata: window.SyncTools.loadSyncMetadata(localStorage),
+    timeoutId: null,
+    isSyncing: false,
+    isApplyingRemote: false,
+    hasConflict: false
+  },
   editingPlanId: null,
   viewingPlanId: null,
   planView: {
@@ -310,6 +318,7 @@ function loadPlans() {
 
 function savePlans() {
   saveStoredArray(STORAGE_KEY, state.plans);
+  markLocalDataChanged();
 }
 
 function loadFocusSessions() {
@@ -342,6 +351,7 @@ function loadFocusSessions() {
 
 function saveFocusSessions() {
   saveStoredArray(SESSION_STORAGE_KEY, state.focusSessions);
+  markLocalDataChanged();
 }
 
 function loadAchievementUnlocks() {
@@ -361,6 +371,7 @@ function loadAchievementUnlocks() {
 
 function saveAchievementUnlocks() {
   saveStoredArray(ACHIEVEMENT_STORAGE_KEY, state.achievementUnlocks);
+  markLocalDataChanged();
 }
 
 function loadStoredArray(key, label, normalizeItems) {
@@ -1468,6 +1479,7 @@ function saveDailyGoalSetting(event) {
   }
 
   state.dailyGoalMinutes = minutes;
+  markLocalDataChanged();
   renderDailyGoal();
   showActionFeedback("每日专注目标已保存。", null);
 }
@@ -1649,6 +1661,122 @@ function checkAndUnlockAchievements(shouldNotify) {
 
 /* ===== Data management ===== */
 
+function persistSyncMetadata() {
+  window.SyncTools.saveSyncMetadata(localStorage, state.sync.metadata);
+}
+
+function hasSyncableLocalData() {
+  return state.plans.length > 0 ||
+    state.focusSessions.length > 0 ||
+    state.achievementUnlocks.length > 0 ||
+    state.dailyGoalMinutes !== window.GoalTools.DEFAULT_DAILY_GOAL_MINUTES;
+}
+
+function prepareSyncMetadataForAccount() {
+  if (state.sync.metadata.accountId === state.account.id) {
+    return;
+  }
+
+  state.sync.metadata = window.SyncTools.createSyncMetadata(state.account.id);
+  if (hasSyncableLocalData()) {
+    state.sync.metadata.localUpdatedAt = new Date().toISOString();
+  }
+  persistSyncMetadata();
+}
+
+function scheduleAutoSync() {
+  window.clearTimeout(state.sync.timeoutId);
+
+  if (!state.account || state.sync.hasConflict) {
+    return;
+  }
+
+  state.sync.timeoutId = window.setTimeout(
+    reconcileCloudData,
+    AUTO_SYNC_DELAY_MS
+  );
+}
+
+function markLocalDataChanged() {
+  if (state.sync.isApplyingRemote) {
+    return;
+  }
+
+  state.sync.metadata.localUpdatedAt = new Date().toISOString();
+  persistSyncMetadata();
+
+  if (state.account) {
+    showAccountStatus("本机有新修改，等待自动同步…", "");
+    scheduleAutoSync();
+  }
+}
+
+function markSyncCompleted(snapshot) {
+  const pendingLocalUpdatedAt = state.sync.metadata.localUpdatedAt;
+  const hasNewerLocalChanges = pendingLocalUpdatedAt &&
+    new Date(pendingLocalUpdatedAt).getTime() >
+      new Date(snapshot.updatedAt).getTime();
+
+  state.sync.metadata.localUpdatedAt = hasNewerLocalChanges
+    ? pendingLocalUpdatedAt
+    : snapshot.updatedAt;
+  state.sync.metadata.lastSyncedLocalUpdatedAt = snapshot.updatedAt;
+  state.sync.metadata.lastSyncedRemoteUpdatedAt = snapshot.updatedAt;
+  state.sync.hasConflict = false;
+  persistSyncMetadata();
+
+  if (hasNewerLocalChanges) {
+    scheduleAutoSync();
+  }
+}
+
+async function reconcileCloudData() {
+  if (!state.account || state.sync.isSyncing || state.sync.hasConflict) {
+    return;
+  }
+
+  state.sync.isSyncing = true;
+  showAccountStatus("正在自动同步…", "");
+
+  try {
+    const result = await syncApi.downloadSnapshot();
+    const remoteSnapshot = result.snapshot;
+    const action = window.SyncTools.decideSyncAction(
+      state.sync.metadata,
+      remoteSnapshot?.updatedAt || null
+    );
+
+    if (action === "conflict") {
+      state.sync.hasConflict = true;
+      showAccountStatus(
+        "本机和云端都有新修改。请选择上传本机数据或下载云端数据。",
+        "error"
+      );
+    } else if (action === "download") {
+      applySyncSnapshot(remoteSnapshot);
+      markSyncCompleted(remoteSnapshot);
+      showAccountStatus("已自动下载云端最新数据。", "success");
+    } else if (action === "upload") {
+      const snapshot = createCurrentSyncSnapshot();
+      await syncApi.uploadSnapshot(
+        snapshot,
+        remoteSnapshot?.updatedAt || null
+      );
+      markSyncCompleted(snapshot);
+      showAccountStatus("已自动同步。", "success");
+    } else {
+      showAccountStatus("数据已是最新。", "success");
+    }
+  } catch (error) {
+    if (error.status === 409) {
+      state.sync.hasConflict = true;
+    }
+    showAccountStatus(error.message, "error");
+  } finally {
+    state.sync.isSyncing = false;
+  }
+}
+
 function showAccountStatus(message, type) {
   elements.accountStatus.textContent = message;
   elements.accountStatus.classList.remove("is-success", "is-error");
@@ -1671,6 +1799,10 @@ async function refreshAccount() {
     const result = await syncApi.getAccount();
     state.account = result.account;
     renderAccount();
+    if (state.account) {
+      prepareSyncMetadataForAccount();
+      reconcileCloudData();
+    }
   } catch (error) {
     showAccountStatus("暂时无法连接账号服务。", "error");
   }
@@ -1705,9 +1837,11 @@ async function signInWithPhone(event) {
       elements.accountPhoneCodeInput.value.trim()
     );
     state.account = result.account;
+    prepareSyncMetadataForAccount();
     elements.phoneLoginForm.reset();
     renderAccount();
-    showAccountStatus("登录成功，可以同步数据了。", "success");
+    showAccountStatus("登录成功，正在检查同步状态…", "success");
+    reconcileCloudData();
   } catch (error) {
     showAccountStatus(error.message, "error");
   }
@@ -1724,7 +1858,9 @@ function createCurrentSyncSnapshot() {
 
 async function uploadCloudData() {
   try {
-    await syncApi.uploadSnapshot(createCurrentSyncSnapshot());
+    const snapshot = createCurrentSyncSnapshot();
+    await syncApi.uploadSnapshot(snapshot);
+    markSyncCompleted(snapshot);
     showAccountStatus("本机数据已上传。", "success");
   } catch (error) {
     showAccountStatus(error.message, "error");
@@ -1733,15 +1869,20 @@ async function uploadCloudData() {
 
 function applySyncSnapshot(snapshot) {
   const normalized = window.SyncTools.validateSyncSnapshot(snapshot);
-  state.plans = normalized.data.plans;
-  state.focusSessions = normalized.data.focusSessions;
-  state.achievementUnlocks = normalized.data.achievementUnlocks;
-  state.dailyGoalMinutes = normalized.data.dailyGoalMinutes;
-  resetHistoryFilter();
-  savePlans();
-  saveFocusSessions();
-  saveAchievementUnlocks();
-  window.GoalTools.saveDailyGoal(localStorage, state.dailyGoalMinutes);
+  state.sync.isApplyingRemote = true;
+  try {
+    state.plans = normalized.data.plans;
+    state.focusSessions = normalized.data.focusSessions;
+    state.achievementUnlocks = normalized.data.achievementUnlocks;
+    state.dailyGoalMinutes = normalized.data.dailyGoalMinutes;
+    resetHistoryFilter();
+    savePlans();
+    saveFocusSessions();
+    saveAchievementUnlocks();
+    window.GoalTools.saveDailyGoal(localStorage, state.dailyGoalMinutes);
+  } finally {
+    state.sync.isApplyingRemote = false;
+  }
   renderPlans();
   renderSessionData();
   checkAndUnlockAchievements(false);
@@ -1758,6 +1899,7 @@ async function downloadCloudData() {
       return;
     }
     applySyncSnapshot(result.snapshot);
+    markSyncCompleted(result.snapshot);
     showAccountStatus("云端数据已下载到本机。", "success");
   } catch (error) {
     showAccountStatus(error.message, "error");
@@ -1768,6 +1910,8 @@ async function signOutAccount() {
   try {
     await syncApi.signOut();
     state.account = null;
+    state.sync.hasConflict = false;
+    window.clearTimeout(state.sync.timeoutId);
     renderAccount();
     showAccountStatus("已退出登录，本机数据仍然保留。", "success");
   } catch (error) {
@@ -1866,6 +2010,7 @@ function resetApplicationData() {
   updateDurationButtons();
   updateTimerDisplay();
   showDataManagementStatus("应用数据已全部重置。", "success");
+  markLocalDataChanged();
 }
 
 /* ===== Notifications and reminders ===== */
@@ -2635,6 +2780,12 @@ function handleApplicationShortcut(event) {
 
 function bindEvents() {
   document.addEventListener("keydown", handleApplicationShortcut);
+  window.addEventListener("online", reconcileCloudData);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      reconcileCloudData();
+    }
+  });
   window.addEventListener("hashchange", handlePageHashChange);
   elements.appTabs.forEach(function (tab) {
     tab.addEventListener("click", function () {

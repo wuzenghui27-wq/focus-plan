@@ -148,6 +148,20 @@ function createApiHandler({ store, secret, isDevelopment }) {
       }
 
       if (request.method === "PUT" && url.pathname === "/api/sync") {
+        const expectedUpdatedAt = request.headers["if-match"];
+        const currentSnapshot = store.getSnapshot(session.user.id);
+        const currentUpdatedAt = currentSnapshot?.updatedAt || "null";
+
+        if (
+          expectedUpdatedAt !== undefined &&
+          expectedUpdatedAt !== currentUpdatedAt
+        ) {
+          sendJson(response, 409, {
+            error: "云端数据已在其他设备更新，请先处理同步冲突。"
+          });
+          return true;
+        }
+
         const snapshot = SyncTools.validateSyncSnapshot(await readJson(request));
         store.saveSnapshot(session.user.id, snapshot);
         sendJson(response, 200, { snapshot });

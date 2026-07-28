@@ -77,9 +77,16 @@
       downloadSnapshot: function () {
         return request("/sync");
       },
-      uploadSnapshot: function (snapshot) {
+      uploadSnapshot: function (snapshot, expectedUpdatedAt) {
+        const headers = {};
+
+        if (expectedUpdatedAt !== undefined) {
+          headers["If-Match"] = expectedUpdatedAt || "null";
+        }
+
         return request("/sync", {
           method: "PUT",
+          headers,
           body: JSON.stringify(snapshot)
         });
       },

@@ -48,6 +48,35 @@ assert.throws(
   () => SyncTools.createSyncSnapshot({ ...source, plans: null }, new Date()),
   /plans/
 );
+
+const metadata = {
+  accountId: 1,
+  localUpdatedAt: "2026-07-28T11:00:00Z",
+  lastSyncedLocalUpdatedAt: "2026-07-28T10:00:00Z",
+  lastSyncedRemoteUpdatedAt: "2026-07-28T10:00:00Z"
+};
+assert.equal(
+  SyncTools.decideSyncAction(metadata, "2026-07-28T10:00:00Z"),
+  "upload"
+);
+assert.equal(
+  SyncTools.decideSyncAction(metadata, "2026-07-28T12:00:00Z"),
+  "conflict"
+);
+assert.equal(
+  SyncTools.decideSyncAction(
+    { ...metadata, localUpdatedAt: metadata.lastSyncedLocalUpdatedAt },
+    "2026-07-28T12:00:00Z"
+  ),
+  "download"
+);
+assert.equal(
+  SyncTools.decideSyncAction(
+    { ...metadata, localUpdatedAt: metadata.lastSyncedLocalUpdatedAt },
+    "2026-07-28T10:00:00Z"
+  ),
+  "none"
+);
 assert.throws(
   () => SyncTools.validateSyncSnapshot({ ...snapshot, schemaVersion: 99 }),
   /version/

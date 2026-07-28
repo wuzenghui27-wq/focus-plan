@@ -8,6 +8,7 @@
   root.SyncTools = tools;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const SYNC_SCHEMA_VERSION = 1;
+  const SYNC_METADATA_STORAGE_KEY = "focus-plan-sync-metadata";
 
   function cloneJsonValue(value) {
     return JSON.parse(JSON.stringify(value));
@@ -91,10 +92,82 @@
     return localTime > remoteTime ? "upload" : "download";
   }
 
+  function createSyncMetadata(accountId) {
+    return {
+      accountId: accountId ?? null,
+      localUpdatedAt: null,
+      lastSyncedLocalUpdatedAt: null,
+      lastSyncedRemoteUpdatedAt: null
+    };
+  }
+
+  function normalizeSyncMetadata(value) {
+    const metadata = createSyncMetadata(value?.accountId);
+
+    [
+      "localUpdatedAt",
+      "lastSyncedLocalUpdatedAt",
+      "lastSyncedRemoteUpdatedAt"
+    ].forEach(function (key) {
+      if (value?.[key] && !Number.isNaN(new Date(value[key]).getTime())) {
+        metadata[key] = new Date(value[key]).toISOString();
+      }
+    });
+
+    return metadata;
+  }
+
+  function loadSyncMetadata(storage) {
+    try {
+      return normalizeSyncMetadata(
+        JSON.parse(storage.getItem(SYNC_METADATA_STORAGE_KEY) || "null")
+      );
+    } catch (error) {
+      return createSyncMetadata(null);
+    }
+  }
+
+  function saveSyncMetadata(storage, metadata) {
+    storage.setItem(
+      SYNC_METADATA_STORAGE_KEY,
+      JSON.stringify(normalizeSyncMetadata(metadata))
+    );
+  }
+
+  function decideSyncAction(metadata, remoteUpdatedAt) {
+    const normalized = normalizeSyncMetadata(metadata);
+    const hasLocalChanges =
+      normalized.localUpdatedAt !== normalized.lastSyncedLocalUpdatedAt;
+
+    if (!remoteUpdatedAt) {
+      return "upload";
+    }
+
+    const normalizedRemote = normalizeUpdatedAt(remoteUpdatedAt);
+    const remoteChanged =
+      normalizedRemote !== normalized.lastSyncedRemoteUpdatedAt;
+
+    if (remoteChanged && hasLocalChanges) {
+      return "conflict";
+    }
+
+    if (remoteChanged) {
+      return "download";
+    }
+
+    return hasLocalChanges ? "upload" : "none";
+  }
+
   return {
     SYNC_SCHEMA_VERSION,
+    SYNC_METADATA_STORAGE_KEY,
     createSyncSnapshot,
     validateSyncSnapshot,
-    chooseSyncAction
+    chooseSyncAction,
+    createSyncMetadata,
+    normalizeSyncMetadata,
+    loadSyncMetadata,
+    saveSyncMetadata,
+    decideSyncAction
   };
 });
