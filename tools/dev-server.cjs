@@ -38,7 +38,10 @@ const server = http.createServer(function (request, response) {
     const extension = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[extension] || "application/octet-stream";
 
-    response.writeHead(200, { "Content-Type": contentType });
+    response.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": "no-store"
+    });
     response.end(file);
   });
 });
