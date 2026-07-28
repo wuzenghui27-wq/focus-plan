@@ -14,6 +14,7 @@
 - 四页移动端导航和 iPhone 安全区域适配
 - PWA 主屏幕图标和离线应用外壳
 - 微信、QQ、手机号登录所需的云同步数据层和 API 契约
+- Node.js + SQLite 本地账号服务、手机号开发登录和手动云同步
 
 ## 本地运行
 
@@ -48,5 +49,6 @@ npm.cmd run check
 - `navigation-tools.js`：四页导航、地址哈希和页面标题规则
 - `sync-tools.js`：云同步快照和版本判断规则
 - `sync-api.js`：账号登录与云同步的前端 API 边界
+- `server/`：账号、会话、验证码和同步快照后端
 - `service-worker.js`：离线缓存和版本更新策略
 - `tools/dev-server.cjs`：本地静态文件服务器

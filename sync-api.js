@@ -27,7 +27,16 @@
       });
 
       if (!response.ok) {
-        const error = new Error("Cloud sync request failed.");
+        let message = "账号服务请求失败。";
+
+        try {
+          const errorBody = await response.json();
+          message = errorBody.error || message;
+        } catch (parseError) {
+          // Keep the generic message when the server did not return JSON.
+        }
+
+        const error = new Error(message);
 
         error.status = response.status;
         throw error;

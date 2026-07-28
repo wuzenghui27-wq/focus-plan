@@ -575,6 +575,58 @@
           </div>
         </section>
 
+        <section class="panel account-panel" aria-labelledby="accountHeading">
+          <div class="section-heading">
+            <div>
+              <h2 id="accountHeading">账号与同步</h2>
+              <p>登录后可在使用同一服务的设备间共享计划数据。</p>
+            </div>
+          </div>
+
+          <div id="accountSignedOut">
+            <div class="social-login-list" aria-label="第三方登录状态">
+              <button class="secondary-button" type="button" disabled>
+                微信登录 · 待平台配置
+              </button>
+              <button class="secondary-button" type="button" disabled>
+                QQ 登录 · 待平台配置
+              </button>
+            </div>
+            <form id="phoneLoginForm" class="phone-login-form">
+              <label for="accountPhone">手机号</label>
+              <div class="account-input-row">
+                <input id="accountPhone" type="tel" inputmode="numeric"
+                  autocomplete="tel" maxlength="11" placeholder="请输入 11 位手机号" required>
+                <button id="sendPhoneCodeButton" class="secondary-button" type="button">
+                  获取验证码
+                </button>
+              </div>
+              <label for="accountPhoneCode">验证码</label>
+              <div class="account-input-row">
+                <input id="accountPhoneCode" type="text" inputmode="numeric"
+                  autocomplete="one-time-code" maxlength="6" placeholder="6 位验证码" required>
+                <button class="primary-button" type="submit">登录</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="accountSignedIn" hidden>
+            <p id="accountSummary" class="account-summary"></p>
+            <div class="account-actions">
+              <button id="uploadSyncButton" class="primary-button" type="button">
+                上传本机数据
+              </button>
+              <button id="downloadSyncButton" class="secondary-button" type="button">
+                下载云端数据
+              </button>
+              <button id="signOutButton" class="secondary-button" type="button">
+                退出登录
+              </button>
+            </div>
+          </div>
+          <p id="accountStatus" class="data-status" role="status" aria-live="polite"></p>
+        </section>
+
     <section class="panel data-panel" aria-labelledby="dataHeading">
       <div class="section-heading">
         <div>
@@ -710,6 +762,8 @@
   <script src="timer-state-tools.js"></script>
   <script src="sound-tools.js"></script>
   <script src="navigation-tools.js"></script>
+  <script src="sync-tools.js"></script>
+  <script src="sync-api.js"></script>
   <script src="script.js"></script>
 </body>
 

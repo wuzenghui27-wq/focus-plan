@@ -17,7 +17,9 @@ const REQUIRED_MODULES = [
   "PomodoroTools",
   "TimerStateTools",
   "SoundTools",
-  "NavigationTools"
+  "NavigationTools",
+  "SyncTools",
+  "SyncApi"
 ];
 const missingModules = REQUIRED_MODULES.filter(function (moduleName) {
   return !window[moduleName];
@@ -105,6 +107,17 @@ const elements = {
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
   notificationButton: document.querySelector("#notificationButton"),
+  accountSignedOut: document.querySelector("#accountSignedOut"),
+  accountSignedIn: document.querySelector("#accountSignedIn"),
+  phoneLoginForm: document.querySelector("#phoneLoginForm"),
+  accountPhoneInput: document.querySelector("#accountPhone"),
+  accountPhoneCodeInput: document.querySelector("#accountPhoneCode"),
+  sendPhoneCodeButton: document.querySelector("#sendPhoneCodeButton"),
+  accountSummary: document.querySelector("#accountSummary"),
+  accountStatus: document.querySelector("#accountStatus"),
+  uploadSyncButton: document.querySelector("#uploadSyncButton"),
+  downloadSyncButton: document.querySelector("#downloadSyncButton"),
+  signOutButton: document.querySelector("#signOutButton"),
   planForm: document.querySelector("#planForm"),
   planTitleInput: document.querySelector("#planTitle"),
   planPriorityInput: document.querySelector("#planPriority"),
@@ -209,6 +222,7 @@ const state = {
   focusSessions: loadFocusSessions(),
   achievementUnlocks: loadAchievementUnlocks(),
   dailyGoalMinutes: window.GoalTools.loadDailyGoal(localStorage),
+  account: null,
   editingPlanId: null,
   viewingPlanId: null,
   planView: {
@@ -253,6 +267,10 @@ const state = {
     autoStartFocus: restoredTimerResult.timer?.autoStartFocus || false
   }
 };
+const syncApi = window.SyncApi.createSyncApi(
+  window.fetch.bind(window),
+  "/api"
+);
 
 /* ===== Storage ===== */
 
@@ -1631,6 +1649,132 @@ function checkAndUnlockAchievements(shouldNotify) {
 
 /* ===== Data management ===== */
 
+function showAccountStatus(message, type) {
+  elements.accountStatus.textContent = message;
+  elements.accountStatus.classList.remove("is-success", "is-error");
+  if (type) {
+    elements.accountStatus.classList.add("is-" + type);
+  }
+}
+
+function renderAccount() {
+  const isSignedIn = state.account !== null;
+  elements.accountSignedOut.hidden = isSignedIn;
+  elements.accountSignedIn.hidden = !isSignedIn;
+  elements.accountSummary.textContent = isSignedIn
+    ? "已登录：" + state.account.phone
+    : "";
+}
+
+async function refreshAccount() {
+  try {
+    const result = await syncApi.getAccount();
+    state.account = result.account;
+    renderAccount();
+  } catch (error) {
+    showAccountStatus("暂时无法连接账号服务。", "error");
+  }
+}
+
+async function sendPhoneCode() {
+  const phone = elements.accountPhoneInput.value.trim();
+  elements.sendPhoneCodeButton.disabled = true;
+  try {
+    const result = await syncApi.sendPhoneCode(phone);
+    if (result.developmentCode) {
+      elements.accountPhoneCodeInput.value = result.developmentCode;
+      showAccountStatus(
+        "开发验证码已自动填入：" + result.developmentCode,
+        "success"
+      );
+    } else {
+      showAccountStatus("验证码已发送。", "success");
+    }
+  } catch (error) {
+    showAccountStatus(error.message, "error");
+  } finally {
+    elements.sendPhoneCodeButton.disabled = false;
+  }
+}
+
+async function signInWithPhone(event) {
+  event.preventDefault();
+  try {
+    const result = await syncApi.verifyPhoneCode(
+      elements.accountPhoneInput.value.trim(),
+      elements.accountPhoneCodeInput.value.trim()
+    );
+    state.account = result.account;
+    elements.phoneLoginForm.reset();
+    renderAccount();
+    showAccountStatus("登录成功，可以同步数据了。", "success");
+  } catch (error) {
+    showAccountStatus(error.message, "error");
+  }
+}
+
+function createCurrentSyncSnapshot() {
+  return window.SyncTools.createSyncSnapshot({
+    plans: state.plans,
+    focusSessions: state.focusSessions,
+    achievementUnlocks: state.achievementUnlocks,
+    dailyGoalMinutes: state.dailyGoalMinutes
+  }, new Date());
+}
+
+async function uploadCloudData() {
+  try {
+    await syncApi.uploadSnapshot(createCurrentSyncSnapshot());
+    showAccountStatus("本机数据已上传。", "success");
+  } catch (error) {
+    showAccountStatus(error.message, "error");
+  }
+}
+
+function applySyncSnapshot(snapshot) {
+  const normalized = window.SyncTools.validateSyncSnapshot(snapshot);
+  state.plans = normalized.data.plans;
+  state.focusSessions = normalized.data.focusSessions;
+  state.achievementUnlocks = normalized.data.achievementUnlocks;
+  state.dailyGoalMinutes = normalized.data.dailyGoalMinutes;
+  resetHistoryFilter();
+  savePlans();
+  saveFocusSessions();
+  saveAchievementUnlocks();
+  window.GoalTools.saveDailyGoal(localStorage, state.dailyGoalMinutes);
+  renderPlans();
+  renderSessionData();
+  checkAndUnlockAchievements(false);
+}
+
+async function downloadCloudData() {
+  try {
+    const result = await syncApi.downloadSnapshot();
+    if (!result.snapshot) {
+      showAccountStatus("云端还没有数据，请先上传本机数据。", "");
+      return;
+    }
+    if (!window.confirm("下载会替换本机的计划和专注数据，确定继续吗？")) {
+      return;
+    }
+    applySyncSnapshot(result.snapshot);
+    showAccountStatus("云端数据已下载到本机。", "success");
+  } catch (error) {
+    showAccountStatus(error.message, "error");
+  }
+}
+
+async function signOutAccount() {
+  try {
+    await syncApi.signOut();
+    state.account = null;
+    renderAccount();
+    showAccountStatus("已退出登录，本机数据仍然保留。", "success");
+  } catch (error) {
+    showAccountStatus(error.message, "error");
+  }
+}
+
 function showDataManagementStatus(message, type) {
   elements.dataManagementStatus.textContent = message;
   elements.dataManagementStatus.classList.remove("is-success", "is-error");
@@ -2592,6 +2736,11 @@ function bindEvents() {
 
   elements.clearHistoryButton.addEventListener("click", clearFocusHistory);
   elements.resetAppButton.addEventListener("click", resetApplicationData);
+  elements.sendPhoneCodeButton.addEventListener("click", sendPhoneCode);
+  elements.phoneLoginForm.addEventListener("submit", signInWithPhone);
+  elements.uploadSyncButton.addEventListener("click", uploadCloudData);
+  elements.downloadSyncButton.addEventListener("click", downloadCloudData);
+  elements.signOutButton.addEventListener("click", signOutAccount);
 
   elements.timerPlanSelect.addEventListener("change", function () {
     state.timer.selectedPlanId = elements.timerPlanSelect.value;
@@ -2662,6 +2811,8 @@ function initializeApp() {
     window.history.replaceState(null, "", expectedPageHash);
   }
   updateNotificationButton();
+  renderAccount();
+  refreshAccount();
   renderPlans();
   renderSessionData();
   checkAndUnlockAchievements(false);

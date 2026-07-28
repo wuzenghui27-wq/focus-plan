@@ -1,10 +1,20 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const { createAccountStore } = require("../server/account-store.cjs");
+const { createApiHandler } = require("../server/api-handler.cjs");
 
 const HOST = "127.0.0.1";
 const PORT = 5500;
 const ROOT = path.resolve(__dirname, "..");
+const accountStore = createAccountStore(
+  path.join(ROOT, ".data", "focus-plan.db")
+);
+const handleApi = createApiHandler({
+  store: accountStore,
+  secret: process.env.SESSION_SECRET || "local-development-secret",
+  isDevelopment: true
+});
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",
@@ -16,8 +26,16 @@ const MIME_TYPES = {
   ".wav": "audio/wav"
 };
 
-const server = http.createServer(function (request, response) {
+const server = http.createServer(async function (request, response) {
   const url = new URL(request.url, `http://${HOST}:${PORT}`);
+
+  if (url.pathname.startsWith("/api/")) {
+    if (!await handleApi(request, response, url)) {
+      response.writeHead(404);
+      response.end("Not found");
+    }
+    return;
+  }
   const requestedPath = decodeURIComponent(url.pathname);
   const relativePath = requestedPath === "/" ? "index.html" : requestedPath.slice(1);
   const filePath = path.resolve(ROOT, relativePath);

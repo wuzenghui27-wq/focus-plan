@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v2";
+const CACHE_NAME = "focus-plan-shell-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -20,6 +20,8 @@ const APP_SHELL = [
   "./sound-tools.js",
   "./storage-tools.js",
   "./subtask-tools.js",
+  "./sync-api.js",
+  "./sync-tools.js",
   "./text-tools.js",
   "./theme-tools.js",
   "./timer-state-tools.js",
@@ -102,6 +104,10 @@ self.addEventListener("fetch", function (event) {
   const requestUrl = new URL(request.url);
 
   if (request.method !== "GET" || requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith("/api/")) {
     return;
   }
 

@@ -1154,7 +1154,45 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   margin: 18px auto 0;
 }
 
-/* ===== Data management ===== */
+/* ===== Account and data management ===== */
+
+.account-panel {
+  margin-top: 20px;
+  padding: 24px;
+}
+
+.social-login-list,
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.phone-login-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.phone-login-form label {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.account-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.account-input-row input {
+  min-width: 0;
+}
+
+.account-summary {
+  margin: 0 0 14px;
+  font-weight: 700;
+}
 
 .data-panel {
   margin-top: 20px;
@@ -2311,4 +2349,16 @@ html[data-theme="dark"] .app-tab:hover {
 html[data-theme="dark"] .settings-list,
 html[data-theme="dark"] .setting-row {
   border-color: #3b4249;
+}
+
+@media (max-width: 520px) {
+  .account-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .account-input-row button,
+  .account-actions button,
+  .social-login-list button {
+    width: 100%;
+  }
 }
