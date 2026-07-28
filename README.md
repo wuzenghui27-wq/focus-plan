@@ -12,6 +12,7 @@
 - 浏览器通知、卡农旋律提示、音量和静音设置
 - 深色模式、数据备份导入和响应式布局
 - 四页移动端导航和 iPhone 安全区域适配
+- PWA 安装入口、主屏幕图标和离线应用外壳
 
 ## 本地运行
 
@@ -44,4 +45,6 @@ npm.cmd run check
 - `tests/`：Node.js 自动测试
 - `sound-tools.js`：卡农旋律音符、声音设置和数据规则
 - `navigation-tools.js`：四页导航、地址哈希和页面标题规则
+- `pwa-tools.js`：设备识别和安装状态规则
+- `service-worker.js`：离线缓存和版本更新策略
 - `tools/dev-server.cjs`：本地静态文件服务器

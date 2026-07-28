@@ -47,7 +47,7 @@
 
   const CANON_CUES = {
     focusComplete: {
-      label: "卡农上行和弦",
+      label: "专注完成旋律",
       notes: createSequence(
         ["D4", "Fs4", "A4", "D5", "A4", "Cs5", "E5", "A5"],
         0.19,
@@ -55,7 +55,7 @@
       )
     },
     shortBreakComplete: {
-      label: "卡农和声进行",
+      label: "短休息旋律",
       notes: createSequence(
         ["D4", "A3", "B3", "Fs4", "G4", "D4", "G4", "A4"],
         0.24,
@@ -63,7 +63,7 @@
       )
     },
     longBreakComplete: {
-      label: "卡农旋律片段",
+      label: "长休息旋律",
       notes: createSequence(
         [
           "Fs5", "E5", "D5", "Cs5",

@@ -2099,6 +2099,10 @@ html[data-theme="dark"] .plan-item.overdue .plan-meta {
   font-size: 12px;
 }
 
+.setting-row .setting-inline-status {
+  color: #16734b;
+}
+
 .setting-row-sound {
   align-items: start;
 }

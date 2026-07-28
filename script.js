@@ -18,7 +18,8 @@ const REQUIRED_MODULES = [
   "PomodoroTools",
   "TimerStateTools",
   "SoundTools",
-  "NavigationTools"
+  "NavigationTools",
+  "PwaTools"
 ];
 const missingModules = REQUIRED_MODULES.filter(function (moduleName) {
   return !window[moduleName];
@@ -116,6 +117,9 @@ const elements = {
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
   notificationButton: document.querySelector("#notificationButton"),
+  installAppButton: document.querySelector("#installAppButton"),
+  installAppStatus: document.querySelector("#installAppStatus"),
+  offlineAppStatus: document.querySelector("#offlineAppStatus"),
   planForm: document.querySelector("#planForm"),
   planTitleInput: document.querySelector("#planTitle"),
   planPriorityInput: document.querySelector("#planPriority"),
@@ -242,6 +246,9 @@ const state = {
     period: "today",
     planKey: "",
     visibleCount: SESSION_PAGE_SIZE
+  },
+  pwa: {
+    deferredInstallPrompt: null
   },
   sound: restoredSoundResult.settings,
   timer: {
@@ -457,6 +464,100 @@ function handleAppTabKeydown(event) {
   event.preventDefault();
   tabs[nextIndex].focus();
   navigateToPage(tabs[nextIndex].dataset.pageTarget);
+}
+
+/* ===== PWA installation ===== */
+
+function isAppRunningStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+    Boolean(window.navigator.standalone);
+}
+
+function isCurrentDeviceIos() {
+  return window.PwaTools.isIosDevice(
+    window.navigator.userAgent,
+    window.navigator.platform,
+    window.navigator.maxTouchPoints
+  );
+}
+
+function getCurrentInstallState() {
+  return window.PwaTools.getInstallState({
+    isStandalone: isAppRunningStandalone(),
+    hasInstallPrompt: state.pwa.deferredInstallPrompt !== null,
+    isIos: isCurrentDeviceIos()
+  });
+}
+
+function updateInstallControls() {
+  const installState = getCurrentInstallState();
+  const presentation =
+    window.PwaTools.getInstallPresentation(installState);
+
+  elements.installAppStatus.textContent = presentation.statusText;
+  elements.installAppButton.hidden = !presentation.buttonVisible;
+  elements.installAppButton.textContent = presentation.buttonText;
+}
+
+function handleBeforeInstallPrompt(event) {
+  event.preventDefault();
+  state.pwa.deferredInstallPrompt = event;
+  updateInstallControls();
+}
+
+function handleAppInstalled() {
+  state.pwa.deferredInstallPrompt = null;
+  updateInstallControls();
+  elements.installAppStatus.textContent = "应用安装成功";
+}
+
+async function handleInstallApp() {
+  const installState = getCurrentInstallState();
+
+  if (installState === window.PwaTools.INSTALL_STATES.IOS_MANUAL) {
+    elements.installAppStatus.textContent =
+      "请在 Safari 中点击分享，再选择“添加到主屏幕”";
+    return;
+  }
+
+  if (state.pwa.deferredInstallPrompt === null) {
+    updateInstallControls();
+    return;
+  }
+
+  const installPrompt = state.pwa.deferredInstallPrompt;
+
+  try {
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+
+    state.pwa.deferredInstallPrompt = null;
+    updateInstallControls();
+    elements.installAppStatus.textContent = choice.outcome === "accepted"
+      ? "正在完成安装"
+      : "已取消安装";
+  } catch (error) {
+    console.warn("应用安装请求失败：", error);
+    elements.installAppStatus.textContent = "暂时无法安装，请稍后重试";
+  }
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in window.navigator)) {
+    elements.offlineAppStatus.textContent = "当前浏览器不支持离线功能";
+    return;
+  }
+
+  window.addEventListener("load", function () {
+    window.navigator.serviceWorker.register("./service-worker.js")
+      .then(function () {
+        elements.offlineAppStatus.textContent = "离线功能已就绪";
+      })
+      .catch(function (error) {
+        console.warn("离线功能注册失败：", error);
+        elements.offlineAppStatus.textContent = "离线功能初始化失败";
+      });
+  });
 }
 
 /* ===== Shared helpers ===== */
@@ -2029,8 +2130,8 @@ function warmUpTimerSounds() {
   }
 
   prepareTimerSounds().catch(function (error) {
-    console.warn("卡农提示音准备失败：", error);
-    setSoundPlaybackStatus("浏览器无法准备卡农提示音", "error");
+    console.warn("提示音准备失败：", error);
+    setSoundPlaybackStatus("浏览器无法准备提示音", "error");
   });
 }
 
@@ -2044,14 +2145,14 @@ async function playTimerSound(eventName, announcePlayback) {
 
   try {
     if (announcePlayback) {
-      setSoundPlaybackStatus("正在准备卡农旋律...", "");
+      setSoundPlaybackStatus("正在准备提示音...", "");
     }
 
     const audioContext = await prepareTimerSounds();
     const cue = window.SoundTools.getSoundCue(eventName);
 
     if (cue === null) {
-      throw new Error("没有找到对应的卡农旋律。");
+      throw new Error("没有找到对应的提示音。");
     }
 
     scheduleCanonCue(audioContext, cue);
@@ -2567,6 +2668,11 @@ function handleApplicationShortcut(event) {
 function bindEvents() {
   document.addEventListener("keydown", handleApplicationShortcut);
   window.addEventListener("hashchange", handlePageHashChange);
+  window.addEventListener(
+    "beforeinstallprompt",
+    handleBeforeInstallPrompt
+  );
+  window.addEventListener("appinstalled", handleAppInstalled);
   elements.appTabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
       navigateToPage(tab.dataset.pageTarget);
@@ -2582,6 +2688,7 @@ function bindEvents() {
     );
   });
   elements.notificationButton.addEventListener("click", requestNotificationPermission);
+  elements.installAppButton.addEventListener("click", handleInstallApp);
   elements.createPlanButton.addEventListener("click", function () {
     navigateToPage("plans");
     openCreatePlanForm();
@@ -2732,6 +2839,8 @@ function bindEvents() {
 function initializeApp() {
   applyTheme(state.theme, false);
   bindEvents();
+  registerServiceWorker();
+  updateInstallControls();
   renderAppPage(state.activePage, false);
   const expectedPageHash = window.NavigationTools.createPageHash(
     state.activePage
@@ -2746,7 +2855,7 @@ function initializeApp() {
   checkAndUnlockAchievements(false);
   updateSoundControls();
   setSoundPlaybackStatus(
-    state.sound.muted ? "提示音已静音" : "卡农提示音已就绪",
+    state.sound.muted ? "提示音已静音" : "提示音已就绪",
     state.sound.muted ? "" : "success"
   );
   if (restoredTimerResult.timer === null) {

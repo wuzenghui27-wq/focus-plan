@@ -8,6 +8,13 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
   <title>我的计划表</title>
+  <meta name="theme-color" content="#041936">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Focus Plan">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/app-icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <script src="theme-tools.js"></script>
   <script>
     document.documentElement.dataset.theme = window.ThemeTools.loadTheme(
@@ -488,7 +495,7 @@
           <div class="section-heading">
             <div>
               <h2 id="preferencesHeading">应用设置</h2>
-              <p>管理外观、提醒与卡农提示旋律。</p>
+              <p>管理外观、提醒、安装与提示音。</p>
             </div>
           </div>
 
@@ -517,9 +524,27 @@
               </button>
             </div>
 
+            <div class="setting-row">
+              <div>
+                <strong>安装应用</strong>
+                <p id="installAppStatus">正在检查安装状态</p>
+                <p id="offlineAppStatus" class="setting-inline-status">
+                  正在准备离线功能
+                </p>
+              </div>
+              <button
+                id="installAppButton"
+                class="secondary-button"
+                type="button"
+                hidden
+              >
+                安装
+              </button>
+            </div>
+
             <div class="setting-row setting-row-sound">
               <div>
-                <strong>卡农提示音</strong>
+                <strong>提示音</strong>
                 <p>专注与休息结束时播放</p>
               </div>
               <div class="timer-sound-settings">
@@ -561,7 +586,7 @@
                   role="status"
                   aria-live="polite"
                 >
-                  卡农提示音已就绪
+                  提示音已就绪
                 </p>
               </div>
             </div>
@@ -711,6 +736,7 @@
   <script src="timer-state-tools.js"></script>
   <script src="sound-tools.js"></script>
   <script src="navigation-tools.js"></script>
+  <script src="pwa-tools.js"></script>
   <script src="script.js"></script>
 </body>
 
