@@ -8,35 +8,72 @@
   root.SoundTools = tools;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const SOUND_SETTINGS_STORAGE_KEY = "focus-plan-sound-settings";
-  const DEFAULT_SOUND_THEME = "bright";
   const DEFAULT_SOUND_SETTINGS = {
     muted: false,
-    volume: 0.45,
-    theme: DEFAULT_SOUND_THEME
+    volume: 0.45
   };
   const SOUND_EVENT_LABELS = {
     focusComplete: "专注完成",
     shortBreakComplete: "短休息结束",
     longBreakComplete: "长休息结束"
   };
-  const SOUND_THEMES = {
-    bright: {
-      label: "轻盈和弦",
-      sources: {
-        focusComplete: "assets/sounds/focus-complete.wav",
-        shortBreakComplete: "assets/sounds/short-break-complete.wav",
-        longBreakComplete: "assets/sounds/long-break-complete.wav"
-      }
+  const NOTE_FREQUENCIES = {
+    A3: 220,
+    B3: 246.94,
+    Cs4: 277.18,
+    D4: 293.66,
+    E4: 329.63,
+    Fs4: 369.99,
+    G4: 392,
+    A4: 440,
+    B4: 493.88,
+    Cs5: 554.37,
+    D5: 587.33,
+    E5: 659.25,
+    Fs5: 739.99,
+    G5: 783.99,
+    A5: 880
+  };
+
+  function createSequence(noteNames, step, duration) {
+    return noteNames.map(function (noteName, index) {
+      return {
+        frequency: NOTE_FREQUENCIES[noteName],
+        start: index * step,
+        duration: duration
+      };
+    });
+  }
+
+  const CANON_CUES = {
+    focusComplete: {
+      label: "卡农上行和弦",
+      notes: createSequence(
+        ["D4", "Fs4", "A4", "D5", "A4", "Cs5", "E5", "A5"],
+        0.19,
+        0.52
+      )
     },
-    calm: {
-      label: "柔和低音",
-      sources: {
-        focusComplete: "assets/sounds/calm-focus-complete.wav",
-        shortBreakComplete:
-          "assets/sounds/calm-short-break-complete.wav",
-        longBreakComplete:
-          "assets/sounds/calm-long-break-complete.wav"
-      }
+    shortBreakComplete: {
+      label: "卡农和声进行",
+      notes: createSequence(
+        ["D4", "A3", "B3", "Fs4", "G4", "D4", "G4", "A4"],
+        0.24,
+        0.58
+      )
+    },
+    longBreakComplete: {
+      label: "卡农旋律片段",
+      notes: createSequence(
+        [
+          "Fs5", "E5", "D5", "Cs5",
+          "B4", "A4", "B4", "Cs5",
+          "D5", "Cs5", "B4", "A4",
+          "G4", "Fs4", "G4", "E4"
+        ],
+        0.18,
+        0.46
+      )
     }
   };
 
@@ -57,10 +94,7 @@
 
     return {
       muted: Boolean(value.muted),
-      volume: normalizeVolume(value.volume),
-      theme: Object.hasOwn(SOUND_THEMES, value.theme)
-        ? value.theme
-        : DEFAULT_SOUND_THEME
+      volume: normalizeVolume(value.volume)
     };
   }
 
@@ -115,12 +149,8 @@
     }
   }
 
-  function getSoundTheme(themeName) {
-    return SOUND_THEMES[themeName] || SOUND_THEMES[DEFAULT_SOUND_THEME];
-  }
-
-  function getSoundSource(eventName, themeName) {
-    return getSoundTheme(themeName).sources[eventName] || null;
+  function getSoundCue(eventName) {
+    return CANON_CUES[eventName] || null;
   }
 
   function getSoundEventLabel(eventName) {
@@ -129,16 +159,14 @@
 
   return {
     SOUND_SETTINGS_STORAGE_KEY: SOUND_SETTINGS_STORAGE_KEY,
-    DEFAULT_SOUND_THEME: DEFAULT_SOUND_THEME,
     DEFAULT_SOUND_SETTINGS: DEFAULT_SOUND_SETTINGS,
     SOUND_EVENT_LABELS: SOUND_EVENT_LABELS,
-    SOUND_THEMES: SOUND_THEMES,
+    CANON_CUES: CANON_CUES,
     normalizeVolume: normalizeVolume,
     normalizeSoundSettings: normalizeSoundSettings,
     loadSoundSettings: loadSoundSettings,
     saveSoundSettings: saveSoundSettings,
-    getSoundTheme: getSoundTheme,
-    getSoundSource: getSoundSource,
+    getSoundCue: getSoundCue,
     getSoundEventLabel: getSoundEventLabel
   };
 });

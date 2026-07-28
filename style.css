@@ -1214,12 +1214,8 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   border-top: 1px solid #e5e8eb;
 }
 
-.sound-theme-row {
-  display: grid;
-  gap: 8px;
-}
-
-.sound-theme-row label {
+.sound-melody-name {
+  margin: 0;
   color: #303841;
   font-size: 13px;
   font-weight: bold;
@@ -1932,7 +1928,7 @@ html[data-theme="dark"] .timer-cycle-indicators span.is-completed {
 html[data-theme="dark"] .timer-auto-options label,
 html[data-theme="dark"] .sound-toggle,
 html[data-theme="dark"] .sound-volume-row label,
-html[data-theme="dark"] .sound-theme-row label {
+html[data-theme="dark"] .sound-melody-name {
   color: #dbe1e7;
 }
 

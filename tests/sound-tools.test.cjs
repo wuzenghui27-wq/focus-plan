@@ -1,15 +1,14 @@
 const assert = require("assert");
 const {
   SOUND_SETTINGS_STORAGE_KEY,
-  DEFAULT_SOUND_THEME,
   DEFAULT_SOUND_SETTINGS,
-  SOUND_THEMES,
+  CANON_CUES,
   normalizeVolume,
   normalizeSoundSettings,
   loadSoundSettings,
   saveSoundSettings,
-  getSoundTheme,
-  getSoundSource
+  getSoundCue,
+  getSoundEventLabel
 } = require("../sound-tools.js");
 
 function createStorage(initialValue) {
@@ -43,17 +42,10 @@ assert.strictEqual(normalizeVolume(-2), 0);
 assert.strictEqual(normalizeVolume(2), 1);
 assert.strictEqual(normalizeVolume(0.456), 0.46);
 assert.strictEqual(normalizeVolume("invalid"), 0.45);
+assert.deepStrictEqual(normalizeSoundSettings(null), DEFAULT_SOUND_SETTINGS);
 assert.deepStrictEqual(
-  normalizeSoundSettings(null),
-  DEFAULT_SOUND_SETTINGS
-);
-assert.deepStrictEqual(
-  normalizeSoundSettings({ muted: 1, volume: 0.7, theme: "calm" }),
-  { muted: true, volume: 0.7, theme: "calm" }
-);
-assert.deepStrictEqual(
-  normalizeSoundSettings({ muted: false, volume: 0.4, theme: "unknown" }),
-  { muted: false, volume: 0.4, theme: DEFAULT_SOUND_THEME }
+  normalizeSoundSettings({ muted: 1, volume: 0.7, theme: "old-theme" }),
+  { muted: true, volume: 0.7 }
 );
 
 const emptyResult = loadSoundSettings(createStorage(null));
@@ -63,11 +55,11 @@ assert.strictEqual(emptyResult.recovered, false);
 const storedResult = loadSoundSettings(createStorage(JSON.stringify({
   muted: true,
   volume: 0.62,
-  theme: "calm"
+  theme: "bright"
 })));
 assert.deepStrictEqual(
   storedResult.settings,
-  { muted: true, volume: 0.62, theme: "calm" }
+  { muted: true, volume: 0.62 }
 );
 
 const corruptStorage = createStorage("{broken");
@@ -83,7 +75,7 @@ assert.strictEqual(
 );
 assert.deepStrictEqual(
   JSON.parse(writableStorage.value()),
-  { muted: false, volume: 1, theme: DEFAULT_SOUND_THEME }
+  { muted: false, volume: 1 }
 );
 assert.strictEqual(
   saveSoundSettings({
@@ -94,15 +86,24 @@ assert.strictEqual(
   false
 );
 
-assert.strictEqual(
-  getSoundSource("focusComplete", "bright"),
-  "assets/sounds/focus-complete.wav"
-);
-assert.strictEqual(
-  getSoundSource("focusComplete", "calm"),
-  "assets/sounds/calm-focus-complete.wav"
-);
-assert.strictEqual(getSoundSource("unknown", "calm"), null);
-assert.strictEqual(getSoundTheme("unknown"), SOUND_THEMES.bright);
+for (const eventName of Object.keys(CANON_CUES)) {
+  const cue = getSoundCue(eventName);
+
+  assert.ok(cue.notes.length >= 8);
+  cue.notes.forEach(function (note, index) {
+    assert.ok(Number.isFinite(note.frequency));
+    assert.ok(note.frequency > 0);
+    assert.ok(note.start >= 0);
+    assert.ok(note.duration > 0);
+
+    if (index > 0) {
+      assert.ok(note.start > cue.notes[index - 1].start);
+    }
+  });
+}
+
+assert.strictEqual(getSoundCue("unknown"), null);
+assert.strictEqual(getSoundEventLabel("focusComplete"), "专注完成");
+assert.strictEqual(getSoundEventLabel("unknown"), "");
 
 console.log("Sound tools: all tests passed");
