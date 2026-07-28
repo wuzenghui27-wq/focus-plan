@@ -29,6 +29,7 @@
     const displayDuration = options?.displayDuration || 8000;
     const maximumVisible = options?.maximumVisible || 3;
     const onActivate = options?.onActivate;
+    const onSnooze = options?.onSnooze;
 
     function dismiss(item) {
       if (!item || item.dataset.dismissing === "true") {
@@ -48,6 +49,10 @@
       let suppressActivation = false;
 
       item.addEventListener("pointerdown", function (event) {
+        if (event.target.closest("button, select")) {
+          return;
+        }
+
         if (getReminderPlacement(window.innerWidth) !== "mobile-top") {
           return;
         }
@@ -85,7 +90,7 @@
       item.addEventListener("click", function (event) {
         if (
           suppressActivation ||
-          event.target.closest(".app-reminder-close")
+          event.target.closest("button, select")
         ) {
           suppressActivation = false;
           return;
@@ -122,6 +127,7 @@
       const title = document.createElement("strong");
       const body = document.createElement("p");
       const closeButton = document.createElement("button");
+      let snoozeSelect = null;
 
       item.className = "app-reminder";
       item.dataset.reminderTag = reminder.tag;
@@ -141,6 +147,41 @@
       time.textContent = "现在";
       title.textContent = reminder.title;
       body.textContent = reminder.body;
+
+      if (
+        typeof onSnooze === "function" &&
+        Array.isArray(reminder.snoozeOptions) &&
+        reminder.snoozeOptions.length > 0
+      ) {
+        snoozeSelect = document.createElement("select");
+        const placeholderOption = document.createElement("option");
+
+        snoozeSelect.className = "app-reminder-snooze";
+        snoozeSelect.setAttribute("aria-label", "选择稍后提醒时间");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "稍后提醒";
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        snoozeSelect.appendChild(placeholderOption);
+
+        reminder.snoozeOptions.forEach(function (minutes) {
+          const option = document.createElement("option");
+          option.value = String(minutes);
+          option.textContent = Number(minutes) === 60
+            ? "1 小时后"
+            : minutes + " 分钟后";
+          snoozeSelect.appendChild(option);
+        });
+
+        snoozeSelect.addEventListener("click", function (event) {
+          event.stopPropagation();
+        });
+        snoozeSelect.addEventListener("change", function () {
+          onSnooze(item.reminderData, Number(snoozeSelect.value));
+          dismiss(item);
+        });
+      }
+
       closeButton.type = "button";
       closeButton.className = "app-reminder-close";
       closeButton.setAttribute("aria-label", "关闭提醒");
@@ -163,6 +204,9 @@
       content.appendChild(meta);
       content.appendChild(title);
       content.appendChild(body);
+      if (snoozeSelect !== null) {
+        content.appendChild(snoozeSelect);
+      }
       item.appendChild(appIcon);
       item.appendChild(content);
       item.appendChild(closeButton);

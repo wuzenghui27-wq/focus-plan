@@ -287,7 +287,8 @@ const reminderPresenter = window.ReminderPresenter.createPresenter(
   {
     displayDuration: 8000,
     maximumVisible: 3,
-    onActivate: activateReminder
+    onActivate: activateReminder,
+    onSnooze: snoozePlanReminder
   }
 );
 
@@ -319,6 +320,9 @@ function loadPlans() {
         notes: window.TextTools.normalizePlanNotes(plan.notes),
         subtasks: window.SubtaskTools.normalizeSubtasks(plan.subtasks),
         reminded: Boolean(plan.reminded),
+        snoozedUntil: window.ReminderTools.normalizeSnoozedUntil(
+          plan.snoozedUntil
+        ),
         completed: Boolean(plan.completed),
         nextOccurrenceCreated: Boolean(plan.nextOccurrenceCreated),
         generatedFromId: plan.generatedFromId ?? null
@@ -638,6 +642,7 @@ function handlePlanSubmit(event) {
       notes,
       subtasks: [],
       reminded: false,
+      snoozedUntil: null,
       completed: false,
       nextOccurrenceCreated: false,
       generatedFromId: null
@@ -658,6 +663,7 @@ function handlePlanSubmit(event) {
         editingPlan.reminderMinutes !== reminderMinutes
       ) {
         editingPlan.reminded = false;
+        editingPlan.snoozedUntil = null;
       }
 
       editingPlan.dueAt = dueAt;
@@ -863,6 +869,10 @@ function createPlanItem(plan) {
   if (REMINDER_LABELS[plan.reminderMinutes]) {
     planMeta.textContent += " · " +
       REMINDER_LABELS[plan.reminderMinutes];
+  }
+  if (!plan.reminded && plan.snoozedUntil !== null) {
+    planMeta.textContent += " · 稍后提醒至 " +
+      formatDateTime(plan.snoozedUntil);
   }
   const subtaskProgress = window.SubtaskTools.calculateSubtaskProgress(
     plan.subtasks
@@ -2067,6 +2077,33 @@ function activateReminder(reminder) {
   }
 }
 
+function snoozePlanReminder(reminder, minutes) {
+  if (reminder.planId === undefined || reminder.planId === null) {
+    return;
+  }
+
+  const matchingPlan = state.plans.find(function (plan) {
+    return String(plan.id) === String(reminder.planId);
+  });
+  const snoozedUntil = window.ReminderTools.calculateSnoozedUntil(
+    Date.now(),
+    minutes
+  );
+
+  if (!matchingPlan || snoozedUntil === null) {
+    return;
+  }
+
+  matchingPlan.snoozedUntil = snoozedUntil;
+  matchingPlan.reminded = false;
+  savePlans();
+  showActionFeedback(
+    "将在" + (minutes === 60 ? " 1 小时" : " " + minutes + " 分钟") +
+      "后再次提醒。",
+    null
+  );
+}
+
 async function showSystemNotification(title, body, tag, options) {
   if (!("Notification" in window) || Notification.permission !== "granted") {
     return false;
@@ -2167,7 +2204,8 @@ async function checkPlanReminders() {
         "plan-" + plan.id,
         {
           targetPage: "plans",
-          planId: plan.id
+          planId: plan.id,
+          snoozeOptions: window.ReminderTools.SNOOZE_MINUTE_VALUES
         }
       );
 

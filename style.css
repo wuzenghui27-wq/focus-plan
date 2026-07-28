@@ -1110,6 +1110,24 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   line-height: 1.45;
 }
 
+.app-reminder-snooze {
+  min-height: 30px;
+  margin-top: 9px;
+  padding: 4px 28px 4px 9px;
+  border: 1px solid #aeb8c2;
+  border-radius: 5px;
+  color: #0b3268;
+  background-color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-reminder-snooze:focus {
+  border-color: #0b3268;
+  outline: 2px solid rgba(11, 50, 104, 0.18);
+}
+
 .app-reminder-close {
   width: 32px;
   height: 32px;
@@ -2509,6 +2527,12 @@ html[data-theme="dark"] .app-reminder-close {
 html[data-theme="dark"] .app-reminder-icon {
   color: #101820;
   background-color: #8db8f0;
+}
+
+html[data-theme="dark"] .app-reminder-snooze {
+  border-color: #68737d;
+  color: #edf1f5;
+  background-color: #2b3136;
 }
 
 html[data-theme="dark"] .app-reminder-close:hover {

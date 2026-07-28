@@ -70,6 +70,7 @@
       repeat: normalizeRepeat(plan.repeat),
       reminderMinutes: Number(plan.reminderMinutes) || 0,
       reminded: false,
+      snoozedUntil: null,
       completed: false,
       nextOccurrenceCreated: false,
       generatedFromId: plan.id
