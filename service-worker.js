@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v1";
+const CACHE_NAME = "focus-plan-shell-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -8,12 +8,10 @@ const APP_SHELL = [
   "./assets/icons/app-icon-512.png",
   "./assets/icons/apple-touch-icon.png",
   "./achievement-rules.js",
-  "./backup-tools.js",
   "./goal-tools.js",
   "./navigation-tools.js",
   "./plan-tools.js",
   "./pomodoro-tools.js",
-  "./pwa-tools.js",
   "./recurrence-tools.js",
   "./reminder-tools.js",
   "./script.js",

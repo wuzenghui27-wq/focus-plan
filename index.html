@@ -524,24 +524,6 @@
               </button>
             </div>
 
-            <div class="setting-row">
-              <div>
-                <strong>安装应用</strong>
-                <p id="installAppStatus">正在检查安装状态</p>
-                <p id="offlineAppStatus" class="setting-inline-status">
-                  正在准备离线功能
-                </p>
-              </div>
-              <button
-                id="installAppButton"
-                class="secondary-button"
-                type="button"
-                hidden
-              >
-                安装
-              </button>
-            </div>
-
             <div class="setting-row setting-row-sound">
               <div>
                 <strong>提示音</strong>
@@ -597,17 +579,11 @@
       <div class="section-heading">
         <div>
           <h2 id="dataHeading">数据管理</h2>
-          <p>备份保存在本机，导入会替换当前应用数据。</p>
+          <p>管理保存在当前设备上的计划与专注记录。</p>
         </div>
       </div>
 
       <div class="data-actions">
-        <button id="exportDataButton" class="secondary-button" type="button">
-          导出备份
-        </button>
-        <button id="importDataButton" class="secondary-button" type="button">
-          导入备份
-        </button>
         <button id="clearHistoryButton" class="danger-button" type="button">
           清除专注历史
         </button>
@@ -616,7 +592,6 @@
         </button>
       </div>
 
-      <input id="importDataInput" type="file" accept="application/json,.json" hidden>
       <p id="dataManagementStatus" class="data-status" role="status" aria-live="polite"></p>
     </section>
       </section>
@@ -720,7 +695,6 @@
   </div>
 
   <script src="achievement-rules.js"></script>
-  <script src="backup-tools.js"></script>
   <script src="session-tools.js"></script>
   <script src="storage-tools.js"></script>
   <script src="timer-tools.js"></script>
@@ -736,7 +710,6 @@
   <script src="timer-state-tools.js"></script>
   <script src="sound-tools.js"></script>
   <script src="navigation-tools.js"></script>
-  <script src="pwa-tools.js"></script>
   <script src="script.js"></script>
 </body>
 

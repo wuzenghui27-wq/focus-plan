@@ -2,7 +2,6 @@
 
 const REQUIRED_MODULES = [
   "AchievementRules",
-  "BackupTools",
   "SessionTools",
   "StorageTools",
   "TimerTools",
@@ -18,8 +17,7 @@ const REQUIRED_MODULES = [
   "PomodoroTools",
   "TimerStateTools",
   "SoundTools",
-  "NavigationTools",
-  "PwaTools"
+  "NavigationTools"
 ];
 const missingModules = REQUIRED_MODULES.filter(function (moduleName) {
   return !window[moduleName];
@@ -42,7 +40,6 @@ if (missingModules.length > 0) {
 const STORAGE_KEY = "focus-plan-plans";
 const SESSION_STORAGE_KEY = "focus-plan-sessions";
 const ACHIEVEMENT_STORAGE_KEY = "focus-plan-achievements";
-const BACKUP_VERSION = window.BackupTools.BACKUP_VERSION;
 const DEFAULT_TIMER_MINUTES = 25;
 const MIN_TIMER_MINUTES = 1;
 const MAX_TIMER_MINUTES = 180;
@@ -89,15 +86,6 @@ const REMINDER_LABELS = {
 const ACHIEVEMENTS = window.AchievementRules.achievements;
 const calculateLongestFocusStreak =
   window.AchievementRules.calculateLongestFocusStreak;
-const BACKUP_VALIDATION_OPTIONS = {
-  priorityValues: Object.keys(PRIORITY_LABELS),
-  repeatValues: window.RecurrenceTools.REPEAT_VALUES,
-  reminderMinuteValues: window.ReminderTools.REMINDER_MINUTE_VALUES,
-  normalizeSubtasks: window.SubtaskTools.normalizeSubtasks,
-  achievementIds: ACHIEVEMENTS.map(function (achievement) {
-    return achievement.id;
-  })
-};
 const storageRecoveryLabels = [];
 
 if (restoredTimerResult.recovered) {
@@ -117,9 +105,6 @@ const elements = {
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
   notificationButton: document.querySelector("#notificationButton"),
-  installAppButton: document.querySelector("#installAppButton"),
-  installAppStatus: document.querySelector("#installAppStatus"),
-  offlineAppStatus: document.querySelector("#offlineAppStatus"),
   planForm: document.querySelector("#planForm"),
   planTitleInput: document.querySelector("#planTitle"),
   planPriorityInput: document.querySelector("#planPriority"),
@@ -171,9 +156,6 @@ const elements = {
   historyPeriodButtons: document.querySelectorAll(".history-period-button"),
   historyPlanFilter: document.querySelector("#historyPlanFilter"),
   loadMoreSessionsButton: document.querySelector("#loadMoreSessionsButton"),
-  exportDataButton: document.querySelector("#exportDataButton"),
-  importDataButton: document.querySelector("#importDataButton"),
-  importDataInput: document.querySelector("#importDataInput"),
   clearHistoryButton: document.querySelector("#clearHistoryButton"),
   resetAppButton: document.querySelector("#resetAppButton"),
   dataManagementStatus: document.querySelector("#dataManagementStatus"),
@@ -246,9 +228,6 @@ const state = {
     period: "today",
     planKey: "",
     visibleCount: SESSION_PAGE_SIZE
-  },
-  pwa: {
-    deferredInstallPrompt: null
   },
   sound: restoredSoundResult.settings,
   timer: {
@@ -466,96 +445,17 @@ function handleAppTabKeydown(event) {
   navigateToPage(tabs[nextIndex].dataset.pageTarget);
 }
 
-/* ===== PWA installation ===== */
-
-function isAppRunningStandalone() {
-  return window.matchMedia("(display-mode: standalone)").matches ||
-    Boolean(window.navigator.standalone);
-}
-
-function isCurrentDeviceIos() {
-  return window.PwaTools.isIosDevice(
-    window.navigator.userAgent,
-    window.navigator.platform,
-    window.navigator.maxTouchPoints
-  );
-}
-
-function getCurrentInstallState() {
-  return window.PwaTools.getInstallState({
-    isStandalone: isAppRunningStandalone(),
-    hasInstallPrompt: state.pwa.deferredInstallPrompt !== null,
-    isIos: isCurrentDeviceIos()
-  });
-}
-
-function updateInstallControls() {
-  const installState = getCurrentInstallState();
-  const presentation =
-    window.PwaTools.getInstallPresentation(installState);
-
-  elements.installAppStatus.textContent = presentation.statusText;
-  elements.installAppButton.hidden = !presentation.buttonVisible;
-  elements.installAppButton.textContent = presentation.buttonText;
-}
-
-function handleBeforeInstallPrompt(event) {
-  event.preventDefault();
-  state.pwa.deferredInstallPrompt = event;
-  updateInstallControls();
-}
-
-function handleAppInstalled() {
-  state.pwa.deferredInstallPrompt = null;
-  updateInstallControls();
-  elements.installAppStatus.textContent = "应用安装成功";
-}
-
-async function handleInstallApp() {
-  const installState = getCurrentInstallState();
-
-  if (installState === window.PwaTools.INSTALL_STATES.IOS_MANUAL) {
-    elements.installAppStatus.textContent =
-      "请在 Safari 中点击分享，再选择“添加到主屏幕”";
-    return;
-  }
-
-  if (state.pwa.deferredInstallPrompt === null) {
-    updateInstallControls();
-    return;
-  }
-
-  const installPrompt = state.pwa.deferredInstallPrompt;
-
-  try {
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-
-    state.pwa.deferredInstallPrompt = null;
-    updateInstallControls();
-    elements.installAppStatus.textContent = choice.outcome === "accepted"
-      ? "正在完成安装"
-      : "已取消安装";
-  } catch (error) {
-    console.warn("应用安装请求失败：", error);
-    elements.installAppStatus.textContent = "暂时无法安装，请稍后重试";
-  }
-}
+/* ===== Offline support ===== */
 
 function registerServiceWorker() {
   if (!("serviceWorker" in window.navigator)) {
-    elements.offlineAppStatus.textContent = "当前浏览器不支持离线功能";
     return;
   }
 
   window.addEventListener("load", function () {
     window.navigator.serviceWorker.register("./service-worker.js")
-      .then(function () {
-        elements.offlineAppStatus.textContent = "离线功能已就绪";
-      })
       .catch(function (error) {
         console.warn("离线功能注册失败：", error);
-        elements.offlineAppStatus.textContent = "离线功能初始化失败";
       });
   });
 }
@@ -1737,89 +1637,10 @@ function showDataManagementStatus(message, type) {
   }
 }
 
-function exportApplicationData() {
-  const backup = {
-    version: BACKUP_VERSION,
-    exportedAt: new Date().toISOString(),
-    plans: state.plans,
-    focusSessions: state.focusSessions,
-    achievementUnlocks: state.achievementUnlocks
-  };
-  const backupText = JSON.stringify(backup, null, 2);
-  const backupBlob = new Blob([backupText], { type: "application/json" });
-  const downloadUrl = URL.createObjectURL(backupBlob);
-  const downloadLink = document.createElement("a");
-  const dateText = new Date().toISOString().slice(0, 10);
-
-  downloadLink.href = downloadUrl;
-  downloadLink.download = "focus-plan-backup-" + dateText + ".json";
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  downloadLink.remove();
-  URL.revokeObjectURL(downloadUrl);
-
-  showDataManagementStatus("备份已导出。", "success");
-}
-
 function resetHistoryFilter() {
   state.historyFilter.period = "today";
   state.historyFilter.planKey = "";
   state.historyFilter.visibleCount = SESSION_PAGE_SIZE;
-}
-
-function applyImportedBackup(backup) {
-  resetTimer();
-  state.plans = backup.plans;
-  state.focusSessions = backup.focusSessions;
-  state.achievementUnlocks = backup.achievementUnlocks;
-  state.timer.selectedPlanId = "";
-  resetHistoryFilter();
-  closePlanForm();
-
-  savePlans();
-  saveFocusSessions();
-  saveAchievementUnlocks();
-  renderPlans();
-  renderSessionData();
-  checkAndUnlockAchievements(false);
-  setTimerDuration(DEFAULT_TIMER_MINUTES);
-}
-
-async function importApplicationData(event) {
-  const file = event.target.files[0];
-
-  if (!file) {
-    return;
-  }
-
-  try {
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error("备份文件不能超过 5 MB");
-    }
-
-    const fileText = await file.text();
-    const parsedBackup = JSON.parse(fileText);
-    const normalizedBackup = window.BackupTools.validateAndNormalizeBackup(
-      parsedBackup,
-      BACKUP_VALIDATION_OPTIONS
-    );
-    const confirmed = window.confirm(
-      "导入会替换当前计划、专注记录和成就，确定继续吗？"
-    );
-
-    if (!confirmed) {
-      showDataManagementStatus("已取消导入。", "");
-      return;
-    }
-
-    applyImportedBackup(normalizedBackup);
-    showDataManagementStatus("备份导入成功。", "success");
-  } catch (error) {
-    console.error("导入备份失败：", error);
-    showDataManagementStatus("导入失败：" + error.message, "error");
-  } finally {
-    elements.importDataInput.value = "";
-  }
 }
 
 function clearFocusHistory() {
@@ -2668,11 +2489,6 @@ function handleApplicationShortcut(event) {
 function bindEvents() {
   document.addEventListener("keydown", handleApplicationShortcut);
   window.addEventListener("hashchange", handlePageHashChange);
-  window.addEventListener(
-    "beforeinstallprompt",
-    handleBeforeInstallPrompt
-  );
-  window.addEventListener("appinstalled", handleAppInstalled);
   elements.appTabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
       navigateToPage(tab.dataset.pageTarget);
@@ -2688,7 +2504,6 @@ function bindEvents() {
     );
   });
   elements.notificationButton.addEventListener("click", requestNotificationPermission);
-  elements.installAppButton.addEventListener("click", handleInstallApp);
   elements.createPlanButton.addEventListener("click", function () {
     navigateToPage("plans");
     openCreatePlanForm();
@@ -2772,11 +2587,6 @@ function bindEvents() {
     renderFocusSessions();
   });
 
-  elements.exportDataButton.addEventListener("click", exportApplicationData);
-  elements.importDataButton.addEventListener("click", function () {
-    elements.importDataInput.click();
-  });
-  elements.importDataInput.addEventListener("change", importApplicationData);
   elements.clearHistoryButton.addEventListener("click", clearFocusHistory);
   elements.resetAppButton.addEventListener("click", resetApplicationData);
 
@@ -2840,7 +2650,6 @@ function initializeApp() {
   applyTheme(state.theme, false);
   bindEvents();
   registerServiceWorker();
-  updateInstallControls();
   renderAppPage(state.activePage, false);
   const expectedPageHash = window.NavigationTools.createPageHash(
     state.activePage
