@@ -13,6 +13,7 @@
 - 深色模式、本地数据管理和响应式布局
 - 四页移动端导航和 iPhone 安全区域适配
 - PWA 主屏幕图标和离线应用外壳
+- 微信、QQ、手机号登录所需的云同步数据层和 API 契约
 
 ## 本地运行
 
@@ -45,5 +46,7 @@ npm.cmd run check
 - `tests/`：Node.js 自动测试
 - `sound-tools.js`：卡农旋律音符、声音设置和数据规则
 - `navigation-tools.js`：四页导航、地址哈希和页面标题规则
+- `sync-tools.js`：云同步快照和版本判断规则
+- `sync-api.js`：账号登录与云同步的前端 API 边界
 - `service-worker.js`：离线缓存和版本更新策略
 - `tools/dev-server.cjs`：本地静态文件服务器
