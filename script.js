@@ -20,7 +20,8 @@ const REQUIRED_MODULES = [
   "SoundTools",
   "NavigationTools",
   "SyncTools",
-  "SyncApi"
+  "SyncApi",
+  "PushApi"
 ];
 const missingModules = REQUIRED_MODULES.filter(function (moduleName) {
   return !window[moduleName];
@@ -110,6 +111,9 @@ const elements = {
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
   notificationButton: document.querySelector("#notificationButton"),
+  pushSubscriptionButton: document.querySelector("#pushSubscriptionButton"),
+  testPushButton: document.querySelector("#testPushButton"),
+  pushStatus: document.querySelector("#pushStatus"),
   reminderRegion: document.querySelector("#reminderRegion"),
   accountSignedOut: document.querySelector("#accountSignedOut"),
   accountSignedIn: document.querySelector("#accountSignedIn"),
@@ -282,6 +286,13 @@ const syncApi = window.SyncApi.createSyncApi(
   window.fetch.bind(window),
   "/api"
 );
+const pushApi = window.PushApi.createPushApi(
+  window.fetch.bind(window),
+  "/api"
+);
+let activePushSubscription = null;
+let pushPublicKey = "";
+let pushBusy = false;
 const reminderPresenter = window.ReminderPresenter.createPresenter(
   elements.reminderRegion,
   {
@@ -2060,6 +2071,161 @@ function updateNotificationButton() {
   elements.notificationButton.disabled = false;
 }
 
+function isWebPushSupported() {
+  return "serviceWorker" in window.navigator &&
+    "PushManager" in window &&
+    "Notification" in window;
+}
+
+function showPushStatus(message, type) {
+  elements.pushStatus.textContent = message;
+  elements.pushStatus.dataset.type = type || "";
+}
+
+function getPushErrorMessage(error) {
+  if (
+    error?.name === "NotAllowedError" ||
+    /permission denied/i.test(String(error?.message || ""))
+  ) {
+    return "浏览器拒绝创建推送订阅，请检查系统通知权限。";
+  }
+
+  return error?.message || "系统推送操作失败。";
+}
+
+function updatePushControls() {
+  if (!isWebPushSupported()) {
+    elements.pushSubscriptionButton.textContent = "当前浏览器不支持";
+    elements.pushSubscriptionButton.disabled = true;
+    elements.testPushButton.disabled = true;
+    return;
+  }
+
+  if (pushPublicKey === "") {
+    elements.pushSubscriptionButton.textContent = "服务器未配置";
+    elements.pushSubscriptionButton.disabled = true;
+    elements.testPushButton.disabled = true;
+    return;
+  }
+
+  elements.pushSubscriptionButton.textContent = activePushSubscription
+    ? "关闭系统推送"
+    : "开启系统推送";
+  elements.pushSubscriptionButton.disabled = pushBusy;
+  elements.testPushButton.disabled = pushBusy || !activePushSubscription;
+}
+
+async function refreshPushSubscription() {
+  if (!isWebPushSupported()) {
+    showPushStatus("当前浏览器不支持 Web Push。", "error");
+    updatePushControls();
+    return;
+  }
+
+  try {
+    const config = await pushApi.getConfig();
+    pushPublicKey = config.configured ? config.publicKey : "";
+
+    if (pushPublicKey === "") {
+      showPushStatus(
+        "请先运行 npm.cmd run push:keys，然后重启本地服务。",
+        "error"
+      );
+      updatePushControls();
+      return;
+    }
+
+    const registration = await window.navigator.serviceWorker.ready;
+    activePushSubscription =
+      await registration.pushManager.getSubscription();
+    showPushStatus(
+      activePushSubscription
+        ? "当前设备已订阅后台推送。"
+        : "当前设备尚未订阅后台推送。",
+      activePushSubscription ? "success" : ""
+    );
+  } catch (error) {
+    showPushStatus(getPushErrorMessage(error), "error");
+  } finally {
+    updatePushControls();
+  }
+}
+
+async function togglePushSubscription() {
+  if (pushBusy || pushPublicKey === "") {
+    return;
+  }
+
+  pushBusy = true;
+  updatePushControls();
+
+  try {
+    if (activePushSubscription) {
+      const endpoint = activePushSubscription.endpoint;
+      await pushApi.deleteSubscription(endpoint);
+      await activePushSubscription.unsubscribe();
+      activePushSubscription = null;
+      showPushStatus("当前设备已关闭后台推送。", "success");
+      return;
+    }
+
+    const permission = Notification.permission === "granted"
+      ? "granted"
+      : await Notification.requestPermission();
+    updateNotificationButton();
+
+    if (permission !== "granted") {
+      showPushStatus("需要允许通知权限才能开启系统推送。", "error");
+      return;
+    }
+
+    const registration = await window.navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey:
+        window.PushApi.urlBase64ToUint8Array(pushPublicKey)
+    });
+
+    try {
+      await pushApi.saveSubscription(subscription);
+      activePushSubscription = subscription;
+      showPushStatus("当前设备已开启后台推送。", "success");
+    } catch (error) {
+      await subscription.unsubscribe();
+      throw error;
+    }
+  } catch (error) {
+    showPushStatus(getPushErrorMessage(error), "error");
+  } finally {
+    pushBusy = false;
+    updatePushControls();
+  }
+}
+
+async function sendTestPush() {
+  if (pushBusy || !activePushSubscription) {
+    return;
+  }
+
+  pushBusy = true;
+  updatePushControls();
+  showPushStatus("正在发送测试推送…", "");
+
+  try {
+    await pushApi.sendTest(activePushSubscription.endpoint);
+    showPushStatus("测试推送已发送，请查看系统通知。", "success");
+  } catch (error) {
+    showPushStatus(error.message, "error");
+
+    if (error.status === 410) {
+      activePushSubscription = null;
+    }
+  } finally {
+    pushBusy = false;
+    updatePushControls();
+  }
+}
+
 function activateReminder(reminder) {
   const targetPage = reminder.targetPage || "plans";
   navigateToPage(targetPage);
@@ -2929,6 +3095,11 @@ function bindEvents() {
     );
   });
   elements.notificationButton.addEventListener("click", requestNotificationPermission);
+  elements.pushSubscriptionButton.addEventListener(
+    "click",
+    togglePushSubscription
+  );
+  elements.testPushButton.addEventListener("click", sendTestPush);
   elements.createPlanButton.addEventListener("click", function () {
     navigateToPage("plans");
     openCreatePlanForm();
@@ -3089,6 +3260,7 @@ function initializeApp() {
     window.history.replaceState(null, "", expectedPageHash);
   }
   updateNotificationButton();
+  refreshPushSubscription();
   renderAccount();
   refreshAccount();
   renderPlans();

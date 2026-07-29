@@ -28,5 +28,20 @@ const snapshot = {
 };
 store.saveSnapshot(user.id, snapshot);
 assert.deepEqual(store.getSnapshot(user.id), snapshot);
+
+const pushSubscription = {
+  endpoint: "https://push.example.test/device-1",
+  expirationTime: null,
+  keys: { p256dh: "public-key", auth: "auth-key" }
+};
+store.savePushSubscription(pushSubscription, "2026-07-29T00:00:00Z");
+assert.deepEqual(
+  store.getPushSubscription(pushSubscription.endpoint),
+  pushSubscription
+);
+assert.equal(store.deletePushSubscription(pushSubscription.endpoint), true);
+assert.equal(store.getPushSubscription(pushSubscription.endpoint), null);
+assert.equal(store.deletePushSubscription(pushSubscription.endpoint), false);
+
 store.close();
 console.log("Account store: all tests passed");

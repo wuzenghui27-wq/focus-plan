@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v7";
+const CACHE_NAME = "focus-plan-shell-v8";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const APP_SHELL = [
   "./navigation-tools.js",
   "./plan-tools.js",
   "./pomodoro-tools.js",
+  "./push-api.js",
   "./recurrence-tools.js",
   "./reminder-presenter.js",
   "./reminder-tools.js",
@@ -134,6 +135,33 @@ self.addEventListener("notificationclick", function (event) {
       }
 
       return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
+self.addEventListener("push", function (event) {
+  const fallback = {
+    title: "Focus Plan",
+    body: "你有一条新的计划提醒。",
+    tag: "focus-plan-push",
+    url: "./#plans"
+  };
+  let payload = fallback;
+
+  if (event.data) {
+    try {
+      payload = { ...fallback, ...event.data.json() };
+    } catch (error) {
+      payload = { ...fallback, body: event.data.text() };
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      icon: "./assets/icons/app-icon-192.png",
+      data: { url: payload.url }
     })
   );
 });

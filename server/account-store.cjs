@@ -29,6 +29,12 @@ function createAccountStore(databasePath) {
       payload TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint TEXT PRIMARY KEY,
+      payload TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   return {
@@ -85,6 +91,32 @@ function createAccountStore(databasePath) {
         ON CONFLICT(user_id) DO UPDATE SET
           payload = excluded.payload, updated_at = excluded.updated_at
       `).run(userId, JSON.stringify(snapshot), snapshot.updatedAt);
+    },
+    savePushSubscription(subscription, savedAt) {
+      database.prepare(`
+        INSERT INTO push_subscriptions (
+          endpoint, payload, created_at, updated_at
+        ) VALUES (?, ?, ?, ?)
+        ON CONFLICT(endpoint) DO UPDATE SET
+          payload = excluded.payload,
+          updated_at = excluded.updated_at
+      `).run(
+        subscription.endpoint,
+        JSON.stringify(subscription),
+        savedAt,
+        savedAt
+      );
+    },
+    getPushSubscription(endpoint) {
+      const record = database.prepare(
+        "SELECT payload FROM push_subscriptions WHERE endpoint = ?"
+      ).get(endpoint);
+      return record ? JSON.parse(record.payload) : null;
+    },
+    deletePushSubscription(endpoint) {
+      return database.prepare(
+        "DELETE FROM push_subscriptions WHERE endpoint = ?"
+      ).run(endpoint).changes > 0;
     },
     close() {
       database.close();

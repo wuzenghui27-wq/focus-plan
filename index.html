@@ -516,12 +516,44 @@
 
             <div class="setting-row">
               <div>
-                <strong>计划提醒</strong>
-                <p>允许浏览器发送到期通知</p>
+                <strong>通知权限</strong>
+                <p>允许浏览器显示计划与计时通知</p>
               </div>
               <button id="notificationButton" class="secondary-button" type="button">
                 开启提醒
               </button>
+            </div>
+
+            <div class="setting-row setting-row-push">
+              <div>
+                <strong>后台系统推送</strong>
+                <p>网页关闭后也能接收服务器通知</p>
+              </div>
+              <div class="push-setting-controls">
+                <div class="push-setting-actions">
+                  <button
+                    id="pushSubscriptionButton"
+                    class="secondary-button"
+                    type="button"
+                  >
+                    检查中
+                  </button>
+                  <button
+                    id="testPushButton"
+                    class="secondary-button"
+                    type="button"
+                    disabled
+                  >
+                    发送测试
+                  </button>
+                </div>
+                <p
+                  id="pushStatus"
+                  class="push-status"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+              </div>
             </div>
 
             <div class="setting-row setting-row-sound">
@@ -771,6 +803,7 @@
   <script src="navigation-tools.js"></script>
   <script src="sync-tools.js"></script>
   <script src="sync-api.js"></script>
+  <script src="push-api.js"></script>
   <script src="script.js"></script>
 </body>
 

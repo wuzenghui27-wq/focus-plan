@@ -2306,6 +2306,35 @@ html[data-theme="dark"] .plan-item.overdue .plan-meta {
   align-items: start;
 }
 
+.setting-row-push {
+  align-items: start;
+}
+
+.push-setting-controls {
+  width: min(100%, 390px);
+}
+
+.push-setting-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.push-status {
+  min-height: 18px;
+  margin: 7px 0 0;
+  color: #687078;
+  text-align: right;
+}
+
+.push-status[data-type="success"] {
+  color: #16734b;
+}
+
+.push-status[data-type="error"] {
+  color: #b42318;
+}
+
 .setting-row .timer-sound-settings {
   width: min(100%, 390px);
   padding-top: 0;
@@ -2442,6 +2471,27 @@ html[data-theme="dark"] .plan-item.overdue .plan-meta {
   .setting-row-sound {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .setting-row-push {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .push-setting-controls {
+    width: 100%;
+  }
+
+  .push-setting-actions {
+    justify-content: stretch;
+  }
+
+  .push-setting-actions button {
+    flex: 1 1 0;
+  }
+
+  .push-status {
+    text-align: left;
   }
 
   .setting-row .timer-sound-settings {

@@ -11,6 +11,7 @@
 - 计时状态恢复、专注历史、统计图表、每日目标和成就系统
 - 浏览器通知、卡农旋律提示、音量和静音设置
 - 手机顶部滑入提醒、上滑关闭和电脑左下角提醒
+- Web Push 设备订阅、后台接收和测试推送
 - 深色模式、本地数据管理和响应式布局
 - 四页移动端导航和 iPhone 安全区域适配
 - PWA 主屏幕图标和离线应用外壳
@@ -23,6 +24,8 @@
 需要先安装 Node.js，然后在项目目录执行：
 
 ```powershell
+npm.cmd install
+npm.cmd run push:keys
 npm.cmd run dev
 ```
 
@@ -51,6 +54,7 @@ npm.cmd run check
 - `navigation-tools.js`：四页导航、地址哈希和页面标题规则
 - `sync-tools.js`：云同步快照和版本判断规则
 - `sync-api.js`：账号登录与云同步的前端 API 边界
+- `push-api.js`：Web Push 前端 API 与 VAPID 公钥转换
 - `server/`：账号、会话、验证码和同步快照后端
-- `service-worker.js`：离线缓存和版本更新策略
+- `service-worker.js`：离线缓存、后台推送接收和通知点击
 - `tools/dev-server.cjs`：本地静态文件服务器

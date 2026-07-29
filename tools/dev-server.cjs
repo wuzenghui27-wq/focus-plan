@@ -3,17 +3,24 @@ const http = require("http");
 const path = require("path");
 const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
+const { createPushService } = require("../server/push-service.cjs");
 
-const HOST = "127.0.0.1";
-const PORT = 5500;
+const HOST = process.env.HOST || "127.0.0.1";
+const PORT = Number(process.env.PORT) || 5500;
 const ROOT = path.resolve(__dirname, "..");
 const accountStore = createAccountStore(
   path.join(ROOT, ".data", "focus-plan.db")
 );
+const pushService = createPushService({
+  subject: process.env.VAPID_SUBJECT,
+  publicKey: process.env.VAPID_PUBLIC_KEY,
+  privateKey: process.env.VAPID_PRIVATE_KEY
+});
 const handleApi = createApiHandler({
   store: accountStore,
   secret: process.env.SESSION_SECRET || "local-development-secret",
-  isDevelopment: true
+  isDevelopment: true,
+  pushService
 });
 
 const MIME_TYPES = {
