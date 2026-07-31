@@ -889,6 +889,21 @@ function updateTimerPlanOptions() {
   elements.timerPlanSelect.value = state.timer.selectedPlanId;
 }
 
+function createPlanActionButton(className, label, iconMarkup) {
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className = "plan-action-button " + className;
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.innerHTML =
+    '<svg class="plan-action-icon" viewBox="0 0 24 24" aria-hidden="true">' +
+    iconMarkup +
+    "</svg>";
+
+  return button;
+}
+
 function createPlanItem(plan) {
   const planItem = document.createElement("li");
   const planContent = document.createElement("label");
@@ -901,10 +916,32 @@ function createPlanItem(plan) {
   const planTag = document.createElement("small");
   const postponeNote = document.createElement("small");
   const planActions = document.createElement("div");
-  const detailsButton = document.createElement("button");
-  const editButton = document.createElement("button");
-  const postponeButton = document.createElement("button");
-  const deleteButton = document.createElement("button");
+  const detailsButton = createPlanActionButton(
+    "details-button",
+    "查看详情：" + plan.title,
+    '<path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"></path>' +
+      '<circle cx="12" cy="12" r="2.5"></circle>'
+  );
+  const editButton = createPlanActionButton(
+    "edit-button",
+    "编辑计划：" + plan.title,
+    '<path d="M12 20h9"></path>' +
+      '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>'
+  );
+  const postponeButton = createPlanActionButton(
+    "postpone-button",
+    "延期计划：" + plan.title,
+    '<path d="M8 2v3M16 2v3M3 9h18"></path>' +
+      '<path d="M19 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"></path>' +
+      '<circle cx="17" cy="17" r="4"></circle>' +
+      '<path d="M17 15v2l1.3 1"></path>'
+  );
+  const deleteButton = createPlanActionButton(
+    "delete-button",
+    "删除计划：" + plan.title,
+    '<path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6"></path>' +
+      '<path d="M10 11v5M14 11v5"></path>'
+  );
 
   planItem.className = "plan-item priority-" + plan.priority;
   planContent.className = "plan-content";
@@ -954,22 +991,7 @@ function createPlanItem(plan) {
     : "";
   postponeNote.hidden = !plan.postponeReason;
 
-  detailsButton.type = "button";
-  detailsButton.className = "details-button";
-  detailsButton.textContent = "详情";
-
-  editButton.type = "button";
-  editButton.className = "edit-button";
-  editButton.textContent = "编辑";
-
-  postponeButton.type = "button";
-  postponeButton.className = "postpone-button";
-  postponeButton.textContent = "延期";
   postponeButton.hidden = plan.completed;
-
-  deleteButton.type = "button";
-  deleteButton.className = "delete-button";
-  deleteButton.textContent = "删除";
 
   if (state.batchMode) {
     const selectionCheckbox = document.createElement("input");

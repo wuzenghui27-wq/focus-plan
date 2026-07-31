@@ -578,31 +578,25 @@ button {
 .plan-item .edit-button,
 .plan-item .postpone-button,
 .plan-item .delete-button {
+  width: 32px;
   min-height: 32px;
-  padding: 5px 9px;
-  border-color: transparent;
+  padding: 0;
+  border: 0;
   box-shadow: none;
-  font-size: 12px;
-}
-
-.plan-item .details-button {
-  color: var(--fp-brand);
-  background-color: var(--fp-brand-soft);
-}
-
-.plan-item .edit-button {
-  color: #465566;
-  background-color: var(--fp-surface-subtle);
-}
-
-.plan-item .postpone-button {
-  color: var(--fp-warning);
-  background-color: var(--fp-warning-soft);
-}
-
-.plan-item .delete-button {
-  color: var(--fp-danger);
+  color: var(--fp-text-muted);
   background-color: transparent;
+}
+
+.plan-item .plan-action-button:hover,
+.plan-item .plan-action-button:focus-visible {
+  color: var(--fp-text);
+  background-color: var(--fp-surface-active);
+}
+
+.plan-item .delete-button:hover,
+.plan-item .delete-button:focus-visible {
+  color: var(--fp-danger);
+  background-color: var(--fp-danger-soft);
 }
 
 .empty-message {
@@ -1259,21 +1253,13 @@ button {
     box-shadow: inset 3px 0 0 var(--fp-brand);
   }
 
-  .plan-item .details-button,
-  .plan-item .edit-button,
-  .plan-item .postpone-button,
-  .plan-item .delete-button {
-    opacity: 0.72;
+  .plan-item .plan-actions {
+    opacity: 0.76;
+    transition: opacity 150ms ease;
   }
 
-  .plan-item:hover .details-button,
-  .plan-item:hover .edit-button,
-  .plan-item:hover .postpone-button,
-  .plan-item:hover .delete-button,
-  .plan-item:focus-within .details-button,
-  .plan-item:focus-within .edit-button,
-  .plan-item:focus-within .postpone-button,
-  .plan-item:focus-within .delete-button {
+  .plan-item:hover .plan-actions,
+  .plan-item:focus-within .plan-actions {
     opacity: 1;
   }
 }
@@ -1509,6 +1495,17 @@ button {
   .plan-quick-time-options button,
   .theme-switch {
     border-radius: var(--fp-radius-md);
+  }
+
+  .plan-item .plan-action-button {
+    width: 40px;
+    min-height: 40px;
+    border-radius: var(--fp-radius-sm);
+  }
+
+  .plan-item .plan-action-icon {
+    width: 18px;
+    height: 18px;
   }
 
   .app-tabbar {
@@ -1904,6 +1901,11 @@ html[data-theme="dark"] .weekly-comparison-item,
 html[data-theme="dark"] .history-toolbar {
   border-color: transparent;
   background-color: var(--fp-surface);
+}
+
+html[data-theme="dark"] .plan-actions {
+  border-color: var(--fp-line);
+  background-color: var(--fp-surface-subtle);
 }
 
 html[data-theme="dark"] .settings-list {

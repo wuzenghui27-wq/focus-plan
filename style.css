@@ -427,59 +427,50 @@ p {
 }
 
 .plan-actions {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #dde4eb;
+  border-radius: 7px;
+  background-color: #f8fafc;
 }
 
 .details-button,
 .edit-button,
 .postpone-button,
 .delete-button {
-  padding: 7px 11px;
-  background-color: #ffffff;
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  color: #657382;
+  background-color: transparent;
   cursor: pointer;
 }
 
-.details-button {
-  border: 1px solid #9eb6d0;
-  color: #24486f;
-}
-
-.details-button:hover {
-  color: #ffffff;
-  background-color: #24486f;
-}
-
-.edit-button {
-  border: 1px solid #9aa7b5;
-  color: #34495e;
-}
-
-.edit-button:hover {
-  color: #ffffff;
-  background-color: #34495e;
-}
-
-.postpone-button {
-  border: 1px solid #d9b36c;
-  color: #855000;
-}
-
-.postpone-button:hover {
-  color: #ffffff;
-  background-color: #9a5b00;
-}
-
-.delete-button {
-  border: 1px solid #d8a6a6;
-  color: #a12c2c;
+.plan-action-button:hover,
+.plan-action-button:focus-visible {
+  color: #17212c;
+  background-color: #e8edf2;
 }
 
 .delete-button:hover {
-  color: #ffffff;
-  background-color: #a12c2c;
+  color: #a12c2c;
+  background-color: #fff0ef;
+}
+
+.plan-action-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .empty-message {
@@ -1659,10 +1650,11 @@ p {
   }
 
   .plan-actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: inline-flex;
+    flex-wrap: nowrap;
     justify-content: flex-end;
-    width: 100%;
+    width: fit-content;
+    margin-left: auto;
   }
 
   .batch-action-bar {
@@ -1688,7 +1680,8 @@ p {
   .plan-actions .edit-button,
   .plan-actions .postpone-button,
   .plan-actions .delete-button {
-    width: auto;
+    width: 40px;
+    min-height: 40px;
     flex: 0 0 auto;
   }
 
