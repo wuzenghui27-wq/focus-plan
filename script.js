@@ -96,8 +96,14 @@ const REMINDER_LABELS = {
 };
 
 const ACHIEVEMENTS = window.AchievementRules.achievements;
+const ACHIEVEMENT_CATEGORIES =
+  window.AchievementRules.achievementCategories;
 const calculateLongestFocusStreak =
   window.AchievementRules.calculateLongestFocusStreak;
+const calculateAchievementMetrics =
+  window.AchievementRules.calculateAchievementMetrics;
+const getAchievementProgress =
+  window.AchievementRules.getAchievementProgress;
 const storageRecoveryLabels = [];
 
 if (restoredTimerResult.recovered) {
@@ -182,6 +188,15 @@ const elements = {
   weeklyFocusChange: document.querySelector("#weeklyFocusChange"),
   achievementList: document.querySelector("#achievementList"),
   achievementSummary: document.querySelector("#achievementSummary"),
+  nextAchievement: document.querySelector("#nextAchievement"),
+  nextAchievementTitle: document.querySelector("#nextAchievementTitle"),
+  nextAchievementValue: document.querySelector("#nextAchievementValue"),
+  nextAchievementDescription:
+    document.querySelector("#nextAchievementDescription"),
+  nextAchievementProgress:
+    document.querySelector("#nextAchievementProgress"),
+  nextAchievementProgressBar:
+    document.querySelector("#nextAchievementProgressBar"),
   achievementToast: document.querySelector("#achievementToast"),
   actionToast: document.querySelector("#actionToast"),
   actionToastMessage: document.querySelector("#actionToastMessage"),
@@ -1714,6 +1729,97 @@ function formatAchievementDate(unlockedAt) {
   }) + " 解锁";
 }
 
+function getAchievementIds(achievement) {
+  return [achievement.id].concat(achievement.legacyIds || []);
+}
+
+function findAchievementUnlock(achievement) {
+  const achievementIds = new Set(getAchievementIds(achievement));
+
+  return state.achievementUnlocks.find(function (unlock) {
+    return achievementIds.has(unlock.id);
+  });
+}
+
+function formatAchievementValue(value, valueType) {
+  const safeValue = Math.max(0, Math.floor(value));
+
+  if (valueType === "duration") {
+    const totalMinutes = Math.floor(safeValue / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours > 0 && minutes > 0) {
+      return hours + " 小时 " + minutes + " 分";
+    }
+
+    if (hours > 0) {
+      return hours + " 小时";
+    }
+
+    return totalMinutes + " 分钟";
+  }
+
+  if (valueType === "days") {
+    return safeValue + " 天";
+  }
+
+  return safeValue + " 次";
+}
+
+function formatAchievementProgress(progress, achievement) {
+  return formatAchievementValue(progress.currentValue, achievement.valueType) +
+    " / " +
+    formatAchievementValue(progress.targetValue, achievement.valueType);
+}
+
+function setAchievementProgressBar(track, bar, progress) {
+  track.setAttribute("aria-valuenow", String(progress.percentage));
+  bar.style.width = progress.percentage + "%";
+}
+
+function renderNextAchievement(achievementStates) {
+  const lockedStates = achievementStates.filter(function (achievementState) {
+    return !achievementState.unlock;
+  });
+
+  if (lockedStates.length === 0) {
+    elements.nextAchievement.classList.add("is-complete");
+    elements.nextAchievementTitle.textContent = "全部成就已解锁";
+    elements.nextAchievementDescription.textContent =
+      "十二个专注里程碑已经全部达成";
+    elements.nextAchievementValue.textContent = "100%";
+    setAchievementProgressBar(
+      elements.nextAchievementProgress,
+      elements.nextAchievementProgressBar,
+      { percentage: 100 }
+    );
+    return;
+  }
+
+  const nextState = lockedStates.sort(function (left, right) {
+    if (right.progress.progress !== left.progress.progress) {
+      return right.progress.progress - left.progress.progress;
+    }
+
+    return left.achievement.tier - right.achievement.tier;
+  })[0];
+
+  elements.nextAchievement.classList.remove("is-complete");
+  elements.nextAchievementTitle.textContent = nextState.achievement.title;
+  elements.nextAchievementDescription.textContent =
+    nextState.category.title + " · " + nextState.achievement.description;
+  elements.nextAchievementValue.textContent = formatAchievementProgress(
+    nextState.progress,
+    nextState.achievement
+  );
+  setAchievementProgressBar(
+    elements.nextAchievementProgress,
+    elements.nextAchievementProgressBar,
+    nextState.progress
+  );
+}
+
 function showAchievementToast(newAchievements) {
   const achievementNames = newAchievements.map(function (achievement) {
     return achievement.title;
@@ -1735,40 +1841,122 @@ function showAchievementToast(newAchievements) {
 
 function renderAchievements() {
   elements.achievementList.innerHTML = "";
-
-  ACHIEVEMENTS.forEach(function (achievement) {
-    const unlock = state.achievementUnlocks.find(function (item) {
-      return item.id === achievement.id;
-    });
-    const achievementItem = document.createElement("article");
-    const mark = document.createElement("span");
-    const title = document.createElement("h3");
-    const description = document.createElement("p");
-    const status = document.createElement("span");
-
-    achievementItem.className = "achievement-item";
-    mark.className = "achievement-mark";
-    status.className = "achievement-status";
-    mark.textContent = achievement.mark;
-    title.textContent = achievement.title;
-    description.textContent = achievement.description;
-
-    if (unlock) {
-      achievementItem.classList.add("is-unlocked");
-      status.textContent = formatAchievementDate(unlock.unlockedAt);
-    } else {
-      status.textContent = "未解锁";
-    }
-
-    achievementItem.appendChild(mark);
-    achievementItem.appendChild(title);
-    achievementItem.appendChild(description);
-    achievementItem.appendChild(status);
-    elements.achievementList.appendChild(achievementItem);
+  const metrics = calculateAchievementMetrics(state.focusSessions);
+  const categoryMap = new Map(ACHIEVEMENT_CATEGORIES.map(function (category) {
+    return [category.id, category];
+  }));
+  const achievementStates = ACHIEVEMENTS.map(function (achievement) {
+    return {
+      achievement,
+      category: categoryMap.get(achievement.category),
+      progress: getAchievementProgress(achievement, metrics),
+      unlock: findAchievementUnlock(achievement)
+    };
   });
 
+  renderNextAchievement(achievementStates);
+
+  ACHIEVEMENT_CATEGORIES.forEach(function (category) {
+    const route = document.createElement("section");
+    const heading = document.createElement("div");
+    const headingText = document.createElement("div");
+    const title = document.createElement("h3");
+    const description = document.createElement("p");
+    const summary = document.createElement("span");
+    const milestones = document.createElement("div");
+    const categoryStates = achievementStates.filter(function (item) {
+      return item.achievement.category === category.id;
+    });
+    const unlockedCount = categoryStates.filter(function (item) {
+      return Boolean(item.unlock);
+    }).length;
+
+    route.className = "achievement-route";
+    heading.className = "achievement-route-heading";
+    title.textContent = category.title;
+    description.textContent = category.description;
+    summary.textContent = unlockedCount + " / " + categoryStates.length;
+    milestones.className = "achievement-route-milestones";
+
+    headingText.appendChild(title);
+    headingText.appendChild(description);
+    heading.appendChild(headingText);
+    heading.appendChild(summary);
+    route.appendChild(heading);
+
+    categoryStates.forEach(function (achievementState) {
+      const achievement = achievementState.achievement;
+      const progress = achievementState.progress;
+      const unlock = achievementState.unlock;
+      const achievementItem = document.createElement("article");
+      const mark = document.createElement("span");
+      const itemText = document.createElement("div");
+      const itemTitle = document.createElement("h4");
+      const itemDescription = document.createElement("p");
+      const progressTrack = document.createElement("div");
+      const progressBar = document.createElement("span");
+      const footer = document.createElement("div");
+      const progressValue = document.createElement("span");
+      const status = document.createElement("span");
+
+      achievementItem.className = "achievement-item";
+      mark.className = "achievement-mark";
+      itemText.className = "achievement-item-text";
+      progressTrack.className = "achievement-progress-track";
+      footer.className = "achievement-item-footer";
+      progressValue.className = "achievement-progress-value";
+      status.className = "achievement-status";
+      mark.textContent = achievement.mark;
+      itemTitle.textContent = achievement.title;
+      itemDescription.textContent = achievement.description;
+      progressValue.textContent = formatAchievementProgress(
+        unlock
+          ? Object.assign({}, progress, {
+            currentValue: progress.targetValue
+          })
+          : progress,
+        achievement
+      );
+      status.textContent = unlock
+        ? formatAchievementDate(unlock.unlockedAt)
+        : progress.percentage + "%";
+      progressTrack.setAttribute("role", "progressbar");
+      progressTrack.setAttribute("aria-label", achievement.title + "进度");
+      progressTrack.setAttribute("aria-valuemin", "0");
+      progressTrack.setAttribute("aria-valuemax", "100");
+      setAchievementProgressBar(
+        progressTrack,
+        progressBar,
+        unlock ? { percentage: 100 } : progress
+      );
+
+      if (unlock) {
+        achievementItem.classList.add("is-unlocked");
+      } else if (progress.currentValue > 0) {
+        achievementItem.classList.add("is-in-progress");
+      }
+
+      itemText.appendChild(itemTitle);
+      itemText.appendChild(itemDescription);
+      progressTrack.appendChild(progressBar);
+      footer.appendChild(progressValue);
+      footer.appendChild(status);
+      achievementItem.appendChild(mark);
+      achievementItem.appendChild(itemText);
+      achievementItem.appendChild(progressTrack);
+      achievementItem.appendChild(footer);
+      milestones.appendChild(achievementItem);
+    });
+
+    route.appendChild(milestones);
+    elements.achievementList.appendChild(route);
+  });
+
+  const unlockedCount = achievementStates.filter(function (item) {
+    return Boolean(item.unlock);
+  }).length;
   elements.achievementSummary.textContent =
-    state.achievementUnlocks.length + " / " + ACHIEVEMENTS.length + " 已解锁";
+    unlockedCount + " / " + ACHIEVEMENTS.length + " 已解锁";
 }
 
 function checkAndUnlockAchievements(shouldNotify) {
@@ -1778,7 +1966,9 @@ function checkAndUnlockAchievements(shouldNotify) {
   const newlyUnlocked = [];
 
   ACHIEVEMENTS.forEach(function (achievement) {
-    if (unlockedIds.has(achievement.id)) {
+    if (getAchievementIds(achievement).some(function (achievementId) {
+      return unlockedIds.has(achievementId);
+    })) {
       return;
     }
 
