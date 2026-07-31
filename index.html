@@ -23,6 +23,7 @@
     );
   </script>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles/visual-system.css">
 </head>
 
 <body>
@@ -58,6 +59,10 @@
           type="button"
           aria-keyshortcuts="N"
         >
+          <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M5 12h14"></path>
+            <path d="M12 5v14"></path>
+          </svg>
           创建计划
         </button>
         </div>
@@ -247,6 +252,17 @@
           </div>
         </div>
 
+        <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
+
+        <div class="timer-actions">
+          <button id="startTimerButton" class="primary-button" type="button">开始</button>
+          <button id="pauseTimerButton" class="secondary-button" type="button" disabled>暂停</button>
+          <button id="resetTimerButton" class="secondary-button" type="button">重置</button>
+          <button id="skipBreakButton" class="secondary-button" type="button" hidden>
+            跳过休息
+          </button>
+        </div>
+
         <div class="timer-settings">
           <div class="form-field">
             <label for="timerPlanSelect">关联计划</label>
@@ -307,17 +323,6 @@
             </label>
           </div>
 
-        </div>
-
-        <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
-
-        <div class="timer-actions">
-          <button id="startTimerButton" class="primary-button" type="button">开始</button>
-          <button id="pauseTimerButton" class="secondary-button" type="button" disabled>暂停</button>
-          <button id="resetTimerButton" class="secondary-button" type="button">重置</button>
-          <button id="skipBreakButton" class="secondary-button" type="button" hidden>
-            跳过休息
-          </button>
         </div>
       </section>
 
@@ -690,7 +695,20 @@
         aria-controls="plansPage"
         aria-selected="true"
       >
-        计划
+        <svg class="app-tab-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M19 3H5"></path>
+          <path d="M21 13V5"></path>
+          <path d="M21 5a2 2 0 0 0-2-2"></path>
+          <path d="M3 19a2 2 0 0 0 2 2"></path>
+          <path d="M3 5v14"></path>
+          <path d="M5 3a2 2 0 0 0-2 2"></path>
+          <path d="m16 19 2 2 4-4"></path>
+          <path d="M16 2v3"></path>
+          <path d="M3 9h18"></path>
+          <path d="M5 21h7.5"></path>
+          <path d="M8 2v3"></path>
+        </svg>
+        <span>计划</span>
       </button>
       <button
         class="app-tab"
@@ -700,7 +718,12 @@
         aria-controls="focusPage"
         aria-selected="false"
       >
-        专注
+        <svg class="app-tab-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M10 2h4"></path>
+          <path d="m12 14 3-3"></path>
+          <circle cx="12" cy="14" r="8"></circle>
+        </svg>
+        <span>专注</span>
       </button>
       <button
         class="app-tab"
@@ -710,7 +733,12 @@
         aria-controls="historyPage"
         aria-selected="false"
       >
-        历史
+        <svg class="app-tab-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M5 21v-6"></path>
+          <path d="M12 21V3"></path>
+          <path d="M19 21V9"></path>
+        </svg>
+        <span>历史</span>
       </button>
       <button
         class="app-tab"
@@ -720,7 +748,13 @@
         aria-controls="settingsPage"
         aria-selected="false"
       >
-        设置
+        <svg class="app-tab-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M14 17H5"></path>
+          <path d="M19 7h-9"></path>
+          <circle cx="17" cy="17" r="3"></circle>
+          <circle cx="7" cy="7" r="3"></circle>
+        </svg>
+        <span>设置</span>
       </button>
     </nav>
   </main>

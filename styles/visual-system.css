@@ -1,0 +1,1096 @@
+/* Focus Plan visual system
+ * 1. Tokens and foundation
+ * 2. Controls
+ * 3. App shell and navigation
+ * 4. Page components
+ * 5. Responsive behavior
+ * 6. Dark theme
+ */
+
+/* ===== 1. Tokens and foundation ===== */
+
+:root {
+  --fp-bg: #f4f6f8;
+  --fp-surface: #ffffff;
+  --fp-surface-subtle: #f8f9fb;
+  --fp-surface-active: #e9eef5;
+  --fp-text: #15191e;
+  --fp-text-muted: #66707b;
+  --fp-text-soft: #89929c;
+  --fp-line: #e0e5ea;
+  --fp-line-strong: #c7d0d9;
+  --fp-brand: #041936;
+  --fp-brand-hover: #0b3268;
+  --fp-brand-soft: #e8eef6;
+  --fp-success: #17795a;
+  --fp-success-soft: #e8f5ef;
+  --fp-warning: #9a6200;
+  --fp-warning-soft: #fff4dc;
+  --fp-danger: #b42318;
+  --fp-danger-soft: #fff0ef;
+  --fp-focus-ring: rgba(11, 50, 104, 0.18);
+  --fp-shadow-raised: 0 12px 32px rgba(15, 31, 50, 0.08);
+  --fp-radius-sm: 6px;
+  --fp-radius-md: 8px;
+  --fp-content-width: 1060px;
+  color: var(--fp-text);
+  background-color: var(--fp-bg);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+html {
+  background-color: var(--fp-bg);
+}
+
+body {
+  color: var(--fp-text);
+  background-color: var(--fp-bg);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+strong {
+  color: var(--fp-text);
+}
+
+p {
+  color: var(--fp-text-muted);
+}
+
+::selection {
+  color: #ffffff;
+  background-color: var(--fp-brand);
+}
+
+/* ===== 2. Controls ===== */
+
+button,
+input,
+select,
+textarea {
+  letter-spacing: 0;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.details-button,
+.edit-button,
+.delete-button,
+.duration-button {
+  min-height: 42px;
+  border-radius: var(--fp-radius-sm);
+  font-weight: 650;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.primary-button {
+  border-color: var(--fp-brand);
+  background-color: var(--fp-brand);
+}
+
+.primary-button:hover {
+  border-color: var(--fp-brand-hover);
+  background-color: var(--fp-brand-hover);
+}
+
+.secondary-button {
+  border-color: var(--fp-line-strong);
+  color: #344252;
+  background-color: var(--fp-surface);
+}
+
+.secondary-button:hover {
+  border-color: #aeb9c4;
+  background-color: var(--fp-surface-subtle);
+}
+
+.danger-button {
+  border-color: #e4aaa5;
+  color: var(--fp-danger);
+  background-color: var(--fp-surface);
+}
+
+.danger-button:hover {
+  border-color: var(--fp-danger);
+  background-color: var(--fp-danger-soft);
+}
+
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+.danger-button:active:not(:disabled),
+.duration-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button-icon,
+.app-tab-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+#createPlanButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.form-field label,
+.duration-fieldset legend,
+.plan-search-field span,
+.plan-sort-field span,
+.plan-tag-filter span,
+.plan-status-filter > span,
+.history-plan-filter label {
+  color: #34404c;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.plan-search-field input,
+.plan-sort-field select,
+.plan-tag-filter select,
+.history-plan-filter select,
+.daily-goal-form input,
+.subtask-form input,
+.account-input-row input,
+.sound-preview-row select {
+  border-color: var(--fp-line-strong);
+  border-radius: var(--fp-radius-sm);
+  color: var(--fp-text);
+  background-color: var(--fp-surface);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.plan-search-field input:focus,
+.plan-sort-field select:focus,
+.plan-tag-filter select:focus,
+.history-plan-filter select:focus,
+.daily-goal-form input:focus,
+.subtask-form input:focus,
+.account-input-row input:focus,
+.sound-preview-row select:focus {
+  border-color: var(--fp-brand-hover);
+  outline: 3px solid var(--fp-focus-ring);
+}
+
+.segmented-control {
+  border-color: var(--fp-line-strong);
+  border-radius: var(--fp-radius-sm);
+  background-color: var(--fp-surface);
+}
+
+.plan-status-button,
+.history-period-button {
+  border-color: var(--fp-line-strong);
+  color: #465566;
+  background-color: transparent;
+  font-weight: 600;
+}
+
+.plan-status-button:hover,
+.history-period-button:hover {
+  background-color: var(--fp-surface-subtle);
+}
+
+.plan-status-button.is-active,
+.history-period-button.is-active {
+  color: #ffffff;
+  background-color: var(--fp-brand);
+}
+
+/* ===== 3. App shell and navigation ===== */
+
+.app {
+  width: min(var(--fp-content-width), calc(100% - 48px));
+  padding: 28px 0 56px;
+}
+
+.app-header {
+  min-height: 54px;
+  margin-bottom: 28px;
+}
+
+.app-brand {
+  gap: 11px;
+}
+
+.app-brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-brand);
+  box-shadow: 0 5px 14px rgba(4, 25, 54, 0.16);
+  font-size: 12px;
+}
+
+.app-header .app-brand h1 {
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.app-header .app-brand p {
+  color: var(--fp-text-muted);
+  font-size: 12px;
+}
+
+.app-pages {
+  min-width: 0;
+}
+
+.app-page {
+  gap: 26px;
+}
+
+.page-heading {
+  min-height: 58px;
+  align-items: center;
+}
+
+.page-heading p {
+  margin-bottom: 4px;
+  color: var(--fp-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.page-heading h2 {
+  color: var(--fp-text);
+  font-size: 30px;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.app-tabbar {
+  gap: 4px;
+}
+
+.app-tab {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  color: var(--fp-text-muted);
+  font-weight: 650;
+}
+
+.app-tab-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.app-tab:hover {
+  color: var(--fp-brand);
+  background-color: var(--fp-surface-active);
+}
+
+.app-tab.is-active {
+  color: var(--fp-brand);
+  background-color: var(--fp-brand-soft);
+}
+
+/* Page sections stay unframed. Repeated records and focused tools are framed. */
+.panel {
+  border: 0;
+  background-color: transparent;
+}
+
+.plans-panel,
+.statistics-panel,
+.achievements-panel,
+.history-panel,
+.settings-panel,
+.account-panel,
+.data-panel {
+  margin: 0;
+  padding: 0;
+}
+
+.section-heading {
+  margin-bottom: 18px;
+}
+
+.section-heading h2 {
+  margin-bottom: 3px;
+  font-size: 19px;
+  font-weight: 720;
+}
+
+.section-heading p {
+  color: var(--fp-text-muted);
+  font-size: 13px;
+}
+
+/* ===== 4. Page components ===== */
+
+/* Plans */
+
+.plan-toolbar {
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.plan-form {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+  box-shadow: var(--fp-shadow-raised);
+}
+
+.batch-action-bar {
+  border-color: var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-brand-soft);
+}
+
+.plan-list {
+  gap: 10px;
+}
+
+.plan-item {
+  min-height: 72px;
+  border-color: var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.plan-item:hover {
+  border-color: #c9d3dd;
+  box-shadow: 0 8px 22px rgba(15, 31, 50, 0.06);
+  transform: translateY(-1px);
+}
+
+.plan-title {
+  color: var(--fp-text);
+  font-weight: 680;
+}
+
+.plan-meta {
+  color: var(--fp-text-muted);
+}
+
+.plan-tag {
+  border-color: #c4d2e1;
+  color: #294b72;
+  background-color: var(--fp-brand-soft);
+}
+
+.empty-message {
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 40px 16px;
+  border-top: 1px solid var(--fp-line);
+  color: var(--fp-text-muted);
+}
+
+.plan-item.priority-low {
+  border-left-color: var(--fp-success);
+}
+
+.plan-item.priority-medium {
+  border-left-color: #d28a0b;
+}
+
+.plan-item.priority-high {
+  border-left-color: var(--fp-danger);
+}
+
+.plan-item.completed {
+  background-color: var(--fp-surface-subtle);
+}
+
+.plan-item.overdue {
+  background-color: var(--fp-danger-soft);
+  box-shadow: inset 0 0 0 1px #e69b95;
+}
+
+/* Focus timer */
+
+.timer-panel {
+  position: static;
+  padding: 24px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+  box-shadow: var(--fp-shadow-raised);
+}
+
+.timer-settings {
+  grid-template-columns: minmax(180px, 1.35fr) minmax(260px, 1.65fr) repeat(3, minmax(105px, 0.7fr));
+  align-items: end;
+  gap: 14px;
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid var(--fp-line);
+}
+
+.timer-cycle,
+.timer-auto-options {
+  grid-column: 1 / -1;
+}
+
+.timer-auto-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 14px;
+  border-color: var(--fp-line);
+}
+
+.timer-auto-options label {
+  padding: 10px 12px;
+  border-radius: var(--fp-radius-sm);
+  background-color: var(--fp-surface-subtle);
+  font-weight: 600;
+}
+
+.duration-options {
+  gap: 6px;
+}
+
+.duration-button {
+  border-color: var(--fp-line-strong);
+  color: #465566;
+  background-color: var(--fp-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.duration-button:hover {
+  border-color: var(--fp-brand-hover);
+}
+
+.duration-button.is-active {
+  border-color: var(--fp-brand);
+  color: #ffffff;
+  background-color: var(--fp-brand);
+}
+
+.timer-display {
+  margin: 24px 0 28px;
+  color: var(--fp-brand);
+  font-size: 76px;
+  font-weight: 720;
+  letter-spacing: 0;
+}
+
+.timer-phase-badge {
+  border-color: #c4d2e1;
+  border-radius: 999px;
+  color: #294b72;
+  background-color: var(--fp-brand-soft);
+}
+
+.timer-actions {
+  width: min(100%, 480px);
+  margin: 0 auto;
+}
+
+.timer-panel.is-running .timer-display {
+  color: var(--fp-success);
+}
+
+/* Statistics and achievements */
+
+.statistics-grid {
+  gap: 10px;
+  border: 0;
+}
+
+.statistic-item {
+  min-height: 106px;
+  justify-content: center;
+  padding: 18px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.statistic-item:last-child {
+  border-right: 1px solid var(--fp-line);
+}
+
+.statistic-item span,
+.weekly-comparison-item span {
+  color: var(--fp-text-muted);
+}
+
+.statistic-item strong {
+  color: var(--fp-brand);
+  font-size: 23px;
+}
+
+.daily-goal-section,
+.focus-trend {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.daily-goal-section {
+  padding-bottom: 20px;
+}
+
+.daily-goal-progress {
+  height: 8px;
+  background-color: #e8edf1;
+}
+
+.daily-goal-progress-bar,
+.focus-trend-bar {
+  background-color: var(--fp-success);
+}
+
+.focus-trend-chart {
+  border-color: var(--fp-line-strong);
+}
+
+.weekly-comparison {
+  gap: 10px;
+  border: 0;
+}
+
+.weekly-comparison-item {
+  min-height: 88px;
+  justify-content: center;
+  padding: 16px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.weekly-comparison-item:last-child {
+  border-right: 1px solid var(--fp-line);
+}
+
+.weekly-comparison-item strong {
+  color: var(--fp-brand);
+}
+
+.achievement-list {
+  gap: 10px;
+  border: 0;
+}
+
+.achievement-item {
+  min-height: 166px;
+  padding: 16px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.achievement-item:last-child {
+  border-right: 1px solid var(--fp-line);
+}
+
+.achievement-mark {
+  border-color: var(--fp-line-strong);
+  color: var(--fp-text-muted);
+  background-color: var(--fp-surface-subtle);
+}
+
+.achievement-item.is-unlocked .achievement-mark {
+  border-color: var(--fp-success);
+  background-color: var(--fp-success);
+}
+
+/* History */
+
+.history-toolbar {
+  align-items: end;
+  margin-bottom: 8px;
+  padding: 16px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+}
+
+.session-list {
+  gap: 0;
+}
+
+.session-item {
+  min-height: 66px;
+  padding: 14px 4px;
+  border-color: var(--fp-line);
+}
+
+.session-duration {
+  color: var(--fp-success);
+  font-weight: 680;
+}
+
+/* Settings */
+
+.settings-panel,
+.account-panel,
+.data-panel {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--fp-line);
+}
+
+.settings-list {
+  border-color: var(--fp-line);
+}
+
+.setting-row {
+  min-height: 78px;
+  border-color: var(--fp-line);
+}
+
+.setting-row strong {
+  font-size: 14px;
+  font-weight: 680;
+}
+
+.setting-row p {
+  color: var(--fp-text-muted);
+}
+
+.theme-switch {
+  border-color: var(--fp-line-strong);
+  color: #344252;
+  background-color: var(--fp-surface);
+}
+
+.theme-switch-track {
+  background-color: #9aa5b0;
+}
+
+.theme-switch input:checked + .theme-switch-track {
+  background-color: var(--fp-success);
+}
+
+.push-status,
+.sound-playback-status,
+.data-status {
+  color: var(--fp-text-muted);
+}
+
+.phone-login-form {
+  width: min(100%, 560px);
+}
+
+.data-actions {
+  gap: 10px;
+}
+
+/* Dialogs and feedback */
+
+.plan-details-dialog {
+  border-color: var(--fp-line);
+  border-radius: var(--fp-radius-md);
+  background-color: var(--fp-surface);
+  box-shadow: 0 24px 64px rgba(4, 25, 54, 0.2);
+}
+
+.achievement-toast,
+.action-toast,
+.app-reminder {
+  border-radius: var(--fp-radius-md);
+  box-shadow: 0 14px 38px rgba(4, 25, 54, 0.18);
+}
+
+/* ===== 5. Responsive behavior ===== */
+
+@media (min-width: 901px) {
+  .app {
+    grid-template-columns: 178px minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  .app-tabbar {
+    top: 28px;
+    padding: 6px;
+    border-color: var(--fp-line);
+    border-radius: var(--fp-radius-md);
+    background-color: var(--fp-surface);
+    box-shadow: 0 8px 24px rgba(15, 31, 50, 0.05);
+  }
+
+  .app-tab {
+    padding: 11px 12px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 900px) {
+  .app {
+    width: 100%;
+    padding: env(safe-area-inset-top) 0 0;
+  }
+
+  .app-header {
+    min-height: 60px;
+    padding: 10px 16px;
+    border-color: var(--fp-line);
+    background-color: rgba(244, 246, 248, 0.92);
+    backdrop-filter: blur(18px);
+  }
+
+  .app-brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-pages {
+    padding: 20px 16px calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .app-page {
+    gap: 24px;
+  }
+
+  .page-heading {
+    min-height: 54px;
+  }
+
+  .page-heading h2 {
+    font-size: 28px;
+  }
+
+  .app-tabbar {
+    grid-template-columns: repeat(4, minmax(64px, 1fr));
+    gap: 0;
+    padding:
+      6px
+      max(8px, env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    border-color: var(--fp-line);
+    background-color: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 -10px 28px rgba(15, 31, 50, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .app-tab {
+    min-height: 58px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 5px 4px;
+    border-radius: 0;
+    font-size: 11px;
+  }
+
+  .app-tab-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .app-tab:hover,
+  .app-tab.is-active {
+    color: var(--fp-brand);
+    background-color: transparent;
+  }
+
+  .plan-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .plan-search-field,
+  .plan-status-filter {
+    grid-column: 1 / -1;
+  }
+
+  .timer-panel {
+    padding: 20px;
+  }
+
+  .timer-settings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timer-settings > .form-field:first-child,
+  .duration-fieldset,
+  .timer-cycle,
+  .timer-auto-options {
+    grid-column: 1 / -1;
+  }
+
+  .timer-auto-options {
+    grid-template-columns: 1fr;
+  }
+
+  .timer-display {
+    font-size: 68px;
+  }
+
+  .achievement-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .achievement-item:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .setting-row {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .statistics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statistic-item {
+    min-height: 94px;
+  }
+
+  .daily-goal-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .daily-goal-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .daily-goal-form label {
+    grid-column: 1 / -1;
+  }
+
+  .daily-goal-form input {
+    width: 100%;
+  }
+
+  .weekly-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-comparison-item {
+    min-height: 76px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-header .app-brand p {
+    display: none;
+  }
+
+  .app-pages {
+    padding-inline: 14px;
+  }
+
+  .page-heading h2 {
+    font-size: 26px;
+  }
+
+  .page-heading .primary-button {
+    padding-inline: 12px;
+  }
+
+  .plan-toolbar {
+    padding: 14px;
+  }
+
+  .timer-panel {
+    padding: 18px 14px;
+  }
+
+  .timer-display {
+    margin-block: 20px 24px;
+    font-size: 60px;
+  }
+
+  .timer-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .timer-actions button {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .achievement-list {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-item,
+  .achievement-item:last-child {
+    min-height: 0;
+    grid-column: auto;
+  }
+
+  .history-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .history-plan-filter {
+    min-width: 0;
+  }
+}
+
+/* ===== 6. Dark theme ===== */
+
+html[data-theme="dark"] {
+  --fp-bg: #171b1f;
+  --fp-surface: #20252a;
+  --fp-surface-subtle: #252b30;
+  --fp-surface-active: #2a343e;
+  --fp-text: #f2f5f7;
+  --fp-text-muted: #aeb8c1;
+  --fp-text-soft: #89949e;
+  --fp-line: #343c43;
+  --fp-line-strong: #4b5660;
+  --fp-brand: #8db8f0;
+  --fp-brand-hover: #a7c9f4;
+  --fp-brand-soft: #26394e;
+  --fp-success: #69c99b;
+  --fp-success-soft: #223b32;
+  --fp-warning: #f0c674;
+  --fp-warning-soft: #44371f;
+  --fp-danger: #ff9b93;
+  --fp-danger-soft: #43292b;
+  --fp-focus-ring: rgba(141, 184, 240, 0.2);
+  --fp-shadow-raised: 0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  color: var(--fp-text);
+  background-color: var(--fp-bg);
+}
+
+html[data-theme="dark"] .app-header,
+html[data-theme="dark"] .app-tabbar {
+  border-color: var(--fp-line);
+  background-color: rgba(23, 27, 31, 0.94);
+}
+
+html[data-theme="dark"] .app-brand-mark {
+  color: #101820;
+  background-color: var(--fp-brand);
+}
+
+html[data-theme="dark"] .app-tab {
+  color: var(--fp-text-muted);
+}
+
+html[data-theme="dark"] .app-tab:hover,
+html[data-theme="dark"] .app-tab.is-active {
+  color: var(--fp-brand);
+  background-color: var(--fp-brand-soft);
+}
+
+html[data-theme="dark"] .panel {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+html[data-theme="dark"] .timer-panel,
+html[data-theme="dark"] .plan-toolbar,
+html[data-theme="dark"] .plan-form,
+html[data-theme="dark"] .plan-item,
+html[data-theme="dark"] .statistic-item,
+html[data-theme="dark"] .daily-goal-section,
+html[data-theme="dark"] .focus-trend,
+html[data-theme="dark"] .weekly-comparison-item,
+html[data-theme="dark"] .achievement-item,
+html[data-theme="dark"] .history-toolbar {
+  border-color: var(--fp-line);
+  background-color: var(--fp-surface);
+}
+
+html[data-theme="dark"] .primary-button,
+html[data-theme="dark"] .plan-status-button.is-active,
+html[data-theme="dark"] .history-period-button.is-active,
+html[data-theme="dark"] .duration-button.is-active {
+  border-color: var(--fp-brand);
+  color: #101820;
+  background-color: var(--fp-brand);
+}
+
+html[data-theme="dark"] .secondary-button,
+html[data-theme="dark"] .danger-button,
+html[data-theme="dark"] .duration-button,
+html[data-theme="dark"] .theme-switch {
+  border-color: var(--fp-line-strong);
+  color: var(--fp-text);
+  background-color: var(--fp-surface);
+}
+
+html[data-theme="dark"] .form-field label,
+html[data-theme="dark"] .duration-fieldset legend,
+html[data-theme="dark"] .plan-search-field span,
+html[data-theme="dark"] .plan-sort-field span,
+html[data-theme="dark"] .plan-tag-filter span,
+html[data-theme="dark"] .plan-status-filter > span,
+html[data-theme="dark"] .history-plan-filter label {
+  color: var(--fp-text);
+}
+
+html[data-theme="dark"] .timer-display,
+html[data-theme="dark"] .statistic-item strong,
+html[data-theme="dark"] .weekly-comparison-item strong {
+  color: var(--fp-brand);
+}
+
+html[data-theme="dark"] .timer-panel.is-running .timer-display {
+  color: var(--fp-success);
+}
+
+@media (max-width: 900px) {
+  html[data-theme="dark"] .app-tab:hover,
+  html[data-theme="dark"] .app-tab.is-active {
+    color: var(--fp-brand);
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .secondary-button,
+  .danger-button,
+  .duration-button,
+  .plan-item {
+    transition: none;
+  }
+}

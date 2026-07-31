@@ -10,6 +10,8 @@ node_modules/
 *.log
 *.tmp
 *.local
+.playwright-cli/
+output/
 .env
 .env.*
 !.env.example
