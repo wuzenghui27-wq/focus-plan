@@ -355,13 +355,21 @@
           </div>
 
           <div class="timer-cycle">
-            <span id="timerCycleStatus">本轮 0 / 4</span>
-            <div id="timerCycleIndicators" class="timer-cycle-indicators" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-              <span></span>
+            <div class="timer-cycle-copy">
+              <strong id="timerCycleStatus">本轮 0 / 4</strong>
+              <span id="timerCycleHint">完成 4 轮后进入长休息</span>
             </div>
+            <label class="timer-cycle-length" for="focusesPerLongBreak">
+              <span>每组轮数</span>
+              <select id="focusesPerLongBreak">
+                <option value="2">2 轮</option>
+                <option value="3">3 轮</option>
+                <option value="4" selected>4 轮</option>
+                <option value="5">5 轮</option>
+                <option value="6">6 轮</option>
+              </select>
+            </label>
+            <div id="timerCycleIndicators" class="timer-cycle-indicators" aria-hidden="true"></div>
           </div>
 
           <div class="timer-auto-options">

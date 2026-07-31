@@ -43,10 +43,16 @@
       options.maximumLongBreakMinutes,
       options.defaultLongBreakMinutes
     );
+    const focusesPerLongBreak = getValidInteger(
+      value.focusesPerLongBreak,
+      options.minimumFocusesPerLongBreak,
+      options.maximumFocusesPerLongBreak,
+      options.defaultFocusesPerLongBreak
+    );
     const completedFocusesInCycle = getValidInteger(
       value.completedFocusesInCycle,
       0,
-      options.focusesPerLongBreak - 1,
+      focusesPerLongBreak - 1,
       0
     );
     const isLongBreak = phase === "break" && Boolean(value.isLongBreak);
@@ -71,6 +77,7 @@
       selectedMinutes: selectedMinutes,
       breakMinutes: breakMinutes,
       longBreakMinutes: longBreakMinutes,
+      focusesPerLongBreak: focusesPerLongBreak,
       completedFocusesInCycle: completedFocusesInCycle,
       isLongBreak: isLongBreak,
       remainingSeconds: remainingSeconds,
@@ -145,6 +152,7 @@
       selectedMinutes: timer.selectedMinutes,
       breakMinutes: timer.breakMinutes,
       longBreakMinutes: timer.longBreakMinutes,
+      focusesPerLongBreak: timer.focusesPerLongBreak,
       completedFocusesInCycle: timer.completedFocusesInCycle,
       isLongBreak: timer.isLongBreak,
       remainingSeconds: timer.remainingSeconds,

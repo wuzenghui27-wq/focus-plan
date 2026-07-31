@@ -611,6 +611,54 @@ button {
   grid-column: 1 / -1;
 }
 
+.timer-cycle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--fp-line);
+  border-radius: var(--fp-radius-sm);
+  background-color: var(--fp-surface-subtle);
+}
+
+.timer-cycle-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.timer-cycle-copy strong {
+  font-size: 14px;
+}
+
+.timer-cycle-copy span {
+  color: var(--fp-text-muted);
+  font-size: 12px;
+}
+
+.timer-cycle-length {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fp-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.timer-cycle-length select {
+  min-height: 36px;
+  padding: 6px 28px 6px 9px;
+  border: 1px solid var(--fp-line-strong);
+  border-radius: var(--fp-radius-sm);
+  color: var(--fp-text);
+  background-color: var(--fp-surface);
+}
+
+.timer-cycle-indicators {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .timer-auto-options {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -1045,6 +1093,14 @@ button {
   .weekly-comparison-item {
     min-height: 76px;
   }
+
+  .timer-cycle {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .timer-cycle-indicators {
+    grid-column: 1 / -1;
+  }
 }
 
 @keyframes plan-sheet-enter {
@@ -1291,6 +1347,17 @@ html[data-theme="dark"] .plan-form-close-button {
   border-color: var(--fp-line-strong);
   color: var(--fp-text);
   background-color: var(--fp-surface-subtle);
+}
+
+html[data-theme="dark"] .timer-cycle {
+  border-color: var(--fp-line);
+  background-color: var(--fp-surface-subtle);
+}
+
+html[data-theme="dark"] .timer-cycle-length select {
+  border-color: var(--fp-line-strong);
+  color: var(--fp-text);
+  background-color: var(--fp-surface);
 }
 
 html[data-theme="dark"] .plan-form-error {

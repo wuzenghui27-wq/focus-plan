@@ -16,7 +16,9 @@ const options = {
   minimumLongBreakMinutes: 1,
   maximumLongBreakMinutes: 60,
   defaultLongBreakMinutes: 15,
-  focusesPerLongBreak: 4
+  minimumFocusesPerLongBreak: 2,
+  maximumFocusesPerLongBreak: 6,
+  defaultFocusesPerLongBreak: 4
 };
 
 function createStorage(initialValue) {
@@ -60,6 +62,7 @@ assert.deepStrictEqual(
     selectedMinutes: 25,
     breakMinutes: 5,
     longBreakMinutes: 15,
+    focusesPerLongBreak: 4,
     completedFocusesInCycle: 0,
     isLongBreak: false,
     remainingSeconds: 1500,
@@ -91,6 +94,7 @@ const pausedResult = loadTimerState(pausedStorage, options, 100000);
 assert.strictEqual(pausedResult.timer.remainingSeconds, 900);
 assert.strictEqual(pausedResult.timer.phase, "break");
 assert.strictEqual(pausedResult.timer.isLongBreak, true);
+assert.strictEqual(pausedResult.timer.focusesPerLongBreak, 4);
 assert.strictEqual(pausedResult.timer.completedFocusesInCycle, 3);
 assert.strictEqual(pausedResult.timer.autoStartBreak, true);
 assert.strictEqual(pausedResult.timer.autoStartFocus, false);
@@ -146,6 +150,22 @@ assert.strictEqual(
   JSON.parse(writableStorage.value()).longBreakMinutes,
   20
 );
+assert.strictEqual(
+  JSON.parse(writableStorage.value()).focusesPerLongBreak,
+  4
+);
+
+const customCycle = normalizeTimerState({
+  phase: "focus",
+  selectedMinutes: 25,
+  breakMinutes: 5,
+  longBreakMinutes: 15,
+  focusesPerLongBreak: 6,
+  completedFocusesInCycle: 5,
+  remainingSeconds: 1500
+}, options);
+assert.strictEqual(customCycle.focusesPerLongBreak, 6);
+assert.strictEqual(customCycle.completedFocusesInCycle, 5);
 
 const invalidCycle = normalizeTimerState({
   phase: "focus",

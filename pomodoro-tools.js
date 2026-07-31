@@ -11,7 +11,9 @@
   const MAX_BREAK_MINUTES = 60;
   const DEFAULT_BREAK_MINUTES = 5;
   const DEFAULT_LONG_BREAK_MINUTES = 15;
-  const FOCUSES_PER_LONG_BREAK = 4;
+  const MIN_FOCUSES_PER_LONG_BREAK = 2;
+  const MAX_FOCUSES_PER_LONG_BREAK = 6;
+  const DEFAULT_FOCUSES_PER_LONG_BREAK = 4;
 
   function normalizePhase(value) {
     return value === "break" ? "break" : "focus";
@@ -43,8 +45,25 @@
     return normalizePhase(phase) === "focus" ? "break" : "focus";
   }
 
-  function shouldUseLongBreak(completedFocuses) {
-    return Number(completedFocuses) >= FOCUSES_PER_LONG_BREAK;
+  function getValidFocusesPerLongBreak(value) {
+    const focuses = Number(value);
+
+    if (
+      !Number.isInteger(focuses) ||
+      focuses < MIN_FOCUSES_PER_LONG_BREAK ||
+      focuses > MAX_FOCUSES_PER_LONG_BREAK
+    ) {
+      return null;
+    }
+
+    return focuses;
+  }
+
+  function shouldUseLongBreak(completedFocuses, focusesPerLongBreak) {
+    const target = getValidFocusesPerLongBreak(focusesPerLongBreak) ||
+      DEFAULT_FOCUSES_PER_LONG_BREAK;
+
+    return Number(completedFocuses) >= target;
   }
 
   function getBreakDurationMinutes(
@@ -65,11 +84,14 @@
     MAX_BREAK_MINUTES: MAX_BREAK_MINUTES,
     DEFAULT_BREAK_MINUTES: DEFAULT_BREAK_MINUTES,
     DEFAULT_LONG_BREAK_MINUTES: DEFAULT_LONG_BREAK_MINUTES,
-    FOCUSES_PER_LONG_BREAK: FOCUSES_PER_LONG_BREAK,
+    MIN_FOCUSES_PER_LONG_BREAK: MIN_FOCUSES_PER_LONG_BREAK,
+    MAX_FOCUSES_PER_LONG_BREAK: MAX_FOCUSES_PER_LONG_BREAK,
+    DEFAULT_FOCUSES_PER_LONG_BREAK: DEFAULT_FOCUSES_PER_LONG_BREAK,
     normalizePhase: normalizePhase,
     getValidBreakMinutes: getValidBreakMinutes,
     getPhaseDurationSeconds: getPhaseDurationSeconds,
     getNextPhase: getNextPhase,
+    getValidFocusesPerLongBreak: getValidFocusesPerLongBreak,
     shouldUseLongBreak: shouldUseLongBreak,
     getBreakDurationMinutes: getBreakDurationMinutes
   };

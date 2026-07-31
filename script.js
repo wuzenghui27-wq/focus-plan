@@ -62,7 +62,12 @@ const TIMER_STATE_OPTIONS = {
   maximumLongBreakMinutes: window.PomodoroTools.MAX_BREAK_MINUTES,
   defaultLongBreakMinutes:
     window.PomodoroTools.DEFAULT_LONG_BREAK_MINUTES,
-  focusesPerLongBreak: window.PomodoroTools.FOCUSES_PER_LONG_BREAK
+  minimumFocusesPerLongBreak:
+    window.PomodoroTools.MIN_FOCUSES_PER_LONG_BREAK,
+  maximumFocusesPerLongBreak:
+    window.PomodoroTools.MAX_FOCUSES_PER_LONG_BREAK,
+  defaultFocusesPerLongBreak:
+    window.PomodoroTools.DEFAULT_FOCUSES_PER_LONG_BREAK
 };
 const restoredTimerResult = window.TimerStateTools.loadTimerState(
   localStorage,
@@ -210,10 +215,10 @@ const elements = {
   timerPhaseBadge: document.querySelector("#timerPhaseBadge"),
   breakMinutesInput: document.querySelector("#breakMinutes"),
   longBreakMinutesInput: document.querySelector("#longBreakMinutes"),
+  focusesPerLongBreakInput: document.querySelector("#focusesPerLongBreak"),
   timerCycleStatus: document.querySelector("#timerCycleStatus"),
-  timerCycleIndicators: document.querySelectorAll(
-    "#timerCycleIndicators span"
-  ),
+  timerCycleHint: document.querySelector("#timerCycleHint"),
+  timerCycleIndicators: document.querySelector("#timerCycleIndicators"),
   autoStartBreakInput: document.querySelector("#autoStartBreak"),
   autoStartFocusInput: document.querySelector("#autoStartFocus"),
   soundMutedInput: document.querySelector("#soundMuted"),
@@ -276,6 +281,9 @@ const state = {
       window.PomodoroTools.DEFAULT_BREAK_MINUTES,
     longBreakMinutes: restoredTimerResult.timer?.longBreakMinutes ||
       window.PomodoroTools.DEFAULT_LONG_BREAK_MINUTES,
+    focusesPerLongBreak:
+      restoredTimerResult.timer?.focusesPerLongBreak ||
+      window.PomodoroTools.DEFAULT_FOCUSES_PER_LONG_BREAK,
     completedFocusesInCycle:
       restoredTimerResult.timer?.completedFocusesInCycle || 0,
     isLongBreak: restoredTimerResult.timer?.isLongBreak || false,
@@ -2086,6 +2094,8 @@ function resetApplicationData() {
   state.timer.breakMinutes = window.PomodoroTools.DEFAULT_BREAK_MINUTES;
   state.timer.longBreakMinutes =
     window.PomodoroTools.DEFAULT_LONG_BREAK_MINUTES;
+  state.timer.focusesPerLongBreak =
+    window.PomodoroTools.DEFAULT_FOCUSES_PER_LONG_BREAK;
   state.timer.completedFocusesInCycle = 0;
   state.timer.isLongBreak = false;
   state.timer.remainingSeconds = DEFAULT_TIMER_MINUTES * 60;
@@ -2118,6 +2128,9 @@ function resetApplicationData() {
   );
   elements.longBreakMinutesInput.value = String(
     window.PomodoroTools.DEFAULT_LONG_BREAK_MINUTES
+  );
+  elements.focusesPerLongBreakInput.value = String(
+    window.PomodoroTools.DEFAULT_FOCUSES_PER_LONG_BREAK
   );
   elements.autoStartBreakInput.checked = false;
   elements.autoStartFocusInput.checked = false;
@@ -2765,11 +2778,27 @@ function getCurrentPhaseTotalSeconds() {
 
 function updateTimerCycleDisplay() {
   const completed = state.timer.completedFocusesInCycle;
+  const target = state.timer.focusesPerLongBreak;
 
   elements.timerCycleStatus.textContent =
-    "本轮 " + completed + " / " +
-    window.PomodoroTools.FOCUSES_PER_LONG_BREAK;
-  elements.timerCycleIndicators.forEach(function (indicator, index) {
+    "本轮 " + completed + " / " + target;
+  elements.timerCycleHint.textContent =
+    "完成 " + target + " 轮后进入长休息";
+
+  while (elements.timerCycleIndicators.children.length < target) {
+    elements.timerCycleIndicators.appendChild(
+      document.createElement("span")
+    );
+  }
+
+  while (elements.timerCycleIndicators.children.length > target) {
+    elements.timerCycleIndicators.lastElementChild.remove();
+  }
+
+  Array.from(elements.timerCycleIndicators.children).forEach(function (
+    indicator,
+    index
+  ) {
     indicator.classList.toggle("is-completed", index < completed);
   });
 }
@@ -2806,6 +2835,7 @@ function updateTimerControls() {
   elements.customMinutesInput.disabled = settingsLocked || isBreak;
   elements.breakMinutesInput.disabled = settingsLocked;
   elements.longBreakMinutesInput.disabled = settingsLocked;
+  elements.focusesPerLongBreakInput.disabled = settingsLocked;
   elements.skipBreakButton.hidden = !isBreak;
   elements.timerPhaseBadge.textContent = isBreak
     ? (state.timer.isLongBreak ? "长休息" : "休息")
@@ -2922,7 +2952,8 @@ function finishTimer() {
     playTimerSound("focusComplete");
     state.timer.completedFocusesInCycle += 1;
     const useLongBreak = window.PomodoroTools.shouldUseLongBreak(
-      state.timer.completedFocusesInCycle
+      state.timer.completedFocusesInCycle,
+      state.timer.focusesPerLongBreak
     );
 
     if (useLongBreak) {
@@ -3146,6 +3177,27 @@ function handleLongBreakMinutesChange() {
   persistTimerState();
 }
 
+function handleFocusesPerLongBreakChange() {
+  const focuses = window.PomodoroTools.getValidFocusesPerLongBreak(
+    elements.focusesPerLongBreakInput.value
+  );
+
+  if (focuses === null) {
+    elements.focusesPerLongBreakInput.value =
+      String(state.timer.focusesPerLongBreak);
+    return;
+  }
+
+  state.timer.focusesPerLongBreak = focuses;
+
+  if (state.timer.completedFocusesInCycle >= focuses) {
+    state.timer.completedFocusesInCycle = 0;
+  }
+
+  updateTimerCycleDisplay();
+  persistTimerState();
+}
+
 function skipBreak() {
   if (state.timer.phase !== "break") {
     return;
@@ -3159,6 +3211,8 @@ function restoreTimerInterface() {
   elements.breakMinutesInput.value = String(state.timer.breakMinutes);
   elements.longBreakMinutesInput.value =
     String(state.timer.longBreakMinutes);
+  elements.focusesPerLongBreakInput.value =
+    String(state.timer.focusesPerLongBreak);
   elements.autoStartBreakInput.checked = state.timer.autoStartBreak;
   elements.autoStartFocusInput.checked = state.timer.autoStartFocus;
   updateDurationButtons();
@@ -3416,6 +3470,10 @@ function bindEvents() {
   elements.longBreakMinutesInput.addEventListener(
     "change",
     handleLongBreakMinutesChange
+  );
+  elements.focusesPerLongBreakInput.addEventListener(
+    "change",
+    handleFocusesPerLongBreakChange
   );
   elements.autoStartBreakInput.addEventListener("change", function () {
     state.timer.autoStartBreak = elements.autoStartBreakInput.checked;

@@ -1,8 +1,10 @@
 const assert = require("assert");
 const {
   DEFAULT_BREAK_MINUTES,
+  DEFAULT_FOCUSES_PER_LONG_BREAK,
   normalizePhase,
   getValidBreakMinutes,
+  getValidFocusesPerLongBreak,
   getPhaseDurationSeconds,
   getNextPhase,
   shouldUseLongBreak,
@@ -28,8 +30,18 @@ assert.strictEqual(
 
 assert.strictEqual(getNextPhase("focus"), "break");
 assert.strictEqual(getNextPhase("break"), "focus");
+assert.strictEqual(getValidFocusesPerLongBreak("2"), 2);
+assert.strictEqual(getValidFocusesPerLongBreak("6"), 6);
+assert.strictEqual(getValidFocusesPerLongBreak("1"), null);
+assert.strictEqual(getValidFocusesPerLongBreak("7"), null);
 assert.strictEqual(shouldUseLongBreak(3), false);
 assert.strictEqual(shouldUseLongBreak(4), true);
+assert.strictEqual(shouldUseLongBreak(2, 2), true);
+assert.strictEqual(shouldUseLongBreak(4, 6), false);
+assert.strictEqual(
+  shouldUseLongBreak(DEFAULT_FOCUSES_PER_LONG_BREAK),
+  true
+);
 assert.strictEqual(getBreakDurationMinutes(false, 5, 15), 5);
 assert.strictEqual(getBreakDurationMinutes(true, 5, 15), 15);
 assert.strictEqual(getBreakDurationMinutes(true, 5, 100), 15);
