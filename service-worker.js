@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v16";
+const CACHE_NAME = "focus-plan-shell-v17";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const APP_SHELL = [
   "./recurrence-tools.js",
   "./reminder-presenter.js",
   "./reminder-tools.js",
+  "./select-menu.js",
   "./script.js",
   "./session-tools.js",
   "./shortcut-tools.js",
