@@ -96,6 +96,7 @@ button {
 .danger-button,
 .details-button,
 .edit-button,
+.postpone-button,
 .delete-button,
 .duration-button {
   min-height: 42px;
@@ -172,10 +173,6 @@ button {
 
 .form-field label,
 .duration-fieldset legend,
-.plan-search-field span,
-.plan-sort-field span,
-.plan-tag-filter span,
-.plan-status-filter > span,
 .history-plan-filter label {
   color: #34404c;
   font-size: 13px;
@@ -185,9 +182,6 @@ button {
 .form-field input,
 .form-field select,
 .form-field textarea,
-.plan-search-field input,
-.plan-sort-field select,
-.plan-tag-filter select,
 .history-plan-filter select,
 .daily-goal-form input,
 .subtask-form input,
@@ -202,9 +196,6 @@ button {
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus,
-.plan-search-field input:focus,
-.plan-sort-field select:focus,
-.plan-tag-filter select:focus,
 .history-plan-filter select:focus,
 .daily-goal-form input:focus,
 .subtask-form input:focus,
@@ -229,7 +220,6 @@ button {
   display: none;
 }
 
-.plan-status-button,
 .history-period-button {
   border-color: var(--fp-line-strong);
   color: #465566;
@@ -237,12 +227,10 @@ button {
   font-weight: 600;
 }
 
-.plan-status-button:hover,
 .history-period-button:hover {
   background-color: var(--fp-surface-subtle);
 }
 
-.plan-status-button.is-active,
 .history-period-button.is-active {
   color: #ffffff;
   background-color: var(--fp-brand);
@@ -398,16 +386,6 @@ button {
 /* ===== 4. Page components ===== */
 
 /* Plans */
-
-.plan-toolbar {
-  gap: 12px;
-  margin-bottom: 18px;
-  padding: 16px;
-  border: 1px solid transparent;
-  border-radius: var(--fp-radius-md);
-  background-color: var(--fp-surface);
-  box-shadow: var(--fp-shadow-card);
-}
 
 .plan-form {
   margin-bottom: 18px;
@@ -598,10 +576,13 @@ button {
 
 .plan-item .details-button,
 .plan-item .edit-button,
+.plan-item .postpone-button,
 .plan-item .delete-button {
-  min-height: 36px;
+  min-height: 32px;
+  padding: 5px 9px;
   border-color: transparent;
   box-shadow: none;
+  font-size: 12px;
 }
 
 .plan-item .details-button {
@@ -612,6 +593,11 @@ button {
 .plan-item .edit-button {
   color: #465566;
   background-color: var(--fp-surface-subtle);
+}
+
+.plan-item .postpone-button {
+  color: var(--fp-warning);
+  background-color: var(--fp-warning-soft);
 }
 
 .plan-item .delete-button {
@@ -657,6 +643,20 @@ button {
 
 .plan-item.completed {
   background-color: var(--fp-surface-subtle);
+}
+
+.plan-state.is-pending {
+  color: var(--fp-brand);
+  background-color: var(--fp-brand-soft);
+}
+
+.plan-state.is-completed {
+  color: var(--fp-success);
+  background-color: var(--fp-mint-soft);
+}
+
+.plan-postpone-note {
+  color: var(--fp-warning);
 }
 
 .plan-item.overdue {
@@ -1219,7 +1219,8 @@ button {
 
 /* Dialogs and feedback */
 
-.plan-details-dialog {
+.plan-details-dialog,
+.postpone-plan-dialog {
   border-color: var(--fp-line);
   border-radius: var(--fp-radius-md);
   background-color: var(--fp-surface);
@@ -1260,15 +1261,18 @@ button {
 
   .plan-item .details-button,
   .plan-item .edit-button,
+  .plan-item .postpone-button,
   .plan-item .delete-button {
     opacity: 0.72;
   }
 
   .plan-item:hover .details-button,
   .plan-item:hover .edit-button,
+  .plan-item:hover .postpone-button,
   .plan-item:hover .delete-button,
   .plan-item:focus-within .details-button,
   .plan-item:focus-within .edit-button,
+  .plan-item:focus-within .postpone-button,
   .plan-item:focus-within .delete-button {
     opacity: 1;
   }
@@ -1451,9 +1455,6 @@ button {
   .form-field input,
   .form-field select,
   .form-field textarea,
-  .plan-search-field input,
-  .plan-sort-field select,
-  .plan-tag-filter select,
   .history-plan-filter select,
   .daily-goal-form input,
   .subtask-form input,
@@ -1470,8 +1471,6 @@ button {
   }
 
   .form-field select,
-  .plan-sort-field select,
-  .plan-tag-filter select,
   .history-plan-filter select,
   .sound-preview-row select,
   .timer-cycle-length select {
@@ -1481,9 +1480,6 @@ button {
   .form-field input:focus,
   .form-field select:focus,
   .form-field textarea:focus,
-  .plan-search-field input:focus,
-  .plan-sort-field select:focus,
-  .plan-tag-filter select:focus,
   .history-plan-filter select:focus,
   .daily-goal-form input:focus,
   .subtask-form input:focus,
@@ -1507,6 +1503,7 @@ button {
   .danger-button,
   .details-button,
   .edit-button,
+  .postpone-button,
   .delete-button,
   .duration-button,
   .plan-quick-time-options button,
@@ -1560,15 +1557,6 @@ button {
     background-color: var(--fp-brand);
     content: "";
     transform: translateX(-50%);
-  }
-
-  .plan-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .plan-search-field,
-  .plan-status-filter {
-    grid-column: 1 / -1;
   }
 
   .timer-panel {
@@ -1788,10 +1776,6 @@ button {
     padding-inline: 12px;
   }
 
-  .plan-toolbar {
-    padding: 14px;
-  }
-
   .timer-panel {
     padding: 18px 14px;
   }
@@ -1911,7 +1895,6 @@ html[data-theme="dark"] .panel {
 }
 
 html[data-theme="dark"] .timer-panel,
-html[data-theme="dark"] .plan-toolbar,
 html[data-theme="dark"] .plan-form,
 html[data-theme="dark"] .plan-item,
 html[data-theme="dark"] .statistic-item,
@@ -1936,9 +1919,6 @@ html[data-theme="dark"] .data-actions {
   html[data-theme="dark"] .form-field input,
   html[data-theme="dark"] .form-field select,
   html[data-theme="dark"] .form-field textarea,
-  html[data-theme="dark"] .plan-search-field input,
-  html[data-theme="dark"] .plan-sort-field select,
-  html[data-theme="dark"] .plan-tag-filter select,
   html[data-theme="dark"] .history-plan-filter select,
   html[data-theme="dark"] .daily-goal-form input,
   html[data-theme="dark"] .subtask-form input,
@@ -2039,7 +2019,6 @@ html[data-theme="dark"] .plan-form-error {
 }
 
 html[data-theme="dark"] .primary-button,
-html[data-theme="dark"] .plan-status-button.is-active,
 html[data-theme="dark"] .history-period-button.is-active,
 html[data-theme="dark"] .duration-button.is-active {
   border-color: var(--fp-brand);
@@ -2058,10 +2037,6 @@ html[data-theme="dark"] .theme-switch {
 
 html[data-theme="dark"] .form-field label,
 html[data-theme="dark"] .duration-fieldset legend,
-html[data-theme="dark"] .plan-search-field span,
-html[data-theme="dark"] .plan-sort-field span,
-html[data-theme="dark"] .plan-tag-filter span,
-html[data-theme="dark"] .plan-status-filter > span,
 html[data-theme="dark"] .history-plan-filter label {
   color: var(--fp-text);
 }

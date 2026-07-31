@@ -40,10 +40,6 @@
       return "create-plan";
     }
 
-    if (key === "/") {
-      return "focus-search";
-    }
-
     return null;
   }
 

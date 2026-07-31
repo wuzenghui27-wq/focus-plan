@@ -55,6 +55,9 @@ assert.deepStrictEqual(nextPlan, {
   reminderMinutes: 15,
   reminded: false,
   snoozedUntil: null,
+  postponedFrom: "",
+  postponeReason: "",
+  postponedAt: null,
   completed: false,
   nextOccurrenceCreated: false,
   generatedFromId: 10

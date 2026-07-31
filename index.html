@@ -80,50 +80,6 @@
           </button>
         </div>
 
-        <div class="plan-toolbar">
-          <label class="plan-search-field" for="planSearchInput">
-            <span>搜索计划</span>
-            <input
-              id="planSearchInput"
-              type="search"
-              placeholder="输入计划名称"
-              autocomplete="off"
-              aria-keyshortcuts="/"
-            >
-          </label>
-
-          <div class="plan-status-filter">
-            <span>状态</span>
-            <div class="segmented-control plan-status-control">
-              <button class="plan-status-button is-active" type="button" data-status="all">
-                全部
-              </button>
-              <button class="plan-status-button" type="button" data-status="active">
-                待完成
-              </button>
-              <button class="plan-status-button" type="button" data-status="completed">
-                已完成
-              </button>
-            </div>
-          </div>
-
-          <label class="plan-sort-field" for="planSortSelect">
-            <span>排序</span>
-            <select id="planSortSelect">
-              <option value="created-desc">最新创建</option>
-              <option value="due-asc">截止时间</option>
-              <option value="priority-desc">优先级</option>
-            </select>
-          </label>
-
-          <label class="plan-tag-filter" for="planTagFilter">
-            <span>标签</span>
-            <select id="planTagFilter">
-              <option value="">全部标签</option>
-            </select>
-          </label>
-        </div>
-
         <div id="batchActionBar" class="batch-action-bar" hidden>
           <label class="batch-select-all" for="batchSelectAll">
             <input id="batchSelectAll" type="checkbox">
@@ -854,6 +810,63 @@
         编辑计划
       </button>
     </div>
+  </dialog>
+
+  <dialog
+    id="postponePlanDialog"
+    class="postpone-plan-dialog"
+    aria-labelledby="postponePlanHeading"
+  >
+    <form id="postponePlanForm" class="postpone-plan-form" novalidate>
+      <div class="postpone-plan-header">
+        <div>
+          <p>调整计划</p>
+          <h2 id="postponePlanHeading">延期</h2>
+        </div>
+        <button
+          id="closePostponePlanButton"
+          class="plan-form-close-button"
+          type="button"
+          aria-label="关闭延期窗口"
+          title="关闭"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <p id="postponePlanTitle" class="postpone-plan-title"></p>
+
+      <label class="form-field" for="postponePlanDueAt">
+        <span>新的计划时间</span>
+        <input id="postponePlanDueAt" type="datetime-local" required>
+      </label>
+
+      <label class="form-field" for="postponePlanReason">
+        <span class="form-label-row">
+          <span>延期原因</span>
+          <output id="postponePlanReasonCount" for="postponePlanReason">0 / 10</output>
+        </span>
+        <input
+          id="postponePlanReason"
+          type="text"
+          maxlength="10"
+          placeholder="例如：临时有课"
+          required
+        >
+      </label>
+
+      <p id="postponePlanError" class="plan-form-error" role="alert" hidden></p>
+
+      <div class="postpone-plan-actions">
+        <button id="cancelPostponePlanButton" class="secondary-button" type="button">
+          取消
+        </button>
+        <button class="primary-button" type="submit">确认延期</button>
+      </div>
+    </form>
   </dialog>
 
   <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden>

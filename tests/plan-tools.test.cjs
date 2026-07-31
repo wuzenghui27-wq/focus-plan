@@ -1,9 +1,8 @@
 const assert = require("assert");
 const {
-  matchesSearch,
-  matchesStatus,
-  matchesTag,
-  filterAndSortPlans,
+  POSTPONE_REASON_MAX_LENGTH,
+  sortPlansForDisplay,
+  validatePostponement,
   markSelectedPlansCompleted,
   removeSelectedPlans
 } = require("../plan-tools.js");
@@ -35,60 +34,36 @@ const plans = [
   }
 ];
 
-assert.strictEqual(matchesSearch(plans[0], "javascript"), true);
-assert.strictEqual(matchesSearch(plans[0], " JavaScript "), true);
-assert.strictEqual(matchesSearch(plans[0], "CSS"), false);
-assert.strictEqual(matchesStatus(plans[0], "active"), true);
-assert.strictEqual(matchesStatus(plans[1], "completed"), true);
-assert.strictEqual(matchesStatus(plans[1], "active"), false);
-assert.strictEqual(matchesTag(plans[0], "课程"), true);
-assert.strictEqual(matchesTag(plans[0], "练习"), false);
-assert.strictEqual(matchesTag(plans[0], ""), true);
-
 assert.deepStrictEqual(
-  filterAndSortPlans(plans, {
-    searchText: "学习",
-    status: "all",
-    sortBy: "created-desc"
-  }).map(function (plan) {
+  sortPlansForDisplay(plans).map(function (plan) {
     return plan.id;
   }),
-  [2, 1]
+  [3, 1, 2]
 );
 
-assert.deepStrictEqual(
-  filterAndSortPlans(plans, {
-    searchText: "",
-    status: "active",
-    sortBy: "due-asc"
-  }).map(function (plan) {
-    return plan.id;
-  }),
-  [3, 1]
-);
-
-assert.deepStrictEqual(
-  filterAndSortPlans(plans, {
-    searchText: "",
-    status: "all",
-    sortBy: "priority-desc"
-  }).map(function (plan) {
-    return plan.id;
-  }),
-  [1, 3, 2]
-);
-
-assert.deepStrictEqual(
-  filterAndSortPlans(plans, {
-    searchText: "",
-    status: "active",
-    tag: "练习",
-    sortBy: "created-desc"
-  }).map(function (plan) {
-    return plan.id;
-  }),
-  [3]
-);
+assert.strictEqual(POSTPONE_REASON_MAX_LENGTH, 10);
+assert.deepStrictEqual(validatePostponement(plans[0], {
+  newDueAt: "2026-07-29T10:00",
+  reason: "  临时有课  "
+}, new Date("2026-07-27T08:00").getTime()), {
+  valid: true,
+  value: {
+    newDueAt: "2026-07-29T10:00",
+    reason: "临时有课"
+  }
+});
+assert.strictEqual(validatePostponement(plans[0], {
+  newDueAt: "2026-07-29T10:00",
+  reason: ""
+}, new Date("2026-07-27T08:00").getTime()).field, "reason");
+assert.strictEqual(validatePostponement(plans[0], {
+  newDueAt: "2026-07-29T10:00",
+  reason: "超过十个字的延期原因说明"
+}, new Date("2026-07-27T08:00").getTime()).field, "reason");
+assert.strictEqual(validatePostponement(plans[0], {
+  newDueAt: "2026-07-27T09:00",
+  reason: "时间冲突"
+}, new Date("2026-07-27T08:00").getTime()).field, "newDueAt");
 
 assert.deepStrictEqual(
   plans.map(function (plan) {

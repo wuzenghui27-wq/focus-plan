@@ -263,78 +263,6 @@ p {
 
 /* ===== Plans ===== */
 
-.plan-toolbar {
-  display: grid;
-  grid-template-columns:
-    minmax(180px, 1fr)
-    auto
-    minmax(120px, 0.5fr)
-    minmax(120px, 0.5fr);
-  align-items: end;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e5e8eb;
-}
-
-.plan-search-field,
-.plan-sort-field,
-.plan-tag-filter,
-.plan-status-filter {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.plan-search-field span,
-.plan-sort-field span,
-.plan-tag-filter span,
-.plan-status-filter > span {
-  color: #303841;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.plan-search-field input,
-.plan-sort-field select,
-.plan-tag-filter select {
-  width: 100%;
-  min-height: 40px;
-  padding: 8px 11px;
-  border: 1px solid #cbd1d8;
-  border-radius: 6px;
-  color: #202124;
-  background-color: #ffffff;
-}
-
-.plan-status-control {
-  grid-template-columns: repeat(3, minmax(66px, 1fr));
-}
-
-.plan-status-button {
-  min-height: 38px;
-  padding: 7px 10px;
-  border: 0;
-  border-right: 1px solid #9aa7b5;
-  color: #34495e;
-  background-color: #ffffff;
-  cursor: pointer;
-}
-
-.plan-status-button:last-child {
-  border-right: 0;
-}
-
-.plan-status-button:hover {
-  background-color: #eef2f5;
-}
-
-.plan-status-button.is-active {
-  color: #ffffff;
-  background-color: #041936;
-}
-
 .batch-action-bar {
   display: grid;
   grid-template-columns: auto minmax(100px, 1fr) auto;
@@ -406,7 +334,7 @@ p {
 
 .plan-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 14px 14px 14px 16px;
@@ -416,7 +344,7 @@ p {
 }
 
 .plan-item.is-selecting {
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
 .plan-content {
@@ -442,6 +370,32 @@ p {
   gap: 5px;
 }
 
+.plan-item-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.plan-state {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.plan-state.is-pending {
+  color: #24486f;
+  background-color: #edf4fb;
+}
+
+.plan-state.is-completed {
+  color: #16734b;
+  background-color: #eaf6ef;
+}
+
 .plan-title {
   overflow-wrap: anywhere;
 }
@@ -465,11 +419,27 @@ p {
   white-space: nowrap;
 }
 
+.plan-postpone-note {
+  width: fit-content;
+  color: #9a5b00;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.plan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .details-button,
 .edit-button,
+.postpone-button,
 .delete-button {
   padding: 7px 11px;
   background-color: #ffffff;
+  cursor: pointer;
 }
 
 .details-button {
@@ -490,6 +460,16 @@ p {
 .edit-button:hover {
   color: #ffffff;
   background-color: #34495e;
+}
+
+.postpone-button {
+  border: 1px solid #d9b36c;
+  color: #855000;
+}
+
+.postpone-button:hover {
+  color: #ffffff;
+  background-color: #9a5b00;
 }
 
 .delete-button {
@@ -529,6 +509,12 @@ p {
   text-decoration: line-through;
 }
 
+.plan-item.completed .plan-meta,
+.plan-item.completed .plan-tag,
+.plan-item.completed .plan-postpone-note {
+  opacity: 0.62;
+}
+
 .plan-item.overdue {
   background-color: #fff5f5;
   box-shadow: inset 0 0 0 1px #d84a4a;
@@ -554,6 +540,53 @@ p {
 
 .plan-details-dialog::backdrop {
   background-color: rgba(18, 24, 30, 0.58);
+}
+
+.postpone-plan-dialog {
+  width: min(440px, calc(100% - 32px));
+  padding: 0;
+  border: 1px solid #cbd1d8;
+  border-radius: 8px;
+  color: #202124;
+  background-color: #ffffff;
+}
+
+.postpone-plan-dialog::backdrop {
+  background-color: rgba(18, 24, 30, 0.58);
+}
+
+.postpone-plan-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.postpone-plan-header,
+.postpone-plan-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.postpone-plan-header p,
+.postpone-plan-header h2,
+.postpone-plan-title {
+  margin: 0;
+}
+
+.postpone-plan-header p {
+  color: #687078;
+  font-size: 12px;
+}
+
+.postpone-plan-title {
+  overflow-wrap: anywhere;
+  font-weight: bold;
+}
+
+.postpone-plan-actions {
+  justify-content: flex-end;
 }
 
 .plan-details-header {
@@ -1592,10 +1625,6 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .plan-toolbar {
-    grid-template-columns: 1fr;
-  }
-
   .plan-form .form-actions {
     grid-column: auto;
   }
@@ -1605,11 +1634,11 @@ p {
   }
 
   .plan-item {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .plan-item.is-selecting {
-    grid-template-columns: auto repeat(3, minmax(0, 1fr));
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .plan-content {
@@ -1617,7 +1646,7 @@ p {
   }
 
   .plan-item.is-selecting .plan-content {
-    grid-column: 2 / -1;
+    grid-column: 2;
   }
 
   .plan-item.is-selecting .plan-select-checkbox {
@@ -1625,16 +1654,15 @@ p {
     grid-row: 1;
   }
 
-  .plan-item.is-selecting .details-button {
+  .plan-item.is-selecting .plan-actions {
     grid-column: 2;
   }
 
-  .plan-item.is-selecting .edit-button {
-    grid-column: 3;
-  }
-
-  .plan-item.is-selecting .delete-button {
-    grid-column: 4;
+  .plan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: 100%;
   }
 
   .batch-action-bar {
@@ -1654,6 +1682,14 @@ p {
   .edit-button,
   .delete-button {
     width: 100%;
+  }
+
+  .plan-actions .details-button,
+  .plan-actions .edit-button,
+  .plan-actions .postpone-button,
+  .plan-actions .delete-button {
+    width: auto;
+    flex: 0 0 auto;
   }
 
   .timer-display {
@@ -1820,18 +1856,15 @@ html[data-theme="dark"] .theme-switch,
 html[data-theme="dark"] .secondary-button,
 html[data-theme="dark"] .details-button,
 html[data-theme="dark"] .edit-button,
+html[data-theme="dark"] .postpone-button,
 html[data-theme="dark"] .delete-button,
 html[data-theme="dark"] .duration-button,
 html[data-theme="dark"] .history-period-button,
-html[data-theme="dark"] .plan-status-button,
 html[data-theme="dark"] .danger-button,
 html[data-theme="dark"] .form-field input,
 html[data-theme="dark"] .form-field select,
 html[data-theme="dark"] .form-field textarea,
-html[data-theme="dark"] .history-plan-filter select,
-html[data-theme="dark"] .plan-search-field input,
-html[data-theme="dark"] .plan-sort-field select,
-html[data-theme="dark"] .plan-tag-filter select {
+html[data-theme="dark"] .history-plan-filter select {
   border-color: #59636d;
   color: #edf1f5;
   background-color: #2b3136;
@@ -1839,18 +1872,13 @@ html[data-theme="dark"] .plan-tag-filter select {
 
 html[data-theme="dark"] .secondary-button:hover,
 html[data-theme="dark"] .details-button:hover,
-html[data-theme="dark"] .history-period-button:hover,
-html[data-theme="dark"] .plan-status-button:hover {
+html[data-theme="dark"] .history-period-button:hover {
   background-color: #384047;
 }
 
 html[data-theme="dark"] .form-field label,
 html[data-theme="dark"] .duration-fieldset legend,
-html[data-theme="dark"] .history-plan-filter label,
-html[data-theme="dark"] .plan-search-field span,
-html[data-theme="dark"] .plan-sort-field span,
-html[data-theme="dark"] .plan-tag-filter span,
-html[data-theme="dark"] .plan-status-filter > span {
+html[data-theme="dark"] .history-plan-filter label {
   color: #dbe1e7;
 }
 
@@ -1859,7 +1887,8 @@ html[data-theme="dark"] .plan-item {
   background-color: #292f34;
 }
 
-html[data-theme="dark"] .plan-details-dialog {
+html[data-theme="dark"] .plan-details-dialog,
+html[data-theme="dark"] .postpone-plan-dialog {
   border-color: #59636d;
   color: #edf1f5;
   background-color: #22272b;
@@ -1953,8 +1982,7 @@ html[data-theme="dark"] .weekly-comparison-item strong.is-negative {
 }
 
 html[data-theme="dark"] .history-period-button.is-active,
-html[data-theme="dark"] .duration-button.is-active,
-html[data-theme="dark"] .plan-status-button.is-active {
+html[data-theme="dark"] .duration-button.is-active {
   border-color: #8db8f0;
   color: #101820;
   background-color: #8db8f0;

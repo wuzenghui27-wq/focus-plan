@@ -145,10 +145,6 @@ const elements = {
   planQuickTimeButtons: document.querySelectorAll("[data-plan-time-preset]"),
   savePlanButton: document.querySelector("#savePlanButton"),
   cancelPlanButton: document.querySelector("#cancelPlanButton"),
-  planSearchInput: document.querySelector("#planSearchInput"),
-  planStatusButtons: document.querySelectorAll(".plan-status-button"),
-  planSortSelect: document.querySelector("#planSortSelect"),
-  planTagFilter: document.querySelector("#planTagFilter"),
   batchModeButton: document.querySelector("#batchModeButton"),
   batchActionBar: document.querySelector("#batchActionBar"),
   batchSelectAll: document.querySelector("#batchSelectAll"),
@@ -199,6 +195,17 @@ const elements = {
   addSubtaskButton: document.querySelector("#addSubtaskButton"),
   closePlanDetailsButton: document.querySelector("#closePlanDetailsButton"),
   editPlanFromDetailsButton: document.querySelector("#editPlanFromDetailsButton"),
+  postponePlanDialog: document.querySelector("#postponePlanDialog"),
+  postponePlanForm: document.querySelector("#postponePlanForm"),
+  postponePlanTitle: document.querySelector("#postponePlanTitle"),
+  postponePlanDueAtInput: document.querySelector("#postponePlanDueAt"),
+  postponePlanReasonInput: document.querySelector("#postponePlanReason"),
+  postponePlanReasonCount: document.querySelector("#postponePlanReasonCount"),
+  postponePlanError: document.querySelector("#postponePlanError"),
+  closePostponePlanButton:
+    document.querySelector("#closePostponePlanButton"),
+  cancelPostponePlanButton:
+    document.querySelector("#cancelPostponePlanButton"),
   timerPanel: document.querySelector(".timer-panel"),
   timerPlanSelect: document.querySelector("#timerPlanSelect"),
   durationButtons: document.querySelectorAll(".duration-button"),
@@ -246,12 +253,7 @@ const state = {
   },
   editingPlanId: null,
   viewingPlanId: null,
-  planView: {
-    searchText: "",
-    status: "all",
-    sortBy: "created-desc",
-    tag: ""
-  },
+  postponingPlanId: null,
   batchMode: false,
   selectedPlanIds: new Set(),
   actionFeedback: {
@@ -343,6 +345,15 @@ function loadPlans() {
         snoozedUntil: window.ReminderTools.normalizeSnoozedUntil(
           plan.snoozedUntil
         ),
+        postponedFrom: typeof plan.postponedFrom === "string"
+          ? plan.postponedFrom
+          : "",
+        postponeReason: window.PlanTools.normalizePostponeReason(
+          plan.postponeReason
+        ).slice(0, window.PlanTools.POSTPONE_REASON_MAX_LENGTH),
+        postponedAt: typeof plan.postponedAt === "string"
+          ? plan.postponedAt
+          : null,
         completed: Boolean(plan.completed),
         nextOccurrenceCreated: Boolean(plan.nextOccurrenceCreated),
         generatedFromId: plan.generatedFromId ?? null
@@ -717,6 +728,9 @@ function handlePlanSubmit(event) {
       subtasks: [],
       reminded: false,
       snoozedUntil: null,
+      postponedFrom: "",
+      postponeReason: "",
+      postponedAt: null,
       completed: false,
       nextOccurrenceCreated: false,
       generatedFromId: null
@@ -740,6 +754,12 @@ function handlePlanSubmit(event) {
         editingPlan.snoozedUntil = null;
       }
 
+      if (editingPlan.dueAt !== dueAt) {
+        editingPlan.postponedFrom = "";
+        editingPlan.postponeReason = "";
+        editingPlan.postponedAt = null;
+      }
+
       editingPlan.dueAt = dueAt;
       editingPlan.reminderMinutes = reminderMinutes;
       editingPlan.notes = notes;
@@ -753,58 +773,18 @@ function handlePlanSubmit(event) {
 
 /* ===== Plan list ===== */
 
-function updatePlanSummary(visibleCount) {
+function updatePlanSummary() {
   const completedCount = state.plans.filter(function (plan) {
     return plan.completed;
   }).length;
+  const pendingCount = state.plans.length - completedCount;
 
   elements.planSummary.textContent =
-    state.plans.length + " 项计划 · " +
-    completedCount + " 项完成 · 当前显示 " + visibleCount + " 项";
-}
-
-function updatePlanViewControls() {
-  elements.planStatusButtons.forEach(function (button) {
-    const isActive = button.dataset.status === state.planView.status;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-  });
+    pendingCount + " 项待完成 · " + completedCount + " 项已完成";
 }
 
 function getVisiblePlans() {
-  return window.PlanTools.filterAndSortPlans(state.plans, state.planView);
-}
-
-function updatePlanTagOptions() {
-  const tags = Array.from(new Set(
-    state.plans
-      .map(function (plan) {
-        return plan.tag;
-      })
-      .filter(Boolean)
-  )).sort(function (firstTag, secondTag) {
-    return firstTag.localeCompare(secondTag, "zh-CN");
-  });
-
-  if (state.planView.tag && !tags.includes(state.planView.tag)) {
-    state.planView.tag = "";
-  }
-
-  elements.planTagFilter.innerHTML = "";
-
-  const allTagsOption = document.createElement("option");
-  allTagsOption.value = "";
-  allTagsOption.textContent = "全部标签";
-  elements.planTagFilter.appendChild(allTagsOption);
-
-  tags.forEach(function (tag) {
-    const option = document.createElement("option");
-    option.value = tag;
-    option.textContent = tag;
-    elements.planTagFilter.appendChild(option);
-  });
-
-  elements.planTagFilter.value = state.planView.tag;
+  return window.PlanTools.sortPlansForDisplay(state.plans);
 }
 
 function updateBatchControls(visiblePlans) {
@@ -834,10 +814,6 @@ function setBatchMode(enabled) {
   state.batchMode = enabled;
   state.selectedPlanIds.clear();
   renderPlans();
-}
-
-function clearBatchSelectionForViewChange() {
-  state.selectedPlanIds.clear();
 }
 
 function hideActionFeedback() {
@@ -918,25 +894,41 @@ function createPlanItem(plan) {
   const planContent = document.createElement("label");
   const checkbox = document.createElement("input");
   const planText = document.createElement("div");
+  const planHeading = document.createElement("div");
   const planTitle = document.createElement("span");
+  const planStatus = document.createElement("span");
   const planMeta = document.createElement("small");
   const planTag = document.createElement("small");
+  const postponeNote = document.createElement("small");
+  const planActions = document.createElement("div");
   const detailsButton = document.createElement("button");
   const editButton = document.createElement("button");
+  const postponeButton = document.createElement("button");
   const deleteButton = document.createElement("button");
 
   planItem.className = "plan-item priority-" + plan.priority;
   planContent.className = "plan-content";
   planText.className = "plan-text";
+  planHeading.className = "plan-item-heading";
   planTitle.className = "plan-title";
+  planStatus.className = "plan-state";
   planMeta.className = "plan-meta";
   planTag.className = "plan-tag";
+  postponeNote.className = "plan-postpone-note";
+  planActions.className = "plan-actions";
 
   checkbox.type = "checkbox";
+  checkbox.className = "plan-completion-checkbox";
   checkbox.checked = plan.completed;
+  checkbox.setAttribute(
+    "aria-label",
+    (plan.completed ? "取消完成：" : "标记完成：") + plan.title
+  );
   planTitle.textContent = plan.title;
+  planStatus.textContent = plan.completed ? "已完成" : "待完成";
+  planStatus.classList.add(plan.completed ? "is-completed" : "is-pending");
   planMeta.textContent =
-    "优先级：" + PRIORITY_LABELS[plan.priority] + " · " + formatDateTime(plan.dueAt);
+    formatDateTime(plan.dueAt) + " · " + PRIORITY_LABELS[plan.priority] + "优先级";
   if (REPEAT_LABELS[plan.repeat]) {
     planMeta.textContent += " · " + REPEAT_LABELS[plan.repeat];
   }
@@ -957,6 +949,10 @@ function createPlanItem(plan) {
   }
   planTag.textContent = plan.tag;
   planTag.hidden = !plan.tag;
+  postponeNote.textContent = plan.postponeReason
+    ? "延期：" + plan.postponeReason
+    : "";
+  postponeNote.hidden = !plan.postponeReason;
 
   detailsButton.type = "button";
   detailsButton.className = "details-button";
@@ -965,6 +961,11 @@ function createPlanItem(plan) {
   editButton.type = "button";
   editButton.className = "edit-button";
   editButton.textContent = "编辑";
+
+  postponeButton.type = "button";
+  postponeButton.className = "postpone-button";
+  postponeButton.textContent = "延期";
+  postponeButton.hidden = plan.completed;
 
   deleteButton.type = "button";
   deleteButton.className = "delete-button";
@@ -1027,6 +1028,10 @@ function createPlanItem(plan) {
     openPlanDetails(plan);
   });
 
+  postponeButton.addEventListener("click", function () {
+    openPostponePlanDialog(plan);
+  });
+
   deleteButton.addEventListener("click", function () {
     const deletionSnapshot = window.UndoTools.createDeletionSnapshot(
       state.plans,
@@ -1044,21 +1049,29 @@ function createPlanItem(plan) {
     if (state.viewingPlanId === plan.id) {
       closePlanDetails();
     }
+    if (state.postponingPlanId === plan.id) {
+      closePostponePlanDialog();
+    }
 
     savePlans();
     renderPlans();
     showActionFeedback("已删除计划“" + plan.title + "”。", deletionSnapshot);
   });
 
-  planText.appendChild(planTitle);
+  planHeading.appendChild(planTitle);
+  planHeading.appendChild(planStatus);
+  planText.appendChild(planHeading);
   planText.appendChild(planMeta);
   planText.appendChild(planTag);
+  planText.appendChild(postponeNote);
   planContent.appendChild(checkbox);
   planContent.appendChild(planText);
   planItem.appendChild(planContent);
-  planItem.appendChild(detailsButton);
-  planItem.appendChild(editButton);
-  planItem.appendChild(deleteButton);
+  planActions.appendChild(detailsButton);
+  planActions.appendChild(editButton);
+  planActions.appendChild(postponeButton);
+  planActions.appendChild(deleteButton);
+  planItem.appendChild(planActions);
 
   return planItem;
 }
@@ -1074,7 +1087,8 @@ function renderPlanDetails(plan) {
   elements.planDetailsMeta.textContent =
     "优先级：" + PRIORITY_LABELS[plan.priority] +
     " · " + formatDateTime(plan.dueAt) +
-    (REPEAT_LABELS[plan.repeat] ? " · " + REPEAT_LABELS[plan.repeat] : "");
+    (REPEAT_LABELS[plan.repeat] ? " · " + REPEAT_LABELS[plan.repeat] : "") +
+    (plan.postponeReason ? " · 延期：" + plan.postponeReason : "");
   elements.planDetailsNotes.textContent =
     plan.notes || "暂无备注。";
   renderSubtasks(plan);
@@ -1206,22 +1220,110 @@ function editPlanFromDetails() {
   openEditPlanForm(plan);
 }
 
+function updatePostponeReasonCount() {
+  const count = Array.from(elements.postponePlanReasonInput.value).length;
+
+  elements.postponePlanReasonCount.textContent =
+    count + " / " + window.PlanTools.POSTPONE_REASON_MAX_LENGTH;
+}
+
+function clearPostponePlanError() {
+  elements.postponePlanError.hidden = true;
+  elements.postponePlanError.textContent = "";
+  elements.postponePlanDueAtInput.removeAttribute("aria-invalid");
+  elements.postponePlanReasonInput.removeAttribute("aria-invalid");
+}
+
+function getDefaultPostponeDueAt(plan) {
+  const now = new Date();
+  const currentDueAt = new Date(plan.dueAt);
+  const baseDate = !Number.isNaN(currentDueAt.getTime()) && currentDueAt > now
+    ? currentDueAt
+    : now;
+
+  baseDate.setDate(baseDate.getDate() + 1);
+  return window.RecurrenceTools.formatLocalDateTime(baseDate);
+}
+
+function openPostponePlanDialog(plan) {
+  if (plan.completed) {
+    return;
+  }
+
+  state.postponingPlanId = plan.id;
+  elements.postponePlanForm.reset();
+  elements.postponePlanTitle.textContent = plan.title;
+  elements.postponePlanDueAtInput.value = getDefaultPostponeDueAt(plan);
+  elements.postponePlanReasonInput.value = "";
+  updatePostponeReasonCount();
+  clearPostponePlanError();
+  elements.postponePlanDialog.showModal();
+  elements.postponePlanReasonInput.focus();
+}
+
+function closePostponePlanDialog() {
+  state.postponingPlanId = null;
+  elements.postponePlanForm.reset();
+  updatePostponeReasonCount();
+  clearPostponePlanError();
+
+  if (elements.postponePlanDialog.open) {
+    elements.postponePlanDialog.close();
+  }
+}
+
+function handlePostponePlanSubmit(event) {
+  event.preventDefault();
+  const plan = state.plans.find(function (item) {
+    return item.id === state.postponingPlanId;
+  });
+
+  if (!plan) {
+    closePostponePlanDialog();
+    return;
+  }
+
+  const validation = window.PlanTools.validatePostponement(plan, {
+    newDueAt: elements.postponePlanDueAtInput.value,
+    reason: elements.postponePlanReasonInput.value
+  }, Date.now());
+
+  if (!validation.valid) {
+    const field = validation.field === "reason"
+      ? elements.postponePlanReasonInput
+      : elements.postponePlanDueAtInput;
+
+    elements.postponePlanError.textContent = validation.message;
+    elements.postponePlanError.hidden = false;
+    field.setAttribute("aria-invalid", "true");
+    field.focus();
+    return;
+  }
+
+  plan.postponedFrom = plan.dueAt;
+  plan.dueAt = validation.value.newDueAt;
+  plan.postponeReason = validation.value.reason;
+  plan.postponedAt = new Date().toISOString();
+  plan.reminded = false;
+  plan.snoozedUntil = null;
+  savePlans();
+  renderPlans();
+  closePostponePlanDialog();
+  showActionFeedback("计划已延期：" + validation.value.reason, null);
+}
+
 function renderPlans() {
-  updatePlanTagOptions();
   const visiblePlans = getVisiblePlans();
 
   elements.planList.innerHTML = "";
   elements.emptyMessage.hidden = visiblePlans.length > 0;
-  elements.emptyMessage.textContent = state.plans.length === 0
-    ? "还没有计划，创建一个试试吧。"
-    : "没有符合当前条件的计划。";
+  elements.emptyMessage.textContent = "还没有计划，创建一个试试吧。";
 
   visiblePlans.forEach(function (plan) {
     elements.planList.appendChild(createPlanItem(plan));
   });
 
-  updatePlanSummary(visiblePlans.length);
-  updatePlanViewControls();
+  updatePlanSummary();
   updateBatchControls(visiblePlans);
   updateTimerPlanOptions();
 }
@@ -1301,6 +1403,12 @@ function deleteSelectedPlans() {
 
   if (state.selectedPlanIds.has(state.editingPlanId)) {
     closePlanForm();
+  }
+  if (state.selectedPlanIds.has(state.viewingPlanId)) {
+    closePlanDetails();
+  }
+  if (state.selectedPlanIds.has(state.postponingPlanId)) {
+    closePostponePlanDialog();
   }
 
   state.plans = window.PlanTools.removeSelectedPlans(
@@ -1987,6 +2095,8 @@ function resetApplicationData() {
   state.sound = { ...window.SoundTools.DEFAULT_SOUND_SETTINGS };
   resetHistoryFilter();
   closePlanForm();
+  closePlanDetails();
+  closePostponePlanDialog();
 
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -3139,16 +3249,10 @@ function handleApplicationShortcut(event) {
     return;
   }
 
-  if (action === "focus-search") {
-    event.preventDefault();
-    navigateToPage("plans");
-    elements.planSearchInput.focus();
-    elements.planSearchInput.select();
-    return;
-  }
-
   if (action === "escape") {
-    if (elements.planDetailsDialog.open) {
+    if (elements.postponePlanDialog.open) {
+      closePostponePlanDialog();
+    } else if (elements.planDetailsDialog.open) {
       closePlanDetails();
     } else if (!elements.planForm.hidden) {
       closePlanForm();
@@ -3251,32 +3355,33 @@ function bindEvents() {
     "click",
     editPlanFromDetails
   );
+  elements.postponePlanForm.addEventListener(
+    "submit",
+    handlePostponePlanSubmit
+  );
+  elements.closePostponePlanButton.addEventListener(
+    "click",
+    closePostponePlanDialog
+  );
+  elements.cancelPostponePlanButton.addEventListener(
+    "click",
+    closePostponePlanDialog
+  );
+  elements.postponePlanReasonInput.addEventListener("input", function () {
+    updatePostponeReasonCount();
+    clearPostponePlanError();
+  });
+  elements.postponePlanDueAtInput.addEventListener(
+    "change",
+    clearPostponePlanError
+  );
+  elements.postponePlanDialog.addEventListener("close", function () {
+    state.postponingPlanId = null;
+  });
   elements.subtaskForm.addEventListener("submit", addSubtask);
   elements.dailyGoalForm.addEventListener("submit", saveDailyGoalSetting);
   elements.planDetailsDialog.addEventListener("close", function () {
     state.viewingPlanId = null;
-  });
-  elements.planSearchInput.addEventListener("input", function () {
-    state.planView.searchText = elements.planSearchInput.value;
-    clearBatchSelectionForViewChange();
-    renderPlans();
-  });
-  elements.planStatusButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      state.planView.status = button.dataset.status;
-      clearBatchSelectionForViewChange();
-      renderPlans();
-    });
-  });
-  elements.planSortSelect.addEventListener("change", function () {
-    state.planView.sortBy = elements.planSortSelect.value;
-    clearBatchSelectionForViewChange();
-    renderPlans();
-  });
-  elements.planTagFilter.addEventListener("change", function () {
-    state.planView.tag = elements.planTagFilter.value;
-    clearBatchSelectionForViewChange();
-    renderPlans();
   });
   elements.batchModeButton.addEventListener("click", function () {
     setBatchMode(true);

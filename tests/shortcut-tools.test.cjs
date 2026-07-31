@@ -25,7 +25,7 @@ function createEvent(key, target, modifiers) {
 
 assert.strictEqual(getShortcutAction(createEvent("n")), "create-plan");
 assert.strictEqual(getShortcutAction(createEvent("N")), "create-plan");
-assert.strictEqual(getShortcutAction(createEvent("/")), "focus-search");
+assert.strictEqual(getShortcutAction(createEvent("/")), null);
 assert.strictEqual(
   getShortcutAction(createEvent("Escape", { tagName: "INPUT" })),
   "escape"

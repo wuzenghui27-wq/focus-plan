@@ -7,40 +7,7 @@
 
   root.PlanTools = tools;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
-  const PRIORITY_ORDER = {
-    high: 3,
-    medium: 2,
-    low: 1
-  };
-
-  function matchesSearch(plan, searchText) {
-    const normalizedSearch = String(searchText || "").trim().toLowerCase();
-
-    if (normalizedSearch === "") {
-      return true;
-    }
-
-    return String(plan.title || "").toLowerCase().includes(normalizedSearch);
-  }
-
-  function matchesStatus(plan, status) {
-    if (status === "active") {
-      return !plan.completed;
-    }
-
-    if (status === "completed") {
-      return Boolean(plan.completed);
-    }
-
-    return true;
-  }
-
-  function matchesTag(plan, tag) {
-    const normalizedTag = String(tag || "").trim();
-
-    return normalizedTag === "" ||
-      String(plan.tag || "").trim() === normalizedTag;
-  }
+  const POSTPONE_REASON_MAX_LENGTH = 10;
 
   function getDueTime(plan) {
     if (!plan.dueAt) {
@@ -51,36 +18,61 @@
     return Number.isNaN(dueTime) ? Number.POSITIVE_INFINITY : dueTime;
   }
 
-  function comparePlans(firstPlan, secondPlan, sortBy) {
-    if (sortBy === "due-asc") {
-      return getDueTime(firstPlan) - getDueTime(secondPlan);
-    }
+  function sortPlansForDisplay(plans) {
+    return plans.slice().sort(function (firstPlan, secondPlan) {
+      if (Boolean(firstPlan.completed) !== Boolean(secondPlan.completed)) {
+        return firstPlan.completed ? 1 : -1;
+      }
 
-    if (sortBy === "priority-desc") {
-      const priorityDifference =
-        (PRIORITY_ORDER[secondPlan.priority] || 0) -
-        (PRIORITY_ORDER[firstPlan.priority] || 0);
+      const dueDifference = getDueTime(firstPlan) - getDueTime(secondPlan);
 
-      return priorityDifference ||
+      return dueDifference ||
         Number(secondPlan.id || 0) - Number(firstPlan.id || 0);
-    }
-
-    return Number(secondPlan.id || 0) - Number(firstPlan.id || 0);
+    });
   }
 
-  function filterAndSortPlans(plans, options) {
-    const safeOptions = options || {};
+  function normalizePostponeReason(reason) {
+    return String(reason || "").trim();
+  }
 
-    return plans
-      .filter(function (plan) {
-        return matchesSearch(plan, safeOptions.searchText) &&
-          matchesStatus(plan, safeOptions.status) &&
-          matchesTag(plan, safeOptions.tag);
-      })
-      .slice()
-      .sort(function (firstPlan, secondPlan) {
-        return comparePlans(firstPlan, secondPlan, safeOptions.sortBy);
-      });
+  function validatePostponement(plan, draft, now) {
+    const reason = normalizePostponeReason(draft && draft.reason);
+    const newDueAt = String(draft && draft.newDueAt || "");
+    const newDueTime = new Date(newDueAt).getTime();
+    const currentDueTime = new Date(plan && plan.dueAt || "").getTime();
+    const currentTime = Number.isFinite(now) ? now : Date.now();
+    const minimumDueTime = Number.isNaN(currentDueTime)
+      ? currentTime
+      : Math.max(currentTime, currentDueTime);
+
+    if (reason === "") {
+      return { valid: false, field: "reason", message: "请填写延期原因。" };
+    }
+
+    if (Array.from(reason).length > POSTPONE_REASON_MAX_LENGTH) {
+      return {
+        valid: false,
+        field: "reason",
+        message: "延期原因不能超过 10 个字。"
+      };
+    }
+
+    if (newDueAt === "" || Number.isNaN(newDueTime)) {
+      return { valid: false, field: "newDueAt", message: "请选择新的计划时间。" };
+    }
+
+    if (newDueTime <= minimumDueTime) {
+      return {
+        valid: false,
+        field: "newDueAt",
+        message: "新的计划时间必须晚于当前时间和原计划时间。"
+      };
+    }
+
+    return {
+      valid: true,
+      value: { reason, newDueAt }
+    };
   }
 
   function markSelectedPlansCompleted(plans, selectedIds) {
@@ -102,10 +94,10 @@
   }
 
   return {
-    matchesSearch: matchesSearch,
-    matchesStatus: matchesStatus,
-    matchesTag: matchesTag,
-    filterAndSortPlans: filterAndSortPlans,
+    POSTPONE_REASON_MAX_LENGTH: POSTPONE_REASON_MAX_LENGTH,
+    sortPlansForDisplay: sortPlansForDisplay,
+    normalizePostponeReason: normalizePostponeReason,
+    validatePostponement: validatePostponement,
     markSelectedPlansCompleted: markSelectedPlansCompleted,
     removeSelectedPlans: removeSelectedPlans
   };
