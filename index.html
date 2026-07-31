@@ -63,7 +63,7 @@
             <path d="M5 12h14"></path>
             <path d="M12 5v14"></path>
           </svg>
-          创建计划
+          <span id="createPlanButtonLabel">创建计划</span>
         </button>
         </div>
 
@@ -143,9 +143,39 @@
           </div>
         </div>
 
-        <form id="planForm" class="plan-form" hidden>
+        <div id="planFormBackdrop" class="plan-form-backdrop" hidden></div>
+
+        <form
+          id="planForm"
+          class="plan-form"
+          aria-labelledby="planFormHeading"
+          novalidate
+          hidden
+        >
+          <div class="plan-form-header">
+            <div>
+              <p>计划编辑</p>
+              <h3 id="planFormHeading">创建计划</h3>
+            </div>
+            <button
+              id="closePlanFormButton"
+              class="plan-form-close-button"
+              type="button"
+              aria-label="关闭计划编辑"
+              title="关闭"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+
           <div class="form-field form-field-wide">
-            <label for="planTitle">计划名称</label>
+            <div class="form-label-row">
+              <label for="planTitle">计划名称</label>
+              <output id="planTitleCount" for="planTitle">0 / 40</output>
+            </div>
             <input
               id="planTitle"
               name="title"
@@ -181,6 +211,16 @@
             <input id="planDueAt" name="dueAt" type="datetime-local">
           </div>
 
+          <div class="form-field form-field-wide plan-quick-time-field">
+            <span class="form-field-label">快捷时间</span>
+            <div class="plan-quick-time-options">
+              <button type="button" data-plan-time-preset="later">两小时后</button>
+              <button type="button" data-plan-time-preset="tomorrow">明天上午</button>
+              <button type="button" data-plan-time-preset="weekend">本周末</button>
+              <button type="button" data-plan-time-preset="clear">不设时间</button>
+            </div>
+          </div>
+
           <div class="form-field">
             <label for="planRepeat">重复</label>
             <select id="planRepeat" name="repeat">
@@ -202,7 +242,10 @@
           </div>
 
           <div class="form-field form-field-wide">
-            <label for="planNotes">备注</label>
+            <div class="form-label-row">
+              <label for="planNotes">备注</label>
+              <output id="planNotesCount" for="planNotes">0 / 500</output>
+            </div>
             <textarea
               id="planNotes"
               name="notes"
@@ -212,12 +255,19 @@
             ></textarea>
           </div>
 
+          <p
+            id="planFormError"
+            class="plan-form-error form-field-wide"
+            role="alert"
+            hidden
+          ></p>
+
           <div class="form-actions">
-            <button id="savePlanButton" class="primary-button" type="submit">
-              保存计划
-            </button>
             <button id="cancelPlanButton" class="secondary-button" type="button">
               取消
+            </button>
+            <button id="savePlanButton" class="primary-button" type="submit">
+              保存计划
             </button>
           </div>
         </form>
@@ -823,6 +873,7 @@
   <script src="storage-tools.js"></script>
   <script src="timer-tools.js"></script>
   <script src="plan-tools.js"></script>
+  <script src="plan-form-tools.js"></script>
   <script src="undo-tools.js"></script>
   <script src="shortcut-tools.js"></script>
   <script src="recurrence-tools.js"></script>

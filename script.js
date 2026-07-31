@@ -111,6 +111,7 @@ const elements = {
   themeToggle: document.querySelector("#themeToggle"),
   themeLabel: document.querySelector("#themeLabel"),
   createPlanButton: document.querySelector("#createPlanButton"),
+  createPlanButtonLabel: document.querySelector("#createPlanButtonLabel"),
   notificationButton: document.querySelector("#notificationButton"),
   pushSubscriptionButton: document.querySelector("#pushSubscriptionButton"),
   testPushButton: document.querySelector("#testPushButton"),
@@ -128,13 +129,20 @@ const elements = {
   downloadSyncButton: document.querySelector("#downloadSyncButton"),
   signOutButton: document.querySelector("#signOutButton"),
   planForm: document.querySelector("#planForm"),
+  planFormBackdrop: document.querySelector("#planFormBackdrop"),
+  planFormHeading: document.querySelector("#planFormHeading"),
+  planFormError: document.querySelector("#planFormError"),
+  closePlanFormButton: document.querySelector("#closePlanFormButton"),
   planTitleInput: document.querySelector("#planTitle"),
+  planTitleCount: document.querySelector("#planTitleCount"),
   planPriorityInput: document.querySelector("#planPriority"),
   planTagInput: document.querySelector("#planTag"),
   planDueAtInput: document.querySelector("#planDueAt"),
   planRepeatInput: document.querySelector("#planRepeat"),
   planReminderMinutesInput: document.querySelector("#planReminderMinutes"),
   planNotesInput: document.querySelector("#planNotes"),
+  planNotesCount: document.querySelector("#planNotesCount"),
+  planQuickTimeButtons: document.querySelectorAll("[data-plan-time-preset]"),
   savePlanButton: document.querySelector("#savePlanButton"),
   cancelPlanButton: document.querySelector("#cancelPlanButton"),
   planSearchInput: document.querySelector("#planSearchInput"),
@@ -435,6 +443,10 @@ function saveStoredArray(key, value) {
 function renderAppPage(pageName, shouldScroll) {
   const activePage = window.NavigationTools.normalizePage(pageName);
 
+  if (activePage !== "plans" && !elements.planForm.hidden) {
+    closePlanForm();
+  }
+
   state.activePage = activePage;
   elements.appPages.forEach(function (page) {
     const isActive = page.dataset.page === activePage;
@@ -574,13 +586,82 @@ function isPlanOverdue(plan) {
 
 /* ===== Plan form ===== */
 
+function updatePlanCharacterCount(input, output, maximum) {
+  const count = window.PlanFormTools.getCharacterCount(
+    input.value,
+    maximum
+  );
+
+  output.textContent = count.label;
+  output.classList.toggle("is-near-limit", count.nearLimit);
+}
+
+function updatePlanFormCounters() {
+  updatePlanCharacterCount(
+    elements.planTitleInput,
+    elements.planTitleCount,
+    window.PlanFormTools.TITLE_MAX_LENGTH
+  );
+  updatePlanCharacterCount(
+    elements.planNotesInput,
+    elements.planNotesCount,
+    window.PlanFormTools.NOTES_MAX_LENGTH
+  );
+}
+
+function clearPlanFormError() {
+  elements.planFormError.hidden = true;
+  elements.planFormError.textContent = "";
+  elements.planTitleInput.removeAttribute("aria-invalid");
+  elements.planDueAtInput.removeAttribute("aria-invalid");
+}
+
+function showPlanFormError(validation) {
+  const field = validation.field === "dueAt"
+    ? elements.planDueAtInput
+    : elements.planTitleInput;
+
+  clearPlanFormError();
+  elements.planFormError.textContent = validation.message;
+  elements.planFormError.hidden = false;
+  field.setAttribute("aria-invalid", "true");
+  field.focus();
+}
+
+function updatePlanTimeControls() {
+  const hasDueAt = elements.planDueAtInput.value !== "";
+  elements.planReminderMinutesInput.disabled = !hasDueAt;
+
+  if (!hasDueAt) {
+    elements.planReminderMinutesInput.value = "0";
+  }
+}
+
+function showPlanForm(mode) {
+  const isEditing = mode === "edit";
+  elements.planFormHeading.textContent = isEditing
+    ? "编辑计划"
+    : "创建计划";
+  elements.savePlanButton.textContent = isEditing
+    ? "保存修改"
+    : "保存计划";
+  elements.createPlanButtonLabel.textContent = isEditing
+    ? "编辑中"
+    : "填写中";
+  elements.createPlanButton.disabled = true;
+  elements.planForm.hidden = false;
+  elements.planFormBackdrop.hidden = false;
+  elements.emptyMessage.hidden = true;
+  document.body.classList.add("plan-form-open");
+  updatePlanFormCounters();
+  updatePlanTimeControls();
+  clearPlanFormError();
+}
+
 function openCreatePlanForm() {
   state.editingPlanId = null;
   elements.planForm.reset();
-  elements.savePlanButton.textContent = "保存计划";
-  elements.createPlanButton.textContent = "填写中";
-  elements.planForm.hidden = false;
-  elements.emptyMessage.hidden = true;
+  showPlanForm("create");
   elements.planTitleInput.focus();
 }
 
@@ -594,10 +675,7 @@ function openEditPlanForm(plan) {
   elements.planReminderMinutesInput.value =
     String(plan.reminderMinutes);
   elements.planNotesInput.value = plan.notes;
-  elements.savePlanButton.textContent = "保存修改";
-  elements.createPlanButton.textContent = "编辑中";
-  elements.planForm.hidden = false;
-  elements.emptyMessage.hidden = true;
+  showPlanForm("edit");
   elements.planTitleInput.focus();
   elements.planTitleInput.select();
 }
@@ -606,8 +684,14 @@ function closePlanForm() {
   state.editingPlanId = null;
   elements.planForm.reset();
   elements.planForm.hidden = true;
-  elements.createPlanButton.textContent = "创建计划";
+  elements.planFormBackdrop.hidden = true;
+  elements.createPlanButtonLabel.textContent = "创建计划";
+  elements.createPlanButton.disabled = false;
   elements.savePlanButton.textContent = "保存计划";
+  elements.planFormHeading.textContent = "创建计划";
+  document.body.classList.remove("plan-form-open");
+  clearPlanFormError();
+  updatePlanFormCounters();
   elements.emptyMessage.hidden = state.plans.length > 0;
 }
 
@@ -628,21 +712,18 @@ function handlePlanSubmit(event) {
     elements.planNotesInput.value
   );
 
-  elements.planDueAtInput.setCustomValidity("");
+  const validation = window.PlanFormTools.validatePlanDraft({
+    title,
+    dueAt,
+    repeat
+  });
 
-  if (repeat !== "none" && dueAt === "") {
-    elements.planDueAtInput.setCustomValidity(
-      "重复计划必须设置计划时间。"
-    );
-    elements.planDueAtInput.reportValidity();
-    elements.planDueAtInput.focus();
+  if (!validation.valid) {
+    showPlanFormError(validation);
     return;
   }
 
-  if (title === "") {
-    elements.planTitleInput.focus();
-    return;
-  }
+  clearPlanFormError();
 
   if (state.editingPlanId === null) {
     state.plans.push({
@@ -3198,7 +3279,39 @@ function bindEvents() {
     openCreatePlanForm();
   });
   elements.cancelPlanButton.addEventListener("click", closePlanForm);
+  elements.closePlanFormButton.addEventListener("click", closePlanForm);
+  elements.planFormBackdrop.addEventListener("click", closePlanForm);
   elements.planForm.addEventListener("submit", handlePlanSubmit);
+  elements.planTitleInput.addEventListener("input", function () {
+    updatePlanCharacterCount(
+      elements.planTitleInput,
+      elements.planTitleCount,
+      window.PlanFormTools.TITLE_MAX_LENGTH
+    );
+    clearPlanFormError();
+  });
+  elements.planNotesInput.addEventListener("input", function () {
+    updatePlanCharacterCount(
+      elements.planNotesInput,
+      elements.planNotesCount,
+      window.PlanFormTools.NOTES_MAX_LENGTH
+    );
+  });
+  elements.planDueAtInput.addEventListener("change", function () {
+    updatePlanTimeControls();
+    clearPlanFormError();
+  });
+  elements.planRepeatInput.addEventListener("change", clearPlanFormError);
+  elements.planQuickTimeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      elements.planDueAtInput.value =
+        window.PlanFormTools.getQuickPlanDate(
+          button.dataset.planTimePreset
+        );
+      updatePlanTimeControls();
+      clearPlanFormError();
+    });
+  });
   elements.closePlanDetailsButton.addEventListener(
     "click",
     closePlanDetails
