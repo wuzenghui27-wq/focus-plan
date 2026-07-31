@@ -7,6 +7,7 @@ const {
   calculateFocusStatistics,
   getLocalDateKey,
   calculateDailyFocusTrend,
+  calculateMonthlyFocusCalendar,
   calculateWeeklyComparison
 } = require("../session-tools.js");
 
@@ -129,6 +130,29 @@ assert.strictEqual(trend[6].dateKey, "2026-08-02");
 assert.strictEqual(trend[0].totalSeconds, 600);
 assert.strictEqual(trend[5].totalSeconds, 1500);
 assert.strictEqual(trend[6].totalSeconds, 0);
+
+const calendarReference = new Date(2026, 6, 22, 18);
+const calendarSessions = [
+  createSession(26, new Date(2026, 6, 1, 9), 1, 600),
+  createSession(27, new Date(2026, 6, 22, 9), 1, 900),
+  createSession(28, new Date(2026, 6, 22, 14), 2, 600),
+  createSession(29, new Date(2026, 5, 30, 9), 2, 3600),
+  createSession(30, new Date(2026, 6, 23, 9), 2, 3600)
+];
+const calendar = calculateMonthlyFocusCalendar(
+  calendarSessions,
+  calendarReference
+);
+
+assert.strictEqual(calendar.monthLabel, "2026年7月");
+assert.strictEqual(calendar.leadingBlankCount, 2);
+assert.strictEqual(calendar.days.length, 31);
+assert.strictEqual(calendar.days[0].totalSeconds, 600);
+assert.strictEqual(calendar.days[21].totalSeconds, 1500);
+assert.strictEqual(calendar.days[21].isToday, true);
+assert.strictEqual(calendar.days[22].totalSeconds, 0);
+assert.strictEqual(calendar.totalSeconds, 2100);
+assert.strictEqual(calendar.focusedDayCount, 2);
 
 const weeklyReference = new Date(2026, 6, 29, 18);
 const weeklySessions = [

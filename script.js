@@ -169,6 +169,7 @@ const elements = {
   totalFocusTime: document.querySelector("#totalFocusTime"),
   longestFocusTime: document.querySelector("#longestFocusTime"),
   focusTrendSummary: document.querySelector("#focusTrendSummary"),
+  focusCalendarHeading: document.querySelector("#focusCalendarHeading"),
   focusTrendChart: document.querySelector("#focusTrendChart"),
   dailyGoalForm: document.querySelector("#dailyGoalForm"),
   dailyGoalMinutesInput: document.querySelector("#dailyGoalMinutes"),
@@ -1515,7 +1516,7 @@ function renderStatistics() {
   elements.totalFocusTime.textContent = formatFocusDuration(statistics.totalSeconds);
   elements.longestFocusTime.textContent = formatFocusDuration(statistics.longestSeconds);
   renderDailyGoal();
-  renderFocusTrend();
+  renderFocusCalendar();
   renderWeeklyComparison();
 }
 
@@ -1608,63 +1609,72 @@ function saveDailyGoalSetting(event) {
   showActionFeedback("每日专注目标已保存。", null);
 }
 
-function renderFocusTrend() {
-  const trend = window.SessionTools.calculateDailyFocusTrend(
+function renderFocusCalendar() {
+  const calendar = window.SessionTools.calculateMonthlyFocusCalendar(
     state.focusSessions,
-    new Date(),
-    7
+    new Date()
   );
-  const maximumSeconds = trend.reduce(function (maximum, day) {
-    return Math.max(maximum, day.totalSeconds);
-  }, 0);
-  const trendTotalSeconds = trend.reduce(function (total, day) {
-    return total + day.totalSeconds;
-  }, 0);
+  const weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"];
 
   elements.focusTrendChart.innerHTML = "";
-  elements.focusTrendSummary.textContent = trendTotalSeconds > 0
-    ? "共 " + formatFocusDuration(trendTotalSeconds)
+  elements.focusCalendarHeading.textContent = calendar.monthLabel;
+  elements.focusTrendSummary.textContent = calendar.totalSeconds > 0
+    ? "专注 " + calendar.focusedDayCount + " 天 · " +
+      formatFocusDuration(calendar.totalSeconds)
     : "暂无专注记录";
   elements.focusTrendChart.setAttribute(
     "aria-label",
-    "最近七天共专注 " + formatFocusDuration(trendTotalSeconds)
+    calendar.monthLabel + "共专注 " + calendar.focusedDayCount +
+      " 天，" + formatFocusDuration(calendar.totalSeconds)
   );
 
-  trend.forEach(function (day) {
+  weekdayLabels.forEach(function (label) {
+    const weekday = document.createElement("span");
+    weekday.className = "focus-calendar-weekday";
+    weekday.textContent = label;
+    elements.focusTrendChart.appendChild(weekday);
+  });
+
+  for (let index = 0; index < calendar.leadingBlankCount; index += 1) {
+    const blank = document.createElement("span");
+    blank.className = "focus-calendar-blank";
+    blank.setAttribute("aria-hidden", "true");
+    elements.focusTrendChart.appendChild(blank);
+  }
+
+  calendar.days.forEach(function (day) {
     const dayItem = document.createElement("div");
-    const value = document.createElement("span");
-    const track = document.createElement("div");
-    const bar = document.createElement("div");
-    const weekday = document.createElement("strong");
-    const date = document.createElement("small");
-    const minutes = Math.round(day.totalSeconds / 60);
-    const heightPercent = maximumSeconds > 0
-      ? day.totalSeconds / maximumSeconds * 100
+    const dayNumber = document.createElement("strong");
+    const duration = document.createElement("span");
+    const minutes = day.totalSeconds > 0
+      ? Math.max(1, Math.round(day.totalSeconds / 60))
       : 0;
 
-    dayItem.className = "focus-trend-day";
-    value.className = "focus-trend-value";
-    track.className = "focus-trend-track";
-    bar.className = "focus-trend-bar";
-    weekday.className = "focus-trend-weekday";
-    date.className = "focus-trend-date";
-
-    value.textContent = minutes + "分";
-    bar.style.height = heightPercent + "%";
-    weekday.textContent = day.weekday;
-    date.textContent = day.dateLabel;
+    dayItem.className = "focus-calendar-day";
+    dayItem.classList.toggle("has-focus", day.totalSeconds > 0);
+    dayItem.classList.toggle("is-today", day.isToday);
+    dayNumber.textContent = String(day.dayNumber);
+    duration.textContent = day.totalSeconds > 0 ? minutes + " 分" : "";
     dayItem.setAttribute(
       "aria-label",
-      day.dateLabel + "，专注 " + minutes + " 分钟"
+      calendar.month + "月" + day.dayNumber + "日，" +
+        (day.totalSeconds > 0 ? "专注 " + minutes + " 分钟" : "未专注")
     );
 
-    track.appendChild(bar);
-    dayItem.appendChild(value);
-    dayItem.appendChild(track);
-    dayItem.appendChild(weekday);
-    dayItem.appendChild(date);
+    dayItem.appendChild(dayNumber);
+    dayItem.appendChild(duration);
     elements.focusTrendChart.appendChild(dayItem);
   });
+
+  const occupiedCells = calendar.leadingBlankCount + calendar.days.length;
+  const trailingBlankCount = (7 - occupiedCells % 7) % 7;
+
+  for (let index = 0; index < trailingBlankCount; index += 1) {
+    const blank = document.createElement("span");
+    blank.className = "focus-calendar-blank";
+    blank.setAttribute("aria-hidden", "true");
+    elements.focusTrendChart.appendChild(blank);
+  }
 }
 
 function renderSessionData() {

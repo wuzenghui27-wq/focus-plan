@@ -134,6 +134,66 @@
     return days;
   }
 
+  function calculateMonthlyFocusCalendar(sessions, referenceDate) {
+    const reference = new Date(referenceDate);
+    const year = reference.getFullYear();
+    const monthIndex = reference.getMonth();
+    const firstDay = new Date(year, monthIndex, 1);
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    const days = [];
+    const daysByKey = new Map();
+
+    for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber += 1) {
+      const date = new Date(year, monthIndex, dayNumber);
+      const day = {
+        dateKey: getLocalDateKey(date),
+        dayNumber: dayNumber,
+        totalSeconds: 0,
+        isToday: isSameLocalDate(date, reference)
+      };
+
+      days.push(day);
+      daysByKey.set(day.dateKey, day);
+    }
+
+    sessions.forEach(function (session) {
+      const completedAt = new Date(session.completedAt);
+      const seconds = Number(session.actualSeconds);
+
+      if (
+        Number.isNaN(completedAt.getTime()) ||
+        completedAt > reference ||
+        !Number.isFinite(seconds) ||
+        seconds <= 0
+      ) {
+        return;
+      }
+
+      const day = daysByKey.get(getLocalDateKey(completedAt));
+
+      if (day) {
+        day.totalSeconds += seconds;
+      }
+    });
+
+    const totalSeconds = days.reduce(function (total, day) {
+      return total + day.totalSeconds;
+    }, 0);
+    const focusedDayCount = days.filter(function (day) {
+      return day.totalSeconds > 0;
+    }).length;
+
+    return {
+      year: year,
+      month: monthIndex + 1,
+      monthLabel: year + "年" + (monthIndex + 1) + "月",
+      leadingBlankCount: (firstDay.getDay() + 6) % 7,
+      days: days,
+      totalSeconds: totalSeconds,
+      focusedDayCount: focusedDayCount
+    };
+  }
+
   function calculateWeeklyComparison(sessions, referenceDate) {
     const now = new Date(referenceDate);
     const currentWeekStart = getStartOfCurrentWeek(now);
@@ -188,6 +248,7 @@
     calculateFocusStatistics,
     getLocalDateKey,
     calculateDailyFocusTrend,
+    calculateMonthlyFocusCalendar,
     calculateWeeklyComparison
   };
 
