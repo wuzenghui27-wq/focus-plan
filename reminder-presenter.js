@@ -119,7 +119,7 @@
       }
 
       const item = document.createElement("article");
-      const appIcon = document.createElement("span");
+      const appIcon = document.createElement("img");
       const content = document.createElement("div");
       const meta = document.createElement("div");
       const appName = document.createElement("span");
@@ -139,7 +139,8 @@
       );
       item.tabIndex = 0;
       appIcon.className = "app-reminder-icon";
-      appIcon.textContent = "FP";
+      appIcon.src = "assets/icons/app-icon-192.png";
+      appIcon.alt = "";
       content.className = "app-reminder-content";
       meta.className = "app-reminder-meta";
       appName.textContent = "FanP";
