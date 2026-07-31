@@ -1614,7 +1614,15 @@ function renderFocusCalendar() {
     state.focusSessions,
     new Date()
   );
-  const weekdayLabels = ["一", "二", "三", "四", "五", "六", "日"];
+  const weekdayLabels = [
+    "周一",
+    "周二",
+    "周三",
+    "周四",
+    "周五",
+    "周六",
+    "周日"
+  ];
 
   elements.focusTrendChart.innerHTML = "";
   elements.focusCalendarHeading.textContent = calendar.monthLabel;
@@ -1653,8 +1661,16 @@ function renderFocusCalendar() {
     dayItem.className = "focus-calendar-day";
     dayItem.classList.toggle("has-focus", day.totalSeconds > 0);
     dayItem.classList.toggle("is-today", day.isToday);
+    if (day.totalSeconds > 0) {
+      const focusLevel = day.totalSeconds >= 60 * 60
+        ? 3
+        : day.totalSeconds >= 30 * 60 ? 2 : 1;
+      dayItem.classList.add("focus-level-" + focusLevel);
+    }
     dayNumber.textContent = String(day.dayNumber);
     duration.textContent = day.totalSeconds > 0 ? minutes + " 分" : "";
+    dayItem.title = calendar.month + "月" + day.dayNumber + "日 · " +
+      (day.totalSeconds > 0 ? "专注 " + minutes + " 分钟" : "未专注");
     dayItem.setAttribute(
       "aria-label",
       calendar.month + "月" + day.dayNumber + "日，" +
