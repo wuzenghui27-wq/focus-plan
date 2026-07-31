@@ -962,11 +962,10 @@ button {
 }
 
 .focus-calendar-day {
+  position: relative;
   display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
   padding: 9px;
   border: 1px solid var(--fp-line);
   background-color: var(--fp-surface-subtle);
@@ -978,9 +977,14 @@ button {
 }
 
 .focus-calendar-day span {
+  position: absolute;
+  right: 4px;
+  bottom: 6px;
+  left: 4px;
   color: var(--fp-text-soft);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -1694,6 +1698,7 @@ button {
   }
 
   .focus-calendar-day span {
+    bottom: 4px;
     max-width: 100%;
     overflow: hidden;
     font-size: 9px;

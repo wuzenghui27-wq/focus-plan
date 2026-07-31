@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v18";
+const CACHE_NAME = "focus-plan-shell-v19";
 const APP_SHELL = [
   "./",
   "./index.html",
