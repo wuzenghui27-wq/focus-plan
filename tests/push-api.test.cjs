@@ -27,6 +27,7 @@ const subscription = {
   await api.getConfig();
   await api.saveSubscription(subscription);
   await api.sendTest(subscription.endpoint);
+  await api.syncReminders(subscription.endpoint, []);
   await api.deleteSubscription(subscription.endpoint);
 
   assert.equal(requests[0].url, "/api/push/config");
@@ -36,7 +37,9 @@ const subscription = {
     { subscription }
   );
   assert.equal(requests[2].url, "/api/push/test");
-  assert.equal(requests[3].options.method, "DELETE");
+  assert.equal(requests[3].url, "/api/push/reminders");
+  assert.equal(requests[3].options.method, "PUT");
+  assert.equal(requests[4].options.method, "DELETE");
 
   console.log("Push API: all tests passed");
 })().catch(function (error) {

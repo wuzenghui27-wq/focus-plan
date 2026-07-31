@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const SyncTools = require("../sync-tools.js");
+const PushReminderTools = require("../push-reminder-tools.js");
 
 const CODE_LIFETIME_MS = 5 * 60 * 1000;
 const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
@@ -135,6 +136,37 @@ function createApiHandler({ store, secret, isDevelopment, pushService }) {
             error: "推送服务暂时无法发送通知。"
           });
         }
+        return true;
+      }
+
+      if (request.method === "PUT" && url.pathname === "/api/push/reminders") {
+        if (!pushService?.isConfigured()) {
+          sendJson(response, 503, {
+            error: "服务器尚未配置 Web Push 密钥。"
+          });
+          return true;
+        }
+
+        const body = await readJson(request);
+        const endpoint = String(body.endpoint || "");
+
+        if (!store.getPushSubscription(endpoint)) {
+          sendJson(response, 404, { error: "没有找到当前设备的推送订阅。" });
+          return true;
+        }
+
+        const reminders = PushReminderTools.normalizeReminderJobs(
+          body.reminders
+        );
+        store.syncPushReminderJobs(
+          endpoint,
+          reminders,
+          new Date().toISOString()
+        );
+        sendJson(response, 200, {
+          ok: true,
+          reminderCount: reminders.length
+        });
         return true;
       }
 

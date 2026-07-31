@@ -4,12 +4,17 @@ const path = require("path");
 const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
 const { createPushService } = require("../server/push-service.cjs");
+const {
+  createReminderScheduler
+} = require("../server/reminder-scheduler.cjs");
 
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = Number(process.env.PORT) || 5500;
 const ROOT = path.resolve(__dirname, "..");
+const databasePath = process.env.DATABASE_PATH ||
+  path.join(ROOT, ".data", "focus-plan.db");
 const accountStore = createAccountStore(
-  path.join(ROOT, ".data", "focus-plan.db")
+  databasePath
 );
 const pushService = createPushService({
   subject: process.env.VAPID_SUBJECT,
@@ -20,6 +25,10 @@ const handleApi = createApiHandler({
   store: accountStore,
   secret: process.env.SESSION_SECRET || "local-development-secret",
   isDevelopment: true,
+  pushService
+});
+const reminderScheduler = createReminderScheduler({
+  store: accountStore,
   pushService
 });
 
@@ -72,5 +81,17 @@ const server = http.createServer(async function (request, response) {
 });
 
 server.listen(PORT, HOST, function () {
+  reminderScheduler.start();
   console.log(`Focus Plan is running at http://${HOST}:${PORT}`);
 });
+
+function shutDown() {
+  reminderScheduler.stop();
+  server.close(function () {
+    accountStore.close();
+    process.exit(0);
+  });
+}
+
+process.on("SIGINT", shutDown);
+process.on("SIGTERM", shutDown);

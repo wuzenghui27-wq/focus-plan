@@ -64,6 +64,12 @@
           method: "POST",
           body: JSON.stringify({ endpoint })
         });
+      },
+      syncReminders: function (endpoint, reminders) {
+        return request("/push/reminders", {
+          method: "PUT",
+          body: JSON.stringify({ endpoint, reminders })
+        });
       }
     };
   }

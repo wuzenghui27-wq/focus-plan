@@ -16,6 +16,7 @@ const REQUIRED_MODULES = [
   "SubtaskTools",
   "GoalTools",
   "PomodoroTools",
+  "PushReminderTools",
   "TimerStateTools",
   "SoundTools",
   "NavigationTools",
@@ -293,6 +294,7 @@ const pushApi = window.PushApi.createPushApi(
 let activePushSubscription = null;
 let pushPublicKey = "";
 let pushBusy = false;
+let pushReminderSyncTimer = null;
 const reminderPresenter = window.ReminderPresenter.createPresenter(
   elements.reminderRegion,
   {
@@ -345,6 +347,7 @@ function loadPlans() {
 function savePlans() {
   saveStoredArray(STORAGE_KEY, state.plans);
   markLocalDataChanged();
+  schedulePushReminderSync();
 }
 
 function loadFocusSessions() {
@@ -2115,6 +2118,41 @@ function updatePushControls() {
   elements.testPushButton.disabled = pushBusy || !activePushSubscription;
 }
 
+async function syncPushReminderJobs(allowSubscriptionRepair) {
+  if (!activePushSubscription) {
+    return;
+  }
+
+  const endpoint = activePushSubscription.endpoint;
+  const reminders = window.PushReminderTools.createReminderJobs(state.plans);
+
+  try {
+    return await pushApi.syncReminders(endpoint, reminders);
+  } catch (error) {
+    if (error.status === 404 && allowSubscriptionRepair !== false) {
+      await pushApi.saveSubscription(activePushSubscription);
+      return syncPushReminderJobs(false);
+    }
+
+    console.warn("后台提醒任务同步失败：", error);
+  }
+}
+
+function schedulePushReminderSync(delay) {
+  if (!activePushSubscription) {
+    return;
+  }
+
+  if (pushReminderSyncTimer !== null) {
+    clearTimeout(pushReminderSyncTimer);
+  }
+
+  pushReminderSyncTimer = setTimeout(function () {
+    pushReminderSyncTimer = null;
+    syncPushReminderJobs();
+  }, delay ?? 600);
+}
+
 async function refreshPushSubscription() {
   if (!isWebPushSupported()) {
     showPushStatus("当前浏览器不支持 Web Push。", "error");
@@ -2140,10 +2178,13 @@ async function refreshPushSubscription() {
       await registration.pushManager.getSubscription();
     showPushStatus(
       activePushSubscription
-        ? "当前设备已订阅后台推送。"
+        ? "当前设备已订阅，计划提醒会自动同步。"
         : "当前设备尚未订阅后台推送。",
       activePushSubscription ? "success" : ""
     );
+    if (activePushSubscription) {
+      schedulePushReminderSync(0);
+    }
   } catch (error) {
     showPushStatus(getPushErrorMessage(error), "error");
   } finally {
@@ -2165,6 +2206,10 @@ async function togglePushSubscription() {
       await pushApi.deleteSubscription(endpoint);
       await activePushSubscription.unsubscribe();
       activePushSubscription = null;
+      if (pushReminderSyncTimer !== null) {
+        clearTimeout(pushReminderSyncTimer);
+        pushReminderSyncTimer = null;
+      }
       showPushStatus("当前设备已关闭后台推送。", "success");
       return;
     }
@@ -2189,7 +2234,13 @@ async function togglePushSubscription() {
     try {
       await pushApi.saveSubscription(subscription);
       activePushSubscription = subscription;
-      showPushStatus("当前设备已开启后台推送。", "success");
+      const result = await syncPushReminderJobs();
+      showPushStatus(
+        "后台推送已开启，已同步 " +
+          (result?.reminderCount || 0) +
+          " 个计划提醒。",
+        "success"
+      );
     } catch (error) {
       await subscription.unsubscribe();
       throw error;
@@ -2223,6 +2274,39 @@ async function sendTestPush() {
   } finally {
     pushBusy = false;
     updatePushControls();
+  }
+}
+
+async function handleBackgroundReminderMessage(event) {
+  const message = event.data;
+
+  if (message?.type !== "FOCUS_PLAN_BACKGROUND_REMINDER") {
+    return;
+  }
+
+  const payload = message.payload || {};
+  const matchingPlan = state.plans.find(function (plan) {
+    return String(plan.id) === String(payload.planId);
+  });
+
+  if (!matchingPlan || matchingPlan.completed || matchingPlan.reminded) {
+    return;
+  }
+
+  const delivered = await deliverReminder(
+    payload.title || "计划时间到了",
+    payload.body || matchingPlan.title,
+    payload.tag || "plan-" + matchingPlan.id,
+    {
+      targetPage: "plans",
+      planId: matchingPlan.id,
+      snoozeOptions: window.ReminderTools.SNOOZE_MINUTE_VALUES
+    }
+  );
+
+  if (delivered) {
+    matchingPlan.reminded = true;
+    savePlans();
   }
 }
 
@@ -3072,7 +3156,16 @@ function handleApplicationShortcut(event) {
 
 function bindEvents() {
   document.addEventListener("keydown", handleApplicationShortcut);
+  if ("serviceWorker" in window.navigator) {
+    window.navigator.serviceWorker.addEventListener(
+      "message",
+      handleBackgroundReminderMessage
+    );
+  }
   window.addEventListener("online", reconcileCloudData);
+  window.addEventListener("online", function () {
+    schedulePushReminderSync(0);
+  });
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible") {
       reconcileCloudData();

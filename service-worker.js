@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v8";
+const CACHE_NAME = "focus-plan-shell-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "./plan-tools.js",
   "./pomodoro-tools.js",
   "./push-api.js",
+  "./push-reminder-tools.js",
   "./recurrence-tools.js",
   "./reminder-presenter.js",
   "./reminder-tools.js",
@@ -139,6 +140,18 @@ self.addEventListener("notificationclick", function (event) {
   );
 });
 
+function showPushNotification(payload) {
+  return self.registration.showNotification(payload.title, {
+    body: payload.body,
+    tag: payload.tag,
+    icon: "./assets/icons/app-icon-192.png",
+    data: {
+      url: payload.url,
+      planId: payload.planId ?? null
+    }
+  });
+}
+
 self.addEventListener("push", function (event) {
   const fallback = {
     title: "Focus Plan",
@@ -157,11 +170,23 @@ self.addEventListener("push", function (event) {
   }
 
   event.waitUntil(
-    self.registration.showNotification(payload.title, {
-      body: payload.body,
-      tag: payload.tag,
-      icon: "./assets/icons/app-icon-192.png",
-      data: { url: payload.url }
+    self.clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    }).then(function (windowClients) {
+      const visibleClient = windowClients.find(function (client) {
+        return client.visibilityState === "visible";
+      });
+
+      if (visibleClient) {
+        visibleClient.postMessage({
+          type: "FOCUS_PLAN_BACKGROUND_REMINDER",
+          payload
+        });
+        return;
+      }
+
+      return showPushNotification(payload);
     })
   );
 });

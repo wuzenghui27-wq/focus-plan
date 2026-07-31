@@ -71,6 +71,28 @@ server.listen(0, "127.0.0.1", async function () {
     assert.equal(sentPayloads.length, 1);
     assert.equal(sentPayloads[0].payload.tag, "push-test");
 
+    const reminder = {
+      planId: "integration-plan",
+      reminderAt: "2026-07-29T10:00:00.000Z",
+      notificationTitle: "计划时间到了",
+      body: "集成测试计划",
+      tag: "plan-integration",
+      url: "./#plans"
+    };
+    const reminderResponse = await jsonRequest(
+      "/reminders",
+      "PUT",
+      {
+        endpoint: subscription.endpoint,
+        reminders: [reminder]
+      }
+    );
+    assert.equal(reminderResponse.status, 200);
+    assert.equal(
+      store.getPushReminderJobs(subscription.endpoint)[0].planId,
+      reminder.planId
+    );
+
     const deleteResponse = await jsonRequest(
       "/subscriptions",
       "DELETE",
@@ -78,6 +100,7 @@ server.listen(0, "127.0.0.1", async function () {
     );
     assert.equal(deleteResponse.status, 200);
     assert.equal(store.getPushSubscription(subscription.endpoint), null);
+    assert.equal(store.getPushReminderJobs(subscription.endpoint).length, 0);
 
     console.log("Push API handler: all tests passed");
   } catch (error) {
