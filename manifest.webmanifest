@@ -1,7 +1,7 @@
 {
   "name": "FanP 我的计划表",
   "short_name": "FanP",
-  "description": "管理每日计划、专注计时、统计与成就。",
+  "description": "管理每日计划、专注计时与专注统计。",
   "lang": "zh-CN",
   "start_url": "./#plans",
   "scope": "./",

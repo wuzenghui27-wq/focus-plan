@@ -1,7 +1,6 @@
 /* ===== Startup check ===== */
 
 const REQUIRED_MODULES = [
-  "AchievementRules",
   "SessionTools",
   "StorageTools",
   "TimerTools",
@@ -44,7 +43,6 @@ if (missingModules.length > 0) {
 
 const STORAGE_KEY = "focus-plan-plans";
 const SESSION_STORAGE_KEY = "focus-plan-sessions";
-const ACHIEVEMENT_STORAGE_KEY = "focus-plan-achievements";
 const DEFAULT_TIMER_MINUTES = 25;
 const MIN_TIMER_MINUTES = 1;
 const MAX_TIMER_MINUTES = 180;
@@ -95,15 +93,6 @@ const REMINDER_LABELS = {
   60: "提前 1 小时提醒"
 };
 
-const ACHIEVEMENTS = window.AchievementRules.achievements;
-const ACHIEVEMENT_CATEGORIES =
-  window.AchievementRules.achievementCategories;
-const calculateLongestFocusStreak =
-  window.AchievementRules.calculateLongestFocusStreak;
-const calculateAchievementMetrics =
-  window.AchievementRules.calculateAchievementMetrics;
-const getAchievementProgress =
-  window.AchievementRules.getAchievementProgress;
 const storageRecoveryLabels = [];
 
 if (restoredTimerResult.recovered) {
@@ -186,18 +175,6 @@ const elements = {
   currentWeekFocusTime: document.querySelector("#currentWeekFocusTime"),
   previousWeekFocusTime: document.querySelector("#previousWeekFocusTime"),
   weeklyFocusChange: document.querySelector("#weeklyFocusChange"),
-  achievementList: document.querySelector("#achievementList"),
-  achievementSummary: document.querySelector("#achievementSummary"),
-  nextAchievement: document.querySelector("#nextAchievement"),
-  nextAchievementTitle: document.querySelector("#nextAchievementTitle"),
-  nextAchievementValue: document.querySelector("#nextAchievementValue"),
-  nextAchievementDescription:
-    document.querySelector("#nextAchievementDescription"),
-  nextAchievementProgress:
-    document.querySelector("#nextAchievementProgress"),
-  nextAchievementProgressBar:
-    document.querySelector("#nextAchievementProgressBar"),
-  achievementToast: document.querySelector("#achievementToast"),
   actionToast: document.querySelector("#actionToast"),
   actionToastMessage: document.querySelector("#actionToastMessage"),
   undoActionButton: document.querySelector("#undoActionButton"),
@@ -258,7 +235,6 @@ const state = {
   ),
   plans: loadPlans(),
   focusSessions: loadFocusSessions(),
-  achievementUnlocks: loadAchievementUnlocks(),
   dailyGoalMinutes: window.GoalTools.loadDailyGoal(localStorage),
   account: null,
   sync: {
@@ -278,7 +254,6 @@ const state = {
   },
   batchMode: false,
   selectedPlanIds: new Set(),
-  achievementToastTimeoutId: null,
   actionFeedback: {
     deletionSnapshot: null,
     timeoutId: null
@@ -412,26 +387,6 @@ function loadFocusSessions() {
 
 function saveFocusSessions() {
   saveStoredArray(SESSION_STORAGE_KEY, state.focusSessions);
-  markLocalDataChanged();
-}
-
-function loadAchievementUnlocks() {
-  return loadStoredArray(
-    ACHIEVEMENT_STORAGE_KEY,
-    "成就",
-    function (parsedUnlocks) {
-    return parsedUnlocks.filter(function (unlock) {
-      return unlock !== null &&
-        typeof unlock === "object" &&
-        typeof unlock.id === "string" &&
-        typeof unlock.unlockedAt === "string";
-    });
-    }
-  );
-}
-
-function saveAchievementUnlocks() {
-  saveStoredArray(ACHIEVEMENT_STORAGE_KEY, state.achievementUnlocks);
   markLocalDataChanged();
 }
 
@@ -1713,293 +1668,6 @@ function renderSessionData() {
   renderStatistics();
 }
 
-/* ===== Achievements ===== */
-
-function formatAchievementDate(unlockedAt) {
-  const date = new Date(unlockedAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return "已解锁";
-  }
-
-  return date.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }) + " 解锁";
-}
-
-function getAchievementIds(achievement) {
-  return [achievement.id].concat(achievement.legacyIds || []);
-}
-
-function findAchievementUnlock(achievement) {
-  const achievementIds = new Set(getAchievementIds(achievement));
-
-  return state.achievementUnlocks.find(function (unlock) {
-    return achievementIds.has(unlock.id);
-  });
-}
-
-function formatAchievementValue(value, valueType) {
-  const safeValue = Math.max(0, Math.floor(value));
-
-  if (valueType === "duration") {
-    const totalMinutes = Math.floor(safeValue / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    if (hours > 0 && minutes > 0) {
-      return hours + " 小时 " + minutes + " 分";
-    }
-
-    if (hours > 0) {
-      return hours + " 小时";
-    }
-
-    return totalMinutes + " 分钟";
-  }
-
-  if (valueType === "days") {
-    return safeValue + " 天";
-  }
-
-  return safeValue + " 次";
-}
-
-function formatAchievementProgress(progress, achievement) {
-  return formatAchievementValue(progress.currentValue, achievement.valueType) +
-    " / " +
-    formatAchievementValue(progress.targetValue, achievement.valueType);
-}
-
-function setAchievementProgressBar(track, bar, progress) {
-  track.setAttribute("aria-valuenow", String(progress.percentage));
-  bar.style.width = progress.percentage + "%";
-}
-
-function renderNextAchievement(achievementStates) {
-  const lockedStates = achievementStates.filter(function (achievementState) {
-    return !achievementState.unlock;
-  });
-
-  if (lockedStates.length === 0) {
-    elements.nextAchievement.classList.add("is-complete");
-    elements.nextAchievementTitle.textContent = "全部成就已解锁";
-    elements.nextAchievementDescription.textContent =
-      "十二个专注里程碑已经全部达成";
-    elements.nextAchievementValue.textContent = "100%";
-    setAchievementProgressBar(
-      elements.nextAchievementProgress,
-      elements.nextAchievementProgressBar,
-      { percentage: 100 }
-    );
-    return;
-  }
-
-  const nextState = lockedStates.sort(function (left, right) {
-    if (right.progress.progress !== left.progress.progress) {
-      return right.progress.progress - left.progress.progress;
-    }
-
-    return left.achievement.tier - right.achievement.tier;
-  })[0];
-
-  elements.nextAchievement.classList.remove("is-complete");
-  elements.nextAchievementTitle.textContent = nextState.achievement.title;
-  elements.nextAchievementDescription.textContent =
-    nextState.category.title + " · " + nextState.achievement.description;
-  elements.nextAchievementValue.textContent = formatAchievementProgress(
-    nextState.progress,
-    nextState.achievement
-  );
-  setAchievementProgressBar(
-    elements.nextAchievementProgress,
-    elements.nextAchievementProgressBar,
-    nextState.progress
-  );
-}
-
-function showAchievementToast(newAchievements) {
-  const achievementNames = newAchievements.map(function (achievement) {
-    return achievement.title;
-  });
-
-  elements.achievementToast.textContent =
-    "解锁成就：" + achievementNames.join("、");
-  elements.achievementToast.hidden = false;
-
-  if (state.achievementToastTimeoutId !== null) {
-    clearTimeout(state.achievementToastTimeoutId);
-  }
-
-  state.achievementToastTimeoutId = setTimeout(function () {
-    elements.achievementToast.hidden = true;
-    state.achievementToastTimeoutId = null;
-  }, 5000);
-}
-
-function renderAchievements() {
-  elements.achievementList.innerHTML = "";
-  const metrics = calculateAchievementMetrics(state.focusSessions);
-  const categoryMap = new Map(ACHIEVEMENT_CATEGORIES.map(function (category) {
-    return [category.id, category];
-  }));
-  const achievementStates = ACHIEVEMENTS.map(function (achievement) {
-    return {
-      achievement,
-      category: categoryMap.get(achievement.category),
-      progress: getAchievementProgress(achievement, metrics),
-      unlock: findAchievementUnlock(achievement)
-    };
-  });
-
-  renderNextAchievement(achievementStates);
-
-  ACHIEVEMENT_CATEGORIES.forEach(function (category) {
-    const route = document.createElement("section");
-    const heading = document.createElement("div");
-    const headingText = document.createElement("div");
-    const title = document.createElement("h3");
-    const description = document.createElement("p");
-    const summary = document.createElement("span");
-    const milestones = document.createElement("div");
-    const categoryStates = achievementStates.filter(function (item) {
-      return item.achievement.category === category.id;
-    });
-    const unlockedCount = categoryStates.filter(function (item) {
-      return Boolean(item.unlock);
-    }).length;
-
-    route.className = "achievement-route";
-    heading.className = "achievement-route-heading";
-    title.textContent = category.title;
-    description.textContent = category.description;
-    summary.textContent = unlockedCount + " / " + categoryStates.length;
-    milestones.className = "achievement-route-milestones";
-
-    headingText.appendChild(title);
-    headingText.appendChild(description);
-    heading.appendChild(headingText);
-    heading.appendChild(summary);
-    route.appendChild(heading);
-
-    categoryStates.forEach(function (achievementState) {
-      const achievement = achievementState.achievement;
-      const progress = achievementState.progress;
-      const unlock = achievementState.unlock;
-      const achievementItem = document.createElement("article");
-      const mark = document.createElement("span");
-      const itemText = document.createElement("div");
-      const itemTitle = document.createElement("h4");
-      const itemDescription = document.createElement("p");
-      const progressTrack = document.createElement("div");
-      const progressBar = document.createElement("span");
-      const footer = document.createElement("div");
-      const progressValue = document.createElement("span");
-      const status = document.createElement("span");
-
-      achievementItem.className = "achievement-item";
-      mark.className = "achievement-mark";
-      itemText.className = "achievement-item-text";
-      progressTrack.className = "achievement-progress-track";
-      footer.className = "achievement-item-footer";
-      progressValue.className = "achievement-progress-value";
-      status.className = "achievement-status";
-      mark.textContent = achievement.mark;
-      itemTitle.textContent = achievement.title;
-      itemDescription.textContent = achievement.description;
-      progressValue.textContent = formatAchievementProgress(
-        unlock
-          ? Object.assign({}, progress, {
-            currentValue: progress.targetValue
-          })
-          : progress,
-        achievement
-      );
-      status.textContent = unlock
-        ? formatAchievementDate(unlock.unlockedAt)
-        : progress.percentage + "%";
-      progressTrack.setAttribute("role", "progressbar");
-      progressTrack.setAttribute("aria-label", achievement.title + "进度");
-      progressTrack.setAttribute("aria-valuemin", "0");
-      progressTrack.setAttribute("aria-valuemax", "100");
-      setAchievementProgressBar(
-        progressTrack,
-        progressBar,
-        unlock ? { percentage: 100 } : progress
-      );
-
-      if (unlock) {
-        achievementItem.classList.add("is-unlocked");
-      } else if (progress.currentValue > 0) {
-        achievementItem.classList.add("is-in-progress");
-      }
-
-      itemText.appendChild(itemTitle);
-      itemText.appendChild(itemDescription);
-      progressTrack.appendChild(progressBar);
-      footer.appendChild(progressValue);
-      footer.appendChild(status);
-      achievementItem.appendChild(mark);
-      achievementItem.appendChild(itemText);
-      achievementItem.appendChild(progressTrack);
-      achievementItem.appendChild(footer);
-      milestones.appendChild(achievementItem);
-    });
-
-    route.appendChild(milestones);
-    elements.achievementList.appendChild(route);
-  });
-
-  const unlockedCount = achievementStates.filter(function (item) {
-    return Boolean(item.unlock);
-  }).length;
-  elements.achievementSummary.textContent =
-    unlockedCount + " / " + ACHIEVEMENTS.length + " 已解锁";
-}
-
-function checkAndUnlockAchievements(shouldNotify) {
-  const unlockedIds = new Set(state.achievementUnlocks.map(function (unlock) {
-    return unlock.id;
-  }));
-  const newlyUnlocked = [];
-
-  ACHIEVEMENTS.forEach(function (achievement) {
-    if (getAchievementIds(achievement).some(function (achievementId) {
-      return unlockedIds.has(achievementId);
-    })) {
-      return;
-    }
-
-    if (achievement.isUnlocked(state.focusSessions)) {
-      state.achievementUnlocks.push({
-        id: achievement.id,
-        unlockedAt: new Date().toISOString()
-      });
-      newlyUnlocked.push(achievement);
-    }
-  });
-
-  if (newlyUnlocked.length > 0) {
-    saveAchievementUnlocks();
-
-    if (shouldNotify) {
-      showAchievementToast(newlyUnlocked);
-      deliverReminder(
-        "解锁新成就",
-        newlyUnlocked.map(function (achievement) {
-          return achievement.title;
-        }).join("、"),
-        "achievement-unlocked",
-        { targetPage: "focus" }
-      );
-    }
-  }
-
-  renderAchievements();
-}
-
 /* ===== Data management ===== */
 
 function persistSyncMetadata() {
@@ -2009,7 +1677,6 @@ function persistSyncMetadata() {
 function hasSyncableLocalData() {
   return state.plans.length > 0 ||
     state.focusSessions.length > 0 ||
-    state.achievementUnlocks.length > 0 ||
     state.dailyGoalMinutes !== window.GoalTools.DEFAULT_DAILY_GOAL_MINUTES;
 }
 
@@ -2192,7 +1859,7 @@ function createCurrentSyncSnapshot() {
   return window.SyncTools.createSyncSnapshot({
     plans: state.plans,
     focusSessions: state.focusSessions,
-    achievementUnlocks: state.achievementUnlocks,
+    achievementUnlocks: [],
     dailyGoalMinutes: state.dailyGoalMinutes
   }, new Date());
 }
@@ -2214,19 +1881,16 @@ function applySyncSnapshot(snapshot) {
   try {
     state.plans = normalized.data.plans;
     state.focusSessions = normalized.data.focusSessions;
-    state.achievementUnlocks = normalized.data.achievementUnlocks;
     state.dailyGoalMinutes = normalized.data.dailyGoalMinutes;
     resetHistoryFilter();
     savePlans();
     saveFocusSessions();
-    saveAchievementUnlocks();
     window.GoalTools.saveDailyGoal(localStorage, state.dailyGoalMinutes);
   } finally {
     state.sync.isApplyingRemote = false;
   }
   renderPlans();
   renderSessionData();
-  checkAndUnlockAchievements(false);
 }
 
 async function downloadCloudData() {
@@ -2277,7 +1941,7 @@ function resetHistoryFilter() {
 
 function clearFocusHistory() {
   const confirmed = window.confirm(
-    "确定清除全部专注历史吗？已解锁成就会保留。"
+    "确定清除全部专注历史吗？"
   );
 
   if (!confirmed) {
@@ -2288,12 +1952,12 @@ function clearFocusHistory() {
   resetHistoryFilter();
   saveFocusSessions();
   renderSessionData();
-  showDataManagementStatus("专注历史已清除，成就仍然保留。", "success");
+  showDataManagementStatus("专注历史已清除。", "success");
 }
 
 function resetApplicationData() {
   const confirmationText = window.prompt(
-    "这会清除计划、专注记录和成就。请输入“重置”确认："
+    "这会清除计划和专注记录。请输入“重置”确认："
   );
 
   if (confirmationText !== "重置") {
@@ -2304,7 +1968,6 @@ function resetApplicationData() {
   stopTimerInterval();
   state.plans = [];
   state.focusSessions = [];
-  state.achievementUnlocks = [];
   state.timer.phase = "focus";
   state.timer.selectedMinutes = DEFAULT_TIMER_MINUTES;
   state.timer.breakMinutes = window.PomodoroTools.DEFAULT_BREAK_MINUTES;
@@ -2327,7 +1990,7 @@ function resetApplicationData() {
 
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(SESSION_STORAGE_KEY);
-  localStorage.removeItem(ACHIEVEMENT_STORAGE_KEY);
+  localStorage.removeItem("focus-plan-achievements");
   localStorage.removeItem(
     window.TimerStateTools.TIMER_STATE_STORAGE_KEY
   );
@@ -2337,7 +2000,6 @@ function resetApplicationData() {
 
   renderPlans();
   renderSessionData();
-  renderAchievements();
   elements.customMinutesInput.value = String(DEFAULT_TIMER_MINUTES);
   elements.breakMinutesInput.value = String(
     window.PomodoroTools.DEFAULT_BREAK_MINUTES
@@ -3135,7 +2797,6 @@ function recordCompletedFocusSession() {
 
   state.focusSessions.push(focusSession);
   saveFocusSessions();
-  checkAndUnlockAchievements(true);
   renderSessionData();
 
   return focusSession;
@@ -3728,6 +3389,7 @@ function bindEvents() {
 }
 
 function initializeApp() {
+  localStorage.removeItem("focus-plan-achievements");
   applyTheme(state.theme, false);
   bindEvents();
   registerServiceWorker();
@@ -3745,7 +3407,6 @@ function initializeApp() {
   refreshAccount();
   renderPlans();
   renderSessionData();
-  checkAndUnlockAchievements(false);
   updateSoundControls();
   setSoundPlaybackStatus(
     state.sound.muted ? "提示音已静音" : "提示音已就绪",

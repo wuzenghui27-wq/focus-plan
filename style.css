@@ -908,94 +908,6 @@ p {
   color: #b42318;
 }
 
-/* ===== Achievements ===== */
-
-.achievements-panel {
-  margin-top: 20px;
-  padding: 24px;
-}
-
-.achievement-list {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  border-top: 1px solid #e5e8eb;
-  border-bottom: 1px solid #e5e8eb;
-}
-
-.achievement-item {
-  display: flex;
-  min-width: 0;
-  min-height: 174px;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-  border-right: 1px solid #e5e8eb;
-}
-
-.achievement-item:last-child {
-  border-right: 0;
-}
-
-.achievement-mark {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid #b8c0c8;
-  border-radius: 50%;
-  color: #687078;
-  background-color: #f3f5f7;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.achievement-item h3 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.achievement-item p {
-  margin: 0;
-  flex: 1;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.achievement-status {
-  color: #7a838c;
-  font-size: 12px;
-}
-
-.achievement-item.is-unlocked .achievement-mark {
-  border-color: #16734b;
-  color: #ffffff;
-  background-color: #16734b;
-}
-
-.achievement-item.is-unlocked .achievement-status {
-  color: #16734b;
-  font-weight: bold;
-}
-
-.achievement-item:not(.is-unlocked) {
-  color: #687078;
-  background-color: #fafbfc;
-}
-
-.achievement-toast {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 10;
-  width: min(360px, calc(100% - 32px));
-  padding: 14px 16px;
-  border-left: 4px solid #2e7d32;
-  border-radius: 6px;
-  color: #ffffff;
-  background-color: #202124;
-  box-shadow: 0 8px 24px rgba(32, 33, 36, 0.2);
-}
-
 .action-toast {
   position: fixed;
   right: 20px;
@@ -1027,11 +939,6 @@ p {
 
 .action-toast button:hover {
   background-color: #0b3268;
-}
-
-.action-toast:not([hidden]) ~ .achievement-toast,
-body:has(.action-toast:not([hidden])) .achievement-toast {
-  bottom: 86px;
 }
 
 /* ===== Responsive reminders ===== */
@@ -1676,7 +1583,6 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
   .plans-panel,
   .timer-panel,
   .statistics-panel,
-  .achievements-panel,
   .history-panel,
   .data-panel {
     padding: 16px;
@@ -1804,38 +1710,6 @@ body:has(.action-toast:not([hidden])) .achievement-toast {
     font-size: 21px;
   }
 
-  .achievement-list {
-    grid-template-columns: 1fr;
-  }
-
-  .achievement-item {
-    display: grid;
-    min-height: 0;
-    grid-template-columns: 40px minmax(0, 1fr);
-    gap: 5px 12px;
-    border-right: 0;
-    border-bottom: 1px solid #e5e8eb;
-  }
-
-  .achievement-item:last-child {
-    border-bottom: 0;
-  }
-
-  .achievement-mark {
-    grid-row: 1 / 4;
-  }
-
-  .achievement-item h3,
-  .achievement-item p,
-  .achievement-status {
-    grid-column: 2;
-  }
-
-  .achievement-toast {
-    right: 16px;
-    bottom: 16px;
-  }
-
   .action-toast {
     right: 16px;
     bottom: 16px;
@@ -1921,7 +1795,6 @@ html[data-theme="dark"] body {
 html[data-theme="dark"] p,
 html[data-theme="dark"] .plan-meta,
 html[data-theme="dark"] .statistic-item span,
-html[data-theme="dark"] .achievement-status,
 html[data-theme="dark"] .session-time,
 html[data-theme="dark"] .data-status {
   color: #aeb7c0;
@@ -1934,14 +1807,12 @@ html[data-theme="dark"] .panel {
 
 html[data-theme="dark"] .plan-form,
 html[data-theme="dark"] .statistics-grid,
-html[data-theme="dark"] .achievement-list,
 html[data-theme="dark"] .history-toolbar,
 html[data-theme="dark"] .session-item {
   border-color: #3b4249;
 }
 
-html[data-theme="dark"] .statistic-item,
-html[data-theme="dark"] .achievement-item {
+html[data-theme="dark"] .statistic-item {
   border-color: #3b4249;
 }
 
@@ -2029,17 +1900,6 @@ html[data-theme="dark"] .plan-item.overdue {
   background-color: #3a2527;
 }
 
-html[data-theme="dark"] .achievement-item:not(.is-unlocked) {
-  color: #aeb7c0;
-  background-color: #252a2f;
-}
-
-html[data-theme="dark"] .achievement-mark {
-  border-color: #59636d;
-  color: #aeb7c0;
-  background-color: #30363c;
-}
-
 html[data-theme="dark"] .statistic-item strong,
 html[data-theme="dark"] .timer-display {
   color: #8db8f0;
@@ -2102,8 +1962,7 @@ html[data-theme="dark"] .plan-status-button.is-active {
 
 html[data-theme="dark"] .timer-panel.is-running .timer-display,
 html[data-theme="dark"] .session-duration,
-html[data-theme="dark"] .data-status.is-success,
-html[data-theme="dark"] .achievement-item.is-unlocked .achievement-status {
+html[data-theme="dark"] .data-status.is-success {
   color: #69c99b;
 }
 
@@ -2449,7 +2308,6 @@ html[data-theme="dark"] .plan-item.overdue .plan-meta {
     min-height: 48px;
   }
 
-  .achievement-toast,
   .action-toast {
     bottom: calc(82px + env(safe-area-inset-bottom));
   }
