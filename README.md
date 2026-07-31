@@ -1,4 +1,4 @@
-# Focus Plan
+# FanP
 
 一个使用原生 HTML、CSS 和 JavaScript 制作的计划管理与专注计时 Web
 项目，也是从零学习前端开发的课程项目。

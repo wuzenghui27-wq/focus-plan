@@ -1,6 +1,6 @@
 {
-  "name": "Focus Plan 我的计划表",
-  "short_name": "Focus Plan",
+  "name": "FanP 我的计划表",
+  "short_name": "FanP",
   "description": "管理每日计划、专注计时、统计与成就。",
   "lang": "zh-CN",
   "start_url": "./#plans",

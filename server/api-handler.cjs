@@ -122,7 +122,7 @@ function createApiHandler({ store, secret, isDevelopment, pushService }) {
 
         try {
           await pushService.sendNotification(subscription, {
-            title: "Focus Plan 推送测试",
+            title: "FanP 推送测试",
             body: "服务器已经可以向这台设备发送后台通知。",
             tag: "push-test",
             url: "./#settings"

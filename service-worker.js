@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v10";
+const CACHE_NAME = "focus-plan-shell-v11";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -156,7 +156,7 @@ function showPushNotification(payload) {
 
 self.addEventListener("push", function (event) {
   const fallback = {
-    title: "Focus Plan",
+    title: "FanP",
     body: "你有一条新的计划提醒。",
     tag: "focus-plan-push",
     url: "./#plans"

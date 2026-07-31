@@ -462,7 +462,7 @@ function renderAppPage(pageName, shouldScroll) {
     tab.tabIndex = isActive ? 0 : -1;
   });
   document.title =
-    window.NavigationTools.getPageTitle(activePage) + " · Focus Plan";
+    window.NavigationTools.getPageTitle(activePage) + " · FanP";
 
   if (shouldScroll) {
     window.scrollTo({ top: 0, behavior: "auto" });

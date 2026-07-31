@@ -142,7 +142,7 @@
       appIcon.textContent = "FP";
       content.className = "app-reminder-content";
       meta.className = "app-reminder-meta";
-      appName.textContent = "Focus Plan";
+      appName.textContent = "FanP";
       time.dateTime = new Date().toISOString();
       time.textContent = "现在";
       title.textContent = reminder.title;

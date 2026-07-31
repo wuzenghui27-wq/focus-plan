@@ -82,7 +82,7 @@ const server = http.createServer(async function (request, response) {
 
 server.listen(PORT, HOST, function () {
   reminderScheduler.start();
-  console.log(`Focus Plan is running at http://${HOST}:${PORT}`);
+  console.log(`FanP is running at http://${HOST}:${PORT}`);
 });
 
 function shutDown() {
