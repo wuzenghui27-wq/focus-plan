@@ -488,6 +488,61 @@
       </section>
 
       <section
+        id="dictionaryPage"
+        class="app-page"
+        data-page="dictionary"
+        role="tabpanel"
+        aria-labelledby="dictionaryPageHeading"
+        hidden
+      >
+        <div class="page-heading dictionary-page-heading">
+          <div>
+            <p>词典</p>
+            <h2 id="dictionaryPageHeading">查词</h2>
+          </div>
+        </div>
+
+        <section class="panel dictionary-panel" aria-labelledby="dictionarySearchHeading">
+          <h2 id="dictionarySearchHeading" class="visually-hidden">查询单词</h2>
+          <form id="dictionaryForm" class="dictionary-form">
+            <label class="visually-hidden" for="dictionaryQuery">单词或中文词语</label>
+            <div class="dictionary-search-field">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="m20 20-4-4"></path>
+              </svg>
+              <input
+                id="dictionaryQuery"
+                type="search"
+                maxlength="60"
+                autocomplete="off"
+                enterkeyhint="search"
+                placeholder="输入英文单词或中文词语"
+              >
+              <span id="dictionaryDirection" class="dictionary-direction">自动识别</span>
+            </div>
+            <button id="dictionarySubmitButton" class="primary-button" type="submit">
+              查询
+            </button>
+          </form>
+
+          <p id="dictionaryStatus" class="dictionary-status" role="status" aria-live="polite"></p>
+
+          <article id="dictionaryResult" class="dictionary-result" hidden>
+            <header class="dictionary-result-header">
+              <div>
+                <h3 id="dictionaryHeadword"></h3>
+                <p id="dictionaryPhonetic" class="dictionary-phonetic"></p>
+              </div>
+              <span id="dictionaryResultDirection" class="dictionary-result-direction"></span>
+            </header>
+            <div id="dictionaryEntries" class="dictionary-entries"></div>
+            <footer id="dictionaryProvider" class="dictionary-provider"></footer>
+          </article>
+        </section>
+      </section>
+
+      <section
         id="settingsPage"
         class="app-page"
         data-page="settings"
@@ -750,6 +805,21 @@
         class="app-tab"
         type="button"
         role="tab"
+        data-page-target="dictionary"
+        aria-controls="dictionaryPage"
+        aria-selected="false"
+      >
+        <svg class="app-tab-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path>
+          <path d="M8 7h8M8 11h6"></path>
+        </svg>
+        <span>查词</span>
+      </button>
+      <button
+        class="app-tab"
+        type="button"
+        role="tab"
         data-page-target="settings"
         aria-controls="settingsPage"
         aria-selected="false"
@@ -897,6 +967,8 @@
   <script src="push-reminder-tools.js"></script>
   <script src="timer-state-tools.js"></script>
   <script src="sound-tools.js"></script>
+  <script src="dictionary-tools.js"></script>
+  <script src="dictionary-api.js"></script>
   <script src="navigation-tools.js"></script>
   <script src="sync-tools.js"></script>
   <script src="sync-api.js"></script>

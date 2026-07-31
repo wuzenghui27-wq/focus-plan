@@ -8,10 +8,11 @@
   root.NavigationTools = tools;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const DEFAULT_PAGE = "plans";
-  const PAGE_NAMES = ["plans", "focus", "history", "settings"];
+  const PAGE_NAMES = ["plans", "focus", "history", "dictionary", "settings"];
   const PAGE_TITLES = {
     plans: "我的计划表",
     focus: "专注时长",
+    dictionary: "查词",
     history: "专注历史",
     settings: "设置"
   };

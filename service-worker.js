@@ -1,4 +1,4 @@
-const CACHE_NAME = "focus-plan-shell-v25";
+const CACHE_NAME = "focus-plan-shell-v26";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -23,6 +23,8 @@ const APP_SHELL = [
   "./session-tools.js",
   "./shortcut-tools.js",
   "./sound-tools.js",
+  "./dictionary-tools.js",
+  "./dictionary-api.js",
   "./storage-tools.js",
   "./subtask-tools.js",
   "./sync-api.js",

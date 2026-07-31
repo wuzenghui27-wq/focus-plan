@@ -14,7 +14,9 @@
 - Web Push 设备订阅、后台接收和测试推送
 - SQLite 后台提醒任务、到期调度和失败重试
 - 深色模式、本地数据管理和响应式布局
-- 四页移动端导航和 iPhone 安全区域适配
+- 五页移动端导航和 iPhone 安全区域适配
+- 英中输入自动识别、双语释义、英文词性和例句查词页
+- Oxford Dictionaries API 服务端代理，浏览器端不接触 API 密钥
 - PWA 主屏幕图标和离线应用外壳
 - 微信、QQ、手机号登录所需的云同步数据层和 API 契约
 - Node.js + SQLite 本地账号服务、手机号开发登录和手动云同步
@@ -36,6 +38,25 @@ npm.cmd run dev
 http://127.0.0.1:5500
 ```
 
+如果 `5500` 端口已被 Live Server 占用，可以临时改用其他端口：
+
+```powershell
+$env:PORT="5501"
+npm.cmd run dev
+```
+
+## Oxford 查词配置
+
+在 Oxford Dictionaries API 控制台创建凭据，然后把以下内容加入本地
+`.env` 文件：
+
+```text
+OXFORD_APP_ID=你的_App_ID
+OXFORD_APP_KEY=你的_App_Key
+```
+
+凭据只由 Node.js 服务读取，不要写入 `index.html` 或浏览器 JavaScript。
+
 ## 自动测试
 
 ```powershell
@@ -52,7 +73,10 @@ npm.cmd run check
 - `*-tools.js`：可独立测试的业务规则模块
 - `tests/`：Node.js 自动测试
 - `sound-tools.js`：卡农旋律音符、声音设置和数据规则
-- `navigation-tools.js`：四页导航、地址哈希和页面标题规则
+- `navigation-tools.js`：五页导航、地址哈希和页面标题规则
+- `dictionary-tools.js`：输入语言识别和词典结果规范化
+- `dictionary-api.js`：查词页的前端 API 边界
+- `server/oxford-dictionary.cjs`：Oxford 请求、响应解析和密钥保护
 - `sync-tools.js`：云同步快照和版本判断规则
 - `sync-api.js`：账号登录与云同步的前端 API 边界
 - `push-api.js`：Web Push 前端 API 与 VAPID 公钥转换

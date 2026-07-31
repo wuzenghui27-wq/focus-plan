@@ -54,7 +54,13 @@ function getCookie(request, name) {
   return "";
 }
 
-function createApiHandler({ store, secret, isDevelopment, pushService }) {
+function createApiHandler({
+  store,
+  secret,
+  isDevelopment,
+  pushService,
+  dictionaryService
+}) {
   function getSession(request) {
     const token = getCookie(request, "focus_plan_session");
     return {
@@ -67,6 +73,27 @@ function createApiHandler({ store, secret, isDevelopment, pushService }) {
 
   return async function handleApi(request, response, url) {
     try {
+      if (request.method === "GET" && url.pathname === "/api/dictionary") {
+        if (!dictionaryService?.isConfigured()) {
+          sendJson(response, 503, {
+            error: "词典服务尚未配置 Oxford API 凭据。"
+          });
+          return true;
+        }
+
+        try {
+          const result = await dictionaryService.lookup(
+            url.searchParams.get("q")
+          );
+          sendJson(response, 200, { result });
+        } catch (error) {
+          sendJson(response, error.statusCode || 502, {
+            error: error.message || "查词服务暂时不可用。"
+          });
+        }
+        return true;
+      }
+
       if (request.method === "GET" && url.pathname === "/api/push/config") {
         sendJson(response, 200, {
           configured: Boolean(pushService?.isConfigured()),

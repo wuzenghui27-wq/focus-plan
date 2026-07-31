@@ -5,6 +5,9 @@ const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
 const { createPushService } = require("../server/push-service.cjs");
 const {
+  createOxfordDictionary
+} = require("../server/oxford-dictionary.cjs");
+const {
   createReminderScheduler
 } = require("../server/reminder-scheduler.cjs");
 
@@ -21,11 +24,17 @@ const pushService = createPushService({
   publicKey: process.env.VAPID_PUBLIC_KEY,
   privateKey: process.env.VAPID_PRIVATE_KEY
 });
+const dictionaryService = createOxfordDictionary({
+  appId: process.env.OXFORD_APP_ID,
+  appKey: process.env.OXFORD_APP_KEY,
+  baseUrl: process.env.OXFORD_API_BASE_URL
+});
 const handleApi = createApiHandler({
   store: accountStore,
   secret: process.env.SESSION_SECRET || "local-development-secret",
   isDevelopment: true,
-  pushService
+  pushService,
+  dictionaryService
 });
 const reminderScheduler = createReminderScheduler({
   store: accountStore,

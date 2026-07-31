@@ -18,6 +18,8 @@ const REQUIRED_MODULES = [
   "PushReminderTools",
   "TimerStateTools",
   "SoundTools",
+  "DictionaryTools",
+  "DictionaryApi",
   "NavigationTools",
   "SyncTools",
   "SyncApi",
@@ -183,6 +185,18 @@ const elements = {
   clearHistoryButton: document.querySelector("#clearHistoryButton"),
   resetAppButton: document.querySelector("#resetAppButton"),
   dataManagementStatus: document.querySelector("#dataManagementStatus"),
+  dictionaryForm: document.querySelector("#dictionaryForm"),
+  dictionaryQueryInput: document.querySelector("#dictionaryQuery"),
+  dictionaryDirection: document.querySelector("#dictionaryDirection"),
+  dictionarySubmitButton: document.querySelector("#dictionarySubmitButton"),
+  dictionaryStatus: document.querySelector("#dictionaryStatus"),
+  dictionaryResult: document.querySelector("#dictionaryResult"),
+  dictionaryHeadword: document.querySelector("#dictionaryHeadword"),
+  dictionaryPhonetic: document.querySelector("#dictionaryPhonetic"),
+  dictionaryResultDirection:
+    document.querySelector("#dictionaryResultDirection"),
+  dictionaryEntries: document.querySelector("#dictionaryEntries"),
+  dictionaryProvider: document.querySelector("#dictionaryProvider"),
   planDetailsDialog: document.querySelector("#planDetailsDialog"),
   planDetailsTitle: document.querySelector("#planDetailsTitle"),
   planDetailsMeta: document.querySelector("#planDetailsMeta"),
@@ -297,6 +311,10 @@ const syncApi = window.SyncApi.createSyncApi(
   "/api"
 );
 const pushApi = window.PushApi.createPushApi(
+  window.fetch.bind(window),
+  "/api"
+);
+const dictionaryApi = window.DictionaryApi.createDictionaryApi(
   window.fetch.bind(window),
   "/api"
 );
@@ -477,6 +495,146 @@ function handlePageHashChange() {
     window.NavigationTools.getPageFromHash(window.location.hash),
     true
   );
+}
+
+/* ===== Dictionary ===== */
+
+const PART_OF_SPEECH_LABELS = {
+  adjective: "形容词",
+  adverb: "副词",
+  conjunction: "连词",
+  interjection: "感叹词",
+  noun: "名词",
+  preposition: "介词",
+  pronoun: "代词",
+  verb: "动词"
+};
+
+function getPartOfSpeechLabel(value) {
+  const partOfSpeech = String(value || "").trim();
+  const normalized = partOfSpeech.toLowerCase();
+  const chineseLabel = PART_OF_SPEECH_LABELS[normalized];
+
+  return chineseLabel
+    ? chineseLabel + " · " + normalized
+    : (partOfSpeech || "释义");
+}
+
+function updateDictionaryDirection() {
+  const query = window.DictionaryTools.normalizeQuery(
+    elements.dictionaryQueryInput.value
+  );
+
+  elements.dictionaryDirection.textContent = query === ""
+    ? "自动识别"
+    : (window.DictionaryTools.detectDirection(query) === "zh-en"
+      ? "中 → 英"
+      : "英 → 中");
+}
+
+function handleDictionaryQueryInput() {
+  updateDictionaryDirection();
+  elements.dictionaryResult.hidden = true;
+  setDictionaryStatus("", "");
+}
+
+function setDictionaryStatus(message, type) {
+  elements.dictionaryStatus.textContent = message;
+  elements.dictionaryStatus.dataset.type = type || "";
+}
+
+function createDictionaryMeaning(meaning, index) {
+  const item = document.createElement("div");
+  const number = document.createElement("span");
+  const content = document.createElement("div");
+
+  item.className = "dictionary-meaning";
+  number.className = "dictionary-meaning-number";
+  content.className = "dictionary-meaning-content";
+  number.textContent = String(index + 1);
+
+  if (meaning.chinese) {
+    const chinese = document.createElement("p");
+    chinese.className = "dictionary-meaning-chinese";
+    chinese.textContent = meaning.chinese;
+    content.appendChild(chinese);
+  }
+  if (meaning.english) {
+    const english = document.createElement("p");
+    english.className = "dictionary-meaning-english";
+    english.textContent = meaning.english;
+    content.appendChild(english);
+  }
+  if (meaning.example) {
+    const example = document.createElement("p");
+    example.className = "dictionary-example";
+    example.textContent = meaning.example;
+    content.appendChild(example);
+  }
+
+  item.appendChild(number);
+  item.appendChild(content);
+  return item;
+}
+
+function renderDictionaryResult(rawResult) {
+  const result = window.DictionaryTools.normalizeLookupResult(rawResult);
+
+  elements.dictionaryHeadword.textContent = result.headword;
+  elements.dictionaryPhonetic.textContent = result.phonetic
+    ? "/" + result.phonetic.replace(/^\/+|\/+$/g, "") + "/"
+    : "";
+  elements.dictionaryPhonetic.hidden = !result.phonetic;
+  elements.dictionaryResultDirection.textContent = result.direction === "zh-en"
+    ? "中 → 英"
+    : "英 → 中";
+  elements.dictionaryEntries.innerHTML = "";
+
+  result.entries.forEach(function (entry) {
+    const section = document.createElement("section");
+    const heading = document.createElement("h4");
+
+    section.className = "dictionary-entry";
+    heading.textContent = getPartOfSpeechLabel(entry.partOfSpeech);
+    section.appendChild(heading);
+    entry.meanings.forEach(function (meaning, index) {
+      section.appendChild(createDictionaryMeaning(meaning, index));
+    });
+    elements.dictionaryEntries.appendChild(section);
+  });
+
+  elements.dictionaryProvider.textContent = "内容来源：" + result.provider;
+  elements.dictionaryResult.hidden = false;
+}
+
+async function handleDictionarySubmit(event) {
+  event.preventDefault();
+  const validation = window.DictionaryTools.validateQuery(
+    elements.dictionaryQueryInput.value
+  );
+
+  if (!validation.valid) {
+    elements.dictionaryResult.hidden = true;
+    setDictionaryStatus(validation.message, "error");
+    elements.dictionaryQueryInput.focus();
+    return;
+  }
+
+  elements.dictionarySubmitButton.disabled = true;
+  elements.dictionarySubmitButton.textContent = "查询中";
+  elements.dictionaryResult.hidden = true;
+  setDictionaryStatus("正在查询…", "loading");
+
+  try {
+    const result = await dictionaryApi.lookup(validation.value);
+    renderDictionaryResult(result);
+    setDictionaryStatus("", "");
+  } catch (error) {
+    setDictionaryStatus(error.message, "error");
+  } finally {
+    elements.dictionarySubmitButton.disabled = false;
+    elements.dictionarySubmitButton.textContent = "查询";
+  }
 }
 
 function handleAppTabKeydown(event) {
@@ -3449,6 +3607,11 @@ function bindEvents() {
 
   elements.clearHistoryButton.addEventListener("click", clearFocusHistory);
   elements.resetAppButton.addEventListener("click", resetApplicationData);
+  elements.dictionaryForm.addEventListener("submit", handleDictionarySubmit);
+  elements.dictionaryQueryInput.addEventListener(
+    "input",
+    handleDictionaryQueryInput
+  );
   elements.sendPhoneCodeButton.addEventListener("click", sendPhoneCode);
   elements.phoneLoginForm.addEventListener("submit", signInWithPhone);
   elements.uploadSyncButton.addEventListener("click", uploadCloudData);

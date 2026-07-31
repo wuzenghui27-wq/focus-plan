@@ -1509,7 +1509,7 @@ button {
   }
 
   .app-tabbar {
-    grid-template-columns: repeat(4, minmax(64px, 1fr));
+    grid-template-columns: repeat(5, minmax(56px, 1fr));
     gap: 0;
     padding:
       6px
@@ -1915,6 +1915,32 @@ html[data-theme="dark"] .settings-list {
 html[data-theme="dark"] .data-actions {
   border-color: #61403e;
   background-color: var(--fp-coral-soft);
+}
+
+html[data-theme="dark"] .dictionary-search-field {
+  border-color: var(--fp-line);
+  background-color: var(--fp-surface);
+}
+
+html[data-theme="dark"] .dictionary-search-field input,
+html[data-theme="dark"] .dictionary-meaning-chinese {
+  color: var(--fp-text);
+}
+
+html[data-theme="dark"] .dictionary-result,
+html[data-theme="dark"] .dictionary-entry,
+html[data-theme="dark"] .dictionary-provider {
+  border-color: var(--fp-line);
+}
+
+html[data-theme="dark"] .dictionary-result-direction,
+html[data-theme="dark"] .dictionary-meaning-number {
+  color: var(--fp-brand);
+  background-color: var(--fp-brand-soft);
+}
+
+html[data-theme="dark"] .dictionary-example {
+  color: var(--fp-text-muted);
 }
 
 @media (max-width: 900px) {
