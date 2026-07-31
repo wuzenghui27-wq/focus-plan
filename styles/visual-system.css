@@ -1271,6 +1271,72 @@ button {
     font-size: 28px;
   }
 
+  .form-field input,
+  .form-field select,
+  .form-field textarea,
+  .plan-search-field input,
+  .plan-sort-field select,
+  .plan-tag-filter select,
+  .history-plan-filter select,
+  .daily-goal-form input,
+  .subtask-form input,
+  .account-input-row input,
+  .sound-preview-row select,
+  .timer-cycle-length select {
+    min-height: 46px;
+    border-color: var(--fp-line);
+    border-radius: 10px;
+    background-color: var(--fp-surface);
+    box-shadow:
+      inset 0 1px 1px rgba(20, 42, 65, 0.025),
+      0 1px 2px rgba(20, 42, 65, 0.035);
+  }
+
+  .form-field select,
+  .plan-sort-field select,
+  .plan-tag-filter select,
+  .history-plan-filter select,
+  .sound-preview-row select,
+  .timer-cycle-length select {
+    padding-right: 38px;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus,
+  .plan-search-field input:focus,
+  .plan-sort-field select:focus,
+  .plan-tag-filter select:focus,
+  .history-plan-filter select:focus,
+  .daily-goal-form input:focus,
+  .subtask-form input:focus,
+  .account-input-row input:focus,
+  .sound-preview-row select:focus,
+  .timer-cycle-length select:focus {
+    border-color: var(--fp-sky);
+    outline: 3px solid rgba(120, 185, 233, 0.18);
+    box-shadow: none;
+  }
+
+  .segmented-control {
+    overflow: hidden;
+    border-color: var(--fp-line);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(20, 42, 65, 0.035);
+  }
+
+  .primary-button,
+  .secondary-button,
+  .danger-button,
+  .details-button,
+  .edit-button,
+  .delete-button,
+  .duration-button,
+  .plan-quick-time-options button,
+  .theme-switch {
+    border-radius: var(--fp-radius-md);
+  }
+
   .app-tabbar {
     grid-template-columns: repeat(4, minmax(64px, 1fr));
     gap: 0;
@@ -1680,6 +1746,25 @@ html[data-theme="dark"] .settings-list {
 html[data-theme="dark"] .data-actions {
   border-color: #61403e;
   background-color: var(--fp-coral-soft);
+}
+
+@media (max-width: 900px) {
+  html[data-theme="dark"] .form-field input,
+  html[data-theme="dark"] .form-field select,
+  html[data-theme="dark"] .form-field textarea,
+  html[data-theme="dark"] .plan-search-field input,
+  html[data-theme="dark"] .plan-sort-field select,
+  html[data-theme="dark"] .plan-tag-filter select,
+  html[data-theme="dark"] .history-plan-filter select,
+  html[data-theme="dark"] .daily-goal-form input,
+  html[data-theme="dark"] .subtask-form input,
+  html[data-theme="dark"] .account-input-row input,
+  html[data-theme="dark"] .sound-preview-row select,
+  html[data-theme="dark"] .timer-cycle-length select {
+    border-color: var(--fp-line);
+    background-color: var(--fp-surface-subtle);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
 }
 
 html[data-theme="dark"] .session-item::before {
