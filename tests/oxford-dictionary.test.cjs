@@ -104,6 +104,17 @@ const sentencePayload = {
     return error.statusCode === 503;
   });
 
+  const offlineDictionary = createOxfordDictionary({
+    appId: "app-id",
+    appKey: "app-key",
+    fetchImpl: async function () {
+      throw new TypeError("fetch failed");
+    }
+  });
+  await assert.rejects(offlineDictionary.lookup("apple"), function (error) {
+    return error.statusCode === 502 && /无法连接 Oxford/.test(error.message);
+  });
+
   console.log("Oxford dictionary: all tests passed");
 })().catch(function (error) {
   console.error(error);

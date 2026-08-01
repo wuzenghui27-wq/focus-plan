@@ -159,13 +159,22 @@ function createOxfordDictionary(options) {
   }
 
   async function fetchOxford(pathname) {
-    const response = await fetchImpl(baseUrl + pathname, {
-      headers: {
-        Accept: "application/json",
-        app_id: appId,
-        app_key: appKey
-      }
-    });
+    let response;
+
+    try {
+      response = await fetchImpl(baseUrl + pathname, {
+        headers: {
+          Accept: "application/json",
+          app_id: appId,
+          app_key: appKey
+        }
+      });
+    } catch (error) {
+      throw createHttpError(
+        "无法连接 Oxford 查词服务，请检查网络后重试。",
+        502
+      );
+    }
 
     if (!response.ok) {
       if (response.status === 404) {
