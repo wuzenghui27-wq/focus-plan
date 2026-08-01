@@ -543,36 +543,53 @@ function setDictionaryStatus(message, type) {
   elements.dictionaryStatus.dataset.type = type || "";
 }
 
-function createDictionaryMeaning(meaning, index) {
+function createDictionaryMeaning(meaning) {
   const item = document.createElement("div");
-  const number = document.createElement("span");
   const content = document.createElement("div");
 
   item.className = "dictionary-meaning";
-  number.className = "dictionary-meaning-number";
   content.className = "dictionary-meaning-content";
-  number.textContent = String(index + 1);
 
-  if (meaning.chinese) {
-    const chinese = document.createElement("p");
-    chinese.className = "dictionary-meaning-chinese";
-    chinese.textContent = meaning.chinese;
-    content.appendChild(chinese);
-  }
   if (meaning.english) {
+    const field = document.createElement("div");
+    const label = document.createElement("span");
     const english = document.createElement("p");
+    field.className = "dictionary-result-field";
+    label.className = "dictionary-field-label";
+    label.textContent = "英英释义";
     english.className = "dictionary-meaning-english";
     english.textContent = meaning.english;
-    content.appendChild(english);
+    field.appendChild(label);
+    field.appendChild(english);
+    content.appendChild(field);
+  }
+  if (meaning.chinese) {
+    const field = document.createElement("div");
+    const label = document.createElement("span");
+    const chinese = document.createElement("p");
+    field.className = "dictionary-result-field";
+    label.className = "dictionary-field-label";
+    label.textContent = "中文意思";
+    chinese.className = "dictionary-meaning-chinese";
+    chinese.textContent = meaning.chinese;
+    field.appendChild(label);
+    field.appendChild(chinese);
+    content.appendChild(field);
   }
   if (meaning.example) {
+    const field = document.createElement("div");
+    const label = document.createElement("span");
     const example = document.createElement("p");
+    field.className = "dictionary-result-field";
+    label.className = "dictionary-field-label";
+    label.textContent = "英文例句";
     example.className = "dictionary-example";
     example.textContent = meaning.example;
-    content.appendChild(example);
+    field.appendChild(label);
+    field.appendChild(example);
+    content.appendChild(field);
   }
 
-  item.appendChild(number);
   item.appendChild(content);
   return item;
 }
@@ -597,8 +614,8 @@ function renderDictionaryResult(rawResult) {
     section.className = "dictionary-entry";
     heading.textContent = getPartOfSpeechLabel(entry.partOfSpeech);
     section.appendChild(heading);
-    entry.meanings.forEach(function (meaning, index) {
-      section.appendChild(createDictionaryMeaning(meaning, index));
+    entry.meanings.forEach(function (meaning) {
+      section.appendChild(createDictionaryMeaning(meaning));
     });
     elements.dictionaryEntries.appendChild(section);
   });

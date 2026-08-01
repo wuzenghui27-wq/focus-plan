@@ -13,6 +13,9 @@ const {
 const {
   createOpenDictionary
 } = require("../server/open-dictionary.cjs");
+const {
+  createTatoebaProvider
+} = require("../server/tatoeba-provider.cjs");
 
 const sampleData = [
   "# CC-CEDICT sample",
@@ -38,14 +41,17 @@ const sampleData = [
   assert.strictEqual(cedict.findEnglish("focus")[0].simplified, "专注");
 
   const payload = [{
-    word: "focus",
-    phonetic: "/ˈfəʊkəs/",
+    word: "apple",
+    phonetic: "/ˈæp.əl/",
     meanings: [{
       partOfSpeech: "noun",
-      definitions: [{
-        definition: "the main subject receiving attention",
-        example: "Learning is the focus of today's plan."
-      }]
+      definitions: [
+        { definition: "A common, round fruit produced by an apple tree." },
+        { definition: "The tree that produces apples." }
+      ]
+    }, {
+      partOfSpeech: "verb",
+      definitions: [{ definition: "To become apple-like." }]
     }]
   }];
   const provider = createFreeDictionaryProvider({
@@ -60,12 +66,37 @@ const sampleData = [
       };
     }
   });
-  const dictionary = createOpenDictionary({ cedict, englishProvider: provider });
+  const exampleProvider = createTatoebaProvider({
+    cacheDirectory: path.join(temporaryDirectory, "cache"),
+    fetchImpl: async function () {
+      return {
+        ok: true,
+        json: async function () {
+          return { data: [{ text: "The little apple is red." }] };
+        }
+      };
+    }
+  });
+  const dictionary = createOpenDictionary({
+    cedict,
+    englishProvider: provider,
+    exampleProvider
+  });
 
-  const englishResult = await dictionary.lookup("focus");
+  const englishResult = await dictionary.lookup("apple");
   assert.strictEqual(englishResult.direction, "en-zh");
-  assert.strictEqual(englishResult.phonetic, "/ˈfəʊkəs/");
-  assert.match(englishResult.entries[0].meanings[0].chinese, /专注/);
+  assert.strictEqual(englishResult.phonetic, "/ˈæp.əl/");
+  assert.strictEqual(englishResult.entries.length, 1);
+  assert.strictEqual(englishResult.entries[0].meanings.length, 1);
+  assert.strictEqual(englishResult.entries[0].meanings[0].chinese, "苹果");
+  assert.strictEqual(
+    englishResult.entries[0].meanings[0].english,
+    "A common, round fruit produced by an apple tree."
+  );
+  assert.strictEqual(
+    englishResult.entries[0].meanings[0].example,
+    "The little apple is red."
+  );
 
   const chineseResult = await dictionary.lookup("专注");
   assert.strictEqual(chineseResult.direction, "zh-en");
@@ -81,9 +112,7 @@ const sampleData = [
       }
     }
   });
-  const fallbackResult = await offlineDictionary.lookup("苹果");
-  assert.strictEqual(fallbackResult.provider, "CC-CEDICT");
-  assert.strictEqual(fallbackResult.entries[0].meanings[0].english, "apple");
+  await assert.rejects(offlineDictionary.lookup("苹果"), /offline/);
 
   fs.rmSync(temporaryDirectory, { recursive: true, force: true });
   console.log("Open dictionary: all tests passed");

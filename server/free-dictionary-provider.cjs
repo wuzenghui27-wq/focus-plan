@@ -42,7 +42,10 @@ function createFreeDictionaryProvider(options) {
 
     let response;
     try {
-      response = await fetchImpl(baseUrl + "/" + encodeURIComponent(normalizedWord));
+      response = await fetchImpl(
+        baseUrl + "/" + encodeURIComponent(normalizedWord),
+        { signal: AbortSignal.timeout(5000) }
+      );
     } catch (error) {
       throw createHttpError("无法连接开源英文词典，请检查网络后重试。", 502);
     }

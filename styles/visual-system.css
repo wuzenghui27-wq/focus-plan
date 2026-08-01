@@ -1927,14 +1927,18 @@ html[data-theme="dark"] .dictionary-meaning-chinese {
   color: var(--fp-text);
 }
 
+html[data-theme="dark"] .dictionary-meaning-english,
+html[data-theme="dark"] .dictionary-field-label {
+  color: var(--fp-text-muted);
+}
+
 html[data-theme="dark"] .dictionary-result,
 html[data-theme="dark"] .dictionary-entry,
 html[data-theme="dark"] .dictionary-provider {
   border-color: var(--fp-line);
 }
 
-html[data-theme="dark"] .dictionary-result-direction,
-html[data-theme="dark"] .dictionary-meaning-number {
+html[data-theme="dark"] .dictionary-result-direction {
   color: var(--fp-brand);
   background-color: var(--fp-brand-soft);
 }
