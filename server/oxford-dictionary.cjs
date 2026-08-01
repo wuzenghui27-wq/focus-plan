@@ -69,10 +69,40 @@ function getFirstTranslation(payload) {
   return "";
 }
 
-function parseEnglishEntries(payload, translations, fallbackChinese) {
+function getSentencesByPartOfSpeech(payload) {
+  const sentences = new Map();
+
+  for (const lexicalEntry of getLexicalEntries(payload)) {
+    const partOfSpeech = getLexicalCategory(lexicalEntry).toLowerCase();
+    const examples = (Array.isArray(lexicalEntry.sentences)
+      ? lexicalEntry.sentences
+      : []).map(function (sentence) {
+      return String(sentence.text || "").trim();
+    }).filter(Boolean);
+
+    if (examples.length > 0) {
+      sentences.set(partOfSpeech, examples);
+    }
+  }
+
+  return sentences;
+}
+
+function parseEnglishEntries(
+  payload,
+  translations,
+  fallbackChinese,
+  sentenceExamples
+) {
+  const examplesByPartOfSpeech = sentenceExamples || new Map();
+
   return getLexicalEntries(payload).map(function (lexicalEntry) {
     const partOfSpeech = getLexicalCategory(lexicalEntry);
+    const normalizedPartOfSpeech = partOfSpeech.toLowerCase();
     const translatedWords = translations.get(partOfSpeech.toLowerCase()) || [];
+    const fallbackExamples = examplesByPartOfSpeech.get(
+      normalizedPartOfSpeech
+    ) || [];
     const meanings = (Array.isArray(lexicalEntry.entries)
       ? lexicalEntry.entries
       : []).flatMap(function (entry) {
@@ -81,7 +111,12 @@ function parseEnglishEntries(payload, translations, fallbackChinese) {
             english: String(sense.definitions?.[0] || "").trim(),
             chinese: translatedWords[index] || translatedWords[0] ||
               fallbackChinese,
-            example: String(sense.examples?.[0]?.text || "").trim()
+            example: String(
+              sense.examples?.[0]?.text ||
+              fallbackExamples[index] ||
+              fallbackExamples[0] ||
+              ""
+            ).trim()
           };
         });
       }).filter(function (meaning) {
@@ -134,6 +169,12 @@ function createOxfordDictionary(options) {
 
     if (!response.ok) {
       if (response.status === 404) {
+        if (baseUrl.includes("sandbox")) {
+          throw createHttpError(
+            "Oxford Sandbox 仅开放限定词表，可用 apple 或“同意”测试。",
+            404
+          );
+        }
         throw createHttpError("没有找到这个词。", 404);
       }
       if ([401, 403].includes(response.status)) {
@@ -177,11 +218,36 @@ function createOxfordDictionary(options) {
     const translations = isChinese
       ? new Map()
       : getTranslationsByPartOfSpeech(translationPayload);
-    const entries = parseEnglishEntries(
+    let entries = parseEnglishEntries(
       entryPayload,
       translations,
       isChinese ? query : ""
     );
+
+    const needsExamples = entries.some(function (entry) {
+      return entry.meanings.some(function (meaning) {
+        return !meaning.example;
+      });
+    });
+
+    if (needsExamples) {
+      let sentencePayload = {};
+      try {
+        sentencePayload = await fetchOxford(
+          "/sentences/en-gb/" + encodeURIComponent(headword.toLowerCase())
+        );
+      } catch (error) {
+        if (error.statusCode !== 404) {
+          throw error;
+        }
+      }
+      entries = parseEnglishEntries(
+        entryPayload,
+        translations,
+        isChinese ? query : "",
+        getSentencesByPartOfSpeech(sentencePayload)
+      );
+    }
 
     if (entries.length === 0) {
       throw createHttpError("暂时没有可展示的释义。", 404);
@@ -203,6 +269,7 @@ function createOxfordDictionary(options) {
 module.exports = {
   createOxfordDictionary,
   getTranslationsByPartOfSpeech,
+  getSentencesByPartOfSpeech,
   parseEnglishEntries,
   getFirstTranslation
 };

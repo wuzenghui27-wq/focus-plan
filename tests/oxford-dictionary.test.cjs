@@ -16,10 +16,17 @@ const entryPayload = {
       entries: [{
         pronunciations: [{ phoneticSpelling: "ˈfəʊkəs" }],
         senses: [{
-          definitions: ["the centre of interest or activity"],
-          examples: [{ text: "This lesson is the focus of today's work." }]
+          definitions: ["the centre of interest or activity"]
         }]
       }]
+    }]
+  }]
+};
+const sentencePayload = {
+  results: [{
+    lexicalEntries: [{
+      lexicalCategory: { id: "noun", text: "Noun" },
+      sentences: [{ text: "Focus on one task at a time." }]
     }]
   }]
 };
@@ -34,9 +41,13 @@ const entryPayload = {
       return {
         ok: true,
         json: async function () {
-          return url.includes("/translations/")
-            ? translationPayload
-            : entryPayload;
+          if (url.includes("/translations/")) {
+            return translationPayload;
+          }
+          if (url.includes("/sentences/")) {
+            return sentencePayload;
+          }
+          return entryPayload;
         }
       };
     }
@@ -46,9 +57,14 @@ const entryPayload = {
   assert.strictEqual(result.direction, "en-zh");
   assert.strictEqual(result.phonetic, "ˈfəʊkəs");
   assert.strictEqual(result.entries[0].meanings[0].chinese, "专注");
+  assert.strictEqual(
+    result.entries[0].meanings[0].example,
+    "Focus on one task at a time."
+  );
   assert.strictEqual(requests[0].headers.app_id, "app-id");
   assert.match(requests[0].url, /translations\/en\/zh\/focus$/);
   assert.match(requests[1].url, /entries\/en-gb\/focus$/);
+  assert.match(requests[2].url, /sentences\/en-gb\/focus$/);
 
   const chineseRequests = [];
   const chineseDictionary = createOxfordDictionary({
@@ -68,6 +84,9 @@ const entryPayload = {
                 }]
               }]
             };
+          }
+          if (url.includes("/sentences/")) {
+            return sentencePayload;
           }
           return entryPayload;
         }

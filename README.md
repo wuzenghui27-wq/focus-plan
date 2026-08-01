@@ -57,6 +57,10 @@ OXFORD_APP_KEY=你的_App_Key
 
 凭据只由 Node.js 服务读取，不要写入 `index.html` 或浏览器 JavaScript。
 
+Sandbox 试用环境只开放各语言字母表首字母对应的有限词表。英文可使用
+`apple` 测试，中译英可使用“同意”测试；`focus` 等非 A 开头英文词会在
+Sandbox 返回 404，正式 API 不受这项试用限制。
+
 ## 自动测试
 
 ```powershell
