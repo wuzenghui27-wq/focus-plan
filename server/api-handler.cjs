@@ -76,7 +76,7 @@ function createApiHandler({
       if (request.method === "GET" && url.pathname === "/api/dictionary") {
         if (!dictionaryService?.isConfigured()) {
           sendJson(response, 503, {
-            error: "词典服务尚未配置 Oxford API 凭据。"
+            error: "开源词典服务尚未准备完成。"
           });
           return true;
         }

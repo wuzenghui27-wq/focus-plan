@@ -16,7 +16,7 @@
 - 深色模式、本地数据管理和响应式布局
 - 五页移动端导航和 iPhone 安全区域适配
 - 英中输入自动识别、双语释义、英文词性和例句查词页
-- Oxford Dictionaries API 服务端代理，浏览器端不接触 API 密钥
+- CC-CEDICT 英汉词库、开源英文释义和本地查询缓存
 - PWA 主屏幕图标和离线应用外壳
 - 微信、QQ、手机号登录所需的云同步数据层和 API 契约
 - Node.js + SQLite 本地账号服务、手机号开发登录和手动云同步
@@ -29,6 +29,7 @@
 ```powershell
 npm.cmd install
 npm.cmd run push:keys
+npm.cmd run dictionary:download
 npm.cmd run dev
 ```
 
@@ -45,21 +46,13 @@ $env:PORT="5501"
 npm.cmd run dev
 ```
 
-## Oxford 查词配置
+## 开源查词数据
 
-在 Oxford Dictionaries API 控制台创建凭据，然后把以下内容加入本地
-`.env` 文件：
+首次运行前执行 `npm.cmd run dictionary:download`，下载 CC-CEDICT 到本地
+`.data/` 目录。它负责中英翻译；英文释义、词性、音标和例句来自 Free
+Dictionary API，并在查询后缓存到本地。查词功能不需要账号或 API 密钥。
 
-```text
-OXFORD_APP_ID=你的_App_ID
-OXFORD_APP_KEY=你的_App_Key
-```
-
-凭据只由 Node.js 服务读取，不要写入 `index.html` 或浏览器 JavaScript。
-
-Sandbox 试用环境只开放各语言字母表首字母对应的有限词表。英文可使用
-`apple` 测试，中译英可使用“同意”测试；`focus` 等非 A 开头英文词会在
-Sandbox 返回 404，正式 API 不受这项试用限制。
+数据来源和许可证说明见 `docs/open-dictionary-data.md`。
 
 ## 自动测试
 
@@ -80,7 +73,9 @@ npm.cmd run check
 - `navigation-tools.js`：五页导航、地址哈希和页面标题规则
 - `dictionary-tools.js`：输入语言识别和词典结果规范化
 - `dictionary-api.js`：查词页的前端 API 边界
-- `server/oxford-dictionary.cjs`：Oxford 请求、响应解析和密钥保护
+- `server/cedict-store.cjs`：加载 CC-CEDICT 并建立中英文索引
+- `server/free-dictionary-provider.cjs`：英文释义请求和本地缓存
+- `server/open-dictionary.cjs`：自动识别方向并合并多个开源数据源
 - `sync-tools.js`：云同步快照和版本判断规则
 - `sync-api.js`：账号登录与云同步的前端 API 边界
 - `push-api.js`：Web Push 前端 API 与 VAPID 公钥转换

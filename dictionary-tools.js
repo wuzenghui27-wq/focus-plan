@@ -69,7 +69,7 @@
       headword: String(result.headword || result.query || "").trim(),
       phonetic: String(result.phonetic || "").trim(),
       entries: entries,
-      provider: String(result.provider || "Oxford Languages").trim()
+      provider: String(result.provider || "开源词典").trim()
     };
   }
 

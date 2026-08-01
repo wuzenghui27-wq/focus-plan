@@ -4,9 +4,11 @@ const path = require("path");
 const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
 const { createPushService } = require("../server/push-service.cjs");
+const { createCedictStore } = require("../server/cedict-store.cjs");
 const {
-  createOxfordDictionary
-} = require("../server/oxford-dictionary.cjs");
+  createFreeDictionaryProvider
+} = require("../server/free-dictionary-provider.cjs");
+const { createOpenDictionary } = require("../server/open-dictionary.cjs");
 const {
   createReminderScheduler
 } = require("../server/reminder-scheduler.cjs");
@@ -24,10 +26,15 @@ const pushService = createPushService({
   publicKey: process.env.VAPID_PUBLIC_KEY,
   privateKey: process.env.VAPID_PRIVATE_KEY
 });
-const dictionaryService = createOxfordDictionary({
-  appId: process.env.OXFORD_APP_ID,
-  appKey: process.env.OXFORD_APP_KEY,
-  baseUrl: process.env.OXFORD_API_BASE_URL
+const cedict = createCedictStore({
+  filePath: path.join(ROOT, ".data", "cedict_1_0_ts_utf-8_mdbg.txt.gz")
+});
+const englishDictionary = createFreeDictionaryProvider({
+  cacheDirectory: path.join(ROOT, ".data", "dictionary-cache")
+});
+const dictionaryService = createOpenDictionary({
+  cedict,
+  englishProvider: englishDictionary
 });
 const handleApi = createApiHandler({
   store: accountStore,
