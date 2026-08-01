@@ -16,11 +16,15 @@ const {
 const {
   createTatoebaProvider
 } = require("../server/tatoeba-provider.cjs");
+const {
+  normalizeWiktionaryPayload
+} = require("../server/wiktionary-provider.cjs");
 
 const sampleData = [
   "# CC-CEDICT sample",
   "專注 专注 [zhuan1 zhu4] /to focus/to concentrate/",
-  "蘋果 苹果 [ping2 guo3] /apple/"
+  "蘋果 苹果 [ping2 guo3] /apple/",
+  "偷取 偷取 [tou1 qu3] /to steal/"
 ].join("\n");
 
 (async function () {
@@ -101,6 +105,85 @@ const sampleData = [
   const chineseResult = await dictionary.lookup("专注");
   assert.strictEqual(chineseResult.direction, "zh-en");
   assert.strictEqual(chineseResult.headword, "focus");
+
+  const wiktionaryPayload = normalizeWiktionaryPayload("steal", {
+    en: [{
+      partOfSpeech: "Verb",
+      definitions: [{
+        definition: "To take <a href=\"/wiki/illegally\">illegally</a> without permission.",
+        parsedExamples: [{
+          example: "They <b>stole</b> all my money."
+        }]
+      }]
+    }]
+  });
+  assert.strictEqual(
+    wiktionaryPayload[0].meanings[0].definitions[0].definition,
+    "To take illegally without permission."
+  );
+  assert.strictEqual(
+    wiktionaryPayload[0].meanings[0].definitions[0].example,
+    "They stole all my money."
+  );
+
+  const fallbackDictionary = createOpenDictionary({
+    cedict,
+    englishProvider: {
+      lookup: async function () {
+        const error = new Error("primary unavailable");
+        error.statusCode = 502;
+        throw error;
+      }
+    },
+    fallbackEnglishProvider: {
+      lookup: async function () {
+        return wiktionaryPayload;
+      }
+    },
+    exampleProvider
+  });
+  const fallbackResult = await fallbackDictionary.lookup("steal");
+  assert.strictEqual(fallbackResult.entries[0].meanings[0].chinese, "偷取");
+  assert.strictEqual(
+    fallbackResult.entries[0].meanings[0].example,
+    "They stole all my money."
+  );
+  assert.strictEqual(
+    fallbackResult.provider,
+    "CC-CEDICT · Wiktionary"
+  );
+
+  const priorityDictionary = createOpenDictionary({
+    cedict,
+    englishProvider: {
+      lookup: async function () {
+        return [{
+          word: "steal",
+          meanings: [{
+            partOfSpeech: "noun",
+            definitions: [{ definition: "The act of stealing." }]
+          }, {
+            partOfSpeech: "verb",
+            definitions: [{
+              definition: "To take something without permission.",
+              example: "Someone stole my bicycle."
+            }]
+          }]
+        }];
+      }
+    },
+    exampleProvider
+  });
+  const priorityResult = await priorityDictionary.lookup("steal");
+  assert.strictEqual(priorityResult.entries[0].partOfSpeech, "verb");
+  assert.strictEqual(
+    priorityResult.entries[0].meanings[0].english,
+    "To take something without permission."
+  );
+  assert.strictEqual(
+    priorityResult.entries[0].meanings[0].example,
+    "Someone stole my bicycle."
+  );
 
   const offlineDictionary = createOpenDictionary({
     cedict,

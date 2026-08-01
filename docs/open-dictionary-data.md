@@ -6,6 +6,9 @@ FanP uses the following open dictionary projects:
   CC BY-SA 4.0. Source: https://cc-cedict.org/
 - Free Dictionary API: English definitions, parts of speech, phonetics and
   examples. Project: https://dictionaryapi.dev/
+- English Wiktionary: fallback English definitions and examples when the
+  primary API is unavailable. Licensed under CC BY-SA.
+  Project: https://en.wiktionary.org/
 - Tatoeba: fallback English example sentences. Sentence licenses are returned
   by the API; current search results use CC BY 2.0 FR.
   Project: https://tatoeba.org/

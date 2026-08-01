@@ -11,6 +11,9 @@ const {
 const { createOpenDictionary } = require("../server/open-dictionary.cjs");
 const { createTatoebaProvider } = require("../server/tatoeba-provider.cjs");
 const {
+  createWiktionaryProvider
+} = require("../server/wiktionary-provider.cjs");
+const {
   createReminderScheduler
 } = require("../server/reminder-scheduler.cjs");
 
@@ -36,9 +39,13 @@ const englishDictionary = createFreeDictionaryProvider({
 const exampleDictionary = createTatoebaProvider({
   cacheDirectory: path.join(ROOT, ".data", "dictionary-cache")
 });
+const fallbackEnglishDictionary = createWiktionaryProvider({
+  cacheDirectory: path.join(ROOT, ".data", "dictionary-cache")
+});
 const dictionaryService = createOpenDictionary({
   cedict,
   englishProvider: englishDictionary,
+  fallbackEnglishProvider: fallbackEnglishDictionary,
   exampleProvider: exampleDictionary
 });
 const handleApi = createApiHandler({
