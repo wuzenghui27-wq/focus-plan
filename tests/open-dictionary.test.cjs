@@ -185,6 +185,76 @@ const sampleData = [
     "Someone stole my bicycle."
   );
 
+  const ambiguousChineseDictionary = createOpenDictionary({
+    cedict: {
+      findEnglish: function () { return []; },
+      findChinese: function (query) {
+        if (query === "\u5feb\u901f") {
+          return [{
+            simplified: query,
+            definitions: ["fast; high-speed; rapid"]
+          }];
+        }
+        if (query === "\u521b\u5efa") {
+          return [{
+            simplified: query,
+            definitions: ["to found; to establish"]
+          }];
+        }
+        if (query === "\u53bb") {
+          return [{ simplified: query, definitions: ["to go"] }];
+        }
+        if (query === "\u4e66") {
+          return [{
+            simplified: query,
+            definitions: ["book", "letter", "document"]
+          }];
+        }
+        return [];
+      }
+    },
+    englishProvider: {
+      lookup: async function (word) {
+        const definitions = {
+          fast: [
+            "Firmly or securely fixed in place; stable.",
+            "Moving with great speed; swift and rapid."
+          ],
+          found: ["simple past and past participle of find"],
+          establish: ["To set up or create something."],
+          go: ["To move from one place to another."],
+          book: [
+            "A bound collection of written pages.",
+            "An award documented by a letter."
+          ]
+        };
+        return [{
+          word,
+          meanings: [{
+            partOfSpeech: word === "fast" ? "adjective" : "verb",
+            definitions: definitions[word].map(function (definition) {
+              return { definition };
+            })
+          }]
+        }];
+      }
+    }
+  });
+  const fastResult = await ambiguousChineseDictionary.lookup("\u5feb\u901f");
+  assert.strictEqual(
+    fastResult.entries[0].meanings[0].english,
+    "Moving with great speed; swift and rapid."
+  );
+  const createResult = await ambiguousChineseDictionary.lookup("\u521b\u5efa");
+  assert.strictEqual(createResult.headword, "establish");
+  const particleResult = await ambiguousChineseDictionary.lookup("\u53bb\u4e86");
+  assert.strictEqual(particleResult.headword, "go");
+  const bookResult = await ambiguousChineseDictionary.lookup("\u4e66");
+  assert.strictEqual(
+    bookResult.entries[0].meanings[0].english,
+    "A bound collection of written pages."
+  );
+
   const offlineDictionary = createOpenDictionary({
     cedict,
     englishProvider: {

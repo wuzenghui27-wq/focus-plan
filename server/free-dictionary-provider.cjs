@@ -33,6 +33,24 @@ function createFreeDictionaryProvider(options) {
     fs.writeFileSync(getCachePath(word), JSON.stringify(payload), "utf8");
   }
 
+  async function retryFetch(url, init) {
+    let lastError;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetchImpl(url, {
+          ...init,
+          signal: AbortSignal.timeout(5000)
+        });
+        if (response.ok || response.status === 404 || attempt === 1) {
+          return response;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("Dictionary request failed");
+  }
+
   async function lookup(word) {
     const normalizedWord = String(word || "").toLowerCase().trim();
     const cached = readCache(normalizedWord);
@@ -42,7 +60,7 @@ function createFreeDictionaryProvider(options) {
 
     let response;
     try {
-      response = await fetchImpl(
+      response = await retryFetch(
         baseUrl + "/" + encodeURIComponent(normalizedWord),
         { signal: AbortSignal.timeout(5000) }
       );

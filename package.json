@@ -10,6 +10,7 @@
     "check": "node --check server/account-store.cjs && node --check server/api-handler.cjs && node --check server/cedict-store.cjs && node --check server/free-dictionary-provider.cjs && node --check server/tatoeba-provider.cjs && node --check server/wiktionary-provider.cjs && node --check server/open-dictionary.cjs && node --check server/push-service.cjs && node --check server/reminder-scheduler.cjs && node --check session-tools.js && node --check storage-tools.js && node --check timer-tools.js && node --check theme-tools.js && node --check plan-tools.js && node --check plan-form-tools.js && node --check undo-tools.js && node --check shortcut-tools.js && node --check recurrence-tools.js && node --check reminder-tools.js && node --check reminder-presenter.js && node --check text-tools.js && node --check subtask-tools.js && node --check goal-tools.js && node --check pomodoro-tools.js && node --check push-reminder-tools.js && node --check timer-state-tools.js && node --check sound-tools.js && node --check navigation-tools.js && node --check dictionary-tools.js && node --check dictionary-api.js && node --check sync-tools.js && node --check sync-api.js && node --check push-api.js && node --check select-menu.js && node --check service-worker.js && node --check script.js && node --check tools/dev-server.cjs && node --check tools/download-open-dictionaries.cjs && node --check tools/generate-vapid-keys.cjs && npm test"
   },
   "dependencies": {
+    "chinese-lexicon": "^1.0.43",
     "html-to-text": "^9.0.5",
     "web-push": "^3.6.7"
   }

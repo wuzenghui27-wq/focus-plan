@@ -19,7 +19,7 @@ function toPlainText(value) {
 function normalizeWiktionaryPayload(word, payload) {
   const englishEntries = Array.isArray(payload?.en) ? payload.en : [];
 
-  for (const entry of englishEntries) {
+  return englishEntries.map(function (entry) {
     const definitions = (Array.isArray(entry.definitions)
       ? entry.definitions
       : []).map(function (definition) {
@@ -35,19 +35,17 @@ function normalizeWiktionaryPayload(word, payload) {
       return definition.definition;
     });
 
-    if (definitions.length > 0) {
-      return [{
+    return definitions.length > 0
+      ? {
         word,
         phonetic: "",
         meanings: [{
           partOfSpeech: String(entry.partOfSpeech || "").toLowerCase(),
           definitions
         }]
-      }];
-    }
-  }
-
-  return [];
+      }
+      : null;
+  }).filter(Boolean);
 }
 
 function createWiktionaryProvider(options) {
@@ -59,7 +57,7 @@ function createWiktionaryProvider(options) {
 
   function getCachePath(word) {
     const key = crypto.createHash("sha256")
-      .update("wiktionary:" + word)
+      .update("wiktionary:v2:" + word)
       .digest("hex");
     return path.join(cacheDirectory, key + ".json");
   }
@@ -76,6 +74,24 @@ function createWiktionaryProvider(options) {
     fs.writeFileSync(getCachePath(word), JSON.stringify(payload), "utf8");
   }
 
+  async function retryFetch(url, init) {
+    let lastError;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetchImpl(url, {
+          ...init,
+          signal: AbortSignal.timeout(5000)
+        });
+        if (response.ok || response.status === 404 || attempt === 1) {
+          return response;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("Dictionary request failed");
+  }
+
   async function lookup(word) {
     const normalizedWord = String(word || "").toLowerCase().trim();
     const cached = readCache(normalizedWord);
@@ -85,7 +101,7 @@ function createWiktionaryProvider(options) {
 
     let response;
     try {
-      response = await fetchImpl(
+      response = await retryFetch(
         baseUrl + "/" + encodeURIComponent(normalizedWord),
         {
           headers: { "User-Agent": "FanP/1.0 (open dictionary project)" },

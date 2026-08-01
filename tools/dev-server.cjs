@@ -1,6 +1,7 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const ChineseLexicon = require("chinese-lexicon");
 const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
 const { createPushService } = require("../server/push-service.cjs");
@@ -25,13 +26,25 @@ const databasePath = process.env.DATABASE_PATH ||
 const accountStore = createAccountStore(
   databasePath
 );
+
+function getChineseFrequencyRank(word) {
+  const ranks = (ChineseLexicon.getEntries(word) || []).flatMap(
+    function (entry) {
+      const statistics = entry.statistics || {};
+      return [statistics.movieWordRank, statistics.bookWordRank]
+        .filter(Number.isFinite);
+    }
+  );
+  return ranks.length > 0 ? Math.min(...ranks) : Number.POSITIVE_INFINITY;
+}
 const pushService = createPushService({
   subject: process.env.VAPID_SUBJECT,
   publicKey: process.env.VAPID_PUBLIC_KEY,
   privateKey: process.env.VAPID_PRIVATE_KEY
 });
 const cedict = createCedictStore({
-  filePath: path.join(ROOT, ".data", "cedict_1_0_ts_utf-8_mdbg.txt.gz")
+  filePath: path.join(ROOT, ".data", "cedict_1_0_ts_utf-8_mdbg.txt.gz"),
+  getFrequencyRank: getChineseFrequencyRank
 });
 const englishDictionary = createFreeDictionaryProvider({
   cacheDirectory: path.join(ROOT, ".data", "dictionary-cache")
@@ -44,8 +57,10 @@ const fallbackEnglishDictionary = createWiktionaryProvider({
 });
 const dictionaryService = createOpenDictionary({
   cedict,
-  englishProvider: englishDictionary,
-  fallbackEnglishProvider: fallbackEnglishDictionary,
+  englishProvider: fallbackEnglishDictionary,
+  englishProviderName: "Wiktionary",
+  fallbackEnglishProvider: englishDictionary,
+  fallbackEnglishProviderName: "Free Dictionary API",
   exampleProvider: exampleDictionary
 });
 const handleApi = createApiHandler({

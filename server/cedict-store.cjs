@@ -41,6 +41,9 @@ function addToIndex(index, key, entry) {
 
 function createCedictStore(options) {
   const filePath = options.filePath;
+  const getFrequencyRank = options.getFrequencyRank || function () {
+    return Number.POSITIVE_INFINITY;
+  };
   let loaded = false;
   let chineseIndex = new Map();
   let englishIndex = new Map();
@@ -96,9 +99,22 @@ function createCedictStore(options) {
 
     return matches.slice().sort(function (left, right) {
       function score(entry) {
-        const matchingDefinitions = entry.definitions.filter(function (definition) {
-          return definition.split(/[;,]/).some(function (phrase) {
-            return normalizeEnglish(phrase) === normalizedQuery;
+        const matchingDefinitions = [];
+        let relevancePenalty = 100;
+
+        entry.definitions.forEach(function (definition, definitionIndex) {
+          definition.split(/[;,]/).forEach(function (phrase, phraseIndex) {
+            if (normalizeEnglish(phrase) !== normalizedQuery) {
+              return;
+            }
+            matchingDefinitions.push(definition);
+            const wholeDefinitionMatches =
+              normalizeEnglish(definition) === normalizedQuery;
+            relevancePenalty = Math.min(
+              relevancePenalty,
+              (wholeDefinitionMatches ? 0 : 8) +
+                definitionIndex * 12 + phraseIndex * 6
+            );
           });
         });
         const parentheticalPenalty = matchingDefinitions.some(function (definition) {
@@ -107,8 +123,13 @@ function createCedictStore(options) {
         const properNamePenalty = matchingDefinitions.some(function (definition) {
           return /^[A-Z]/.test(definition);
         }) ? 8 : 0;
+        const rank = Number(getFrequencyRank(entry.simplified));
+        const frequencyPenalty = Number.isFinite(rank)
+          ? Math.log10(rank + 1) * 4
+          : 32;
 
-        return entry.definitions.length + parentheticalPenalty + properNamePenalty;
+        return relevancePenalty + entry.definitions.length +
+          parentheticalPenalty + properNamePenalty + frequencyPenalty;
       }
 
       return score(left) - score(right);

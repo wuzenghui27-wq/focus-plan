@@ -17,29 +17,98 @@ function getChineseTranslations(entries) {
 }
 
 function getEnglishHeadword(entries) {
+  return getEnglishHeadwordCandidates(entries)[0] || "";
+}
+
+function getEnglishHeadwordCandidates(entries) {
+  const candidates = [];
   for (const entry of entries) {
     for (const definition of entry.definitions) {
-      const candidate = definition
+      for (const phrase of definition.split(/[;,]/)) {
+        const candidate = phrase
         .replace(/\([^)]*\)/g, "")
+        .trim()
         .replace(/^to\s+/, "")
-        .split(/[;,]/)[0]
         .trim();
-      if (/^[a-z][a-z '\-]+$/i.test(candidate)) {
-        return candidate.toLowerCase();
+        if (/^[a-z][a-z '\-]+$/i.test(candidate)) {
+          candidates.push(candidate.toLowerCase());
+        }
       }
     }
   }
-  return "";
+  return unique(candidates).map(function (candidate, index) {
+    return { candidate, index };
+  }).sort(function (left, right) {
+    const leftWords = left.candidate.match(/[a-z]+/g)?.length || 0;
+    const rightWords = right.candidate.match(/[a-z]+/g)?.length || 0;
+    return (leftWords === 1 ? 0 : 1) - (rightWords === 1 ? 0 : 1) ||
+      left.index - right.index;
+  }).map(function (item) {
+    return item.candidate;
+  });
 }
 
 function inferPreferredPartOfSpeech(entries) {
-  return entries.some(function (entry) {
-    return entry.definitions.some(function (definition) {
-      return definition.split(/[;,]/).some(function (phrase) {
-        return /^to\s+/i.test(phrase.trim());
-      });
-    });
-  }) ? "verb" : "";
+  const bestEntry = entries[0];
+  const firstDefinition = (bestEntry?.definitions?.[0] || "")
+    .replace(/\([^)]*\)/g, "")
+    .trim();
+  const firstPhrase = firstDefinition.split(/[;,]/)[0].trim();
+  return /^to\s+/i.test(firstPhrase) ? "verb" : "";
+}
+
+function getGlossKeywords(entries, headword) {
+  let relatedCandidates = [];
+  for (const entry of entries) {
+    for (const definition of entry.definitions) {
+      const candidates = getEnglishHeadwordCandidates([{
+        definitions: [definition]
+      }]);
+      if (candidates.includes(headword)) {
+        relatedCandidates = candidates;
+        break;
+      }
+    }
+    if (relatedCandidates.length > 0) {
+      break;
+    }
+  }
+
+  return unique(relatedCandidates.flatMap(
+    function (candidate) {
+      return candidate.match(/[a-z]+/g) || [];
+    }
+  )).filter(function (word) {
+    return word.length >= 4 && word !== "this" && word !== "that" &&
+      word !== "with" && word !== "from" && word !== "used" &&
+      word !== "only" && word !== headword;
+  });
+}
+
+function isInflectionDefinition(definition) {
+  return /^(simple past|past participle|plural|comparative|superlative)\b/i
+    .test(String(definition || "").trim());
+}
+
+function getBestDefinition(meaning, keywords) {
+  const definitions = (Array.isArray(meaning?.definitions)
+    ? meaning.definitions
+    : []).filter(function (definition) {
+    return String(definition.definition || "").trim();
+  });
+  if (definitions.length < 2 || keywords.length === 0) {
+    return definitions[0];
+  }
+
+  return definitions.slice().sort(function (left, right) {
+    function score(item) {
+      const text = String(item.definition || "").toLowerCase();
+      return keywords.reduce(function (total, keyword) {
+        return total + (text.includes(keyword) ? 1 : 0);
+      }, 0);
+    }
+    return score(right) - score(left);
+  })[0];
 }
 
 function getPrimaryMeaning(payload, preferredPartOfSpeech) {
@@ -64,14 +133,11 @@ function parseEnglishPayload(
   payload,
   translations,
   fallbackExample,
-  preferredPartOfSpeech
+  preferredPartOfSpeech,
+  glossKeywords
 ) {
   const meaning = getPrimaryMeaning(payload, preferredPartOfSpeech);
-  const definition = (Array.isArray(meaning?.definitions)
-    ? meaning.definitions
-    : []).find(function (item) {
-    return String(item.definition || "").trim();
-  });
+  const definition = getBestDefinition(meaning, glossKeywords || []);
 
   if (!definition) {
     return [];
@@ -82,7 +148,11 @@ function parseEnglishPayload(
     meanings: [{
       english: String(definition.definition).trim(),
       chinese: translations[0] || "",
-      example: String(definition.example || fallbackExample || "").trim()
+      example: String(
+        isUsefulExample(definition.example)
+          ? definition.example
+          : fallbackExample || ""
+      ).trim()
     }]
   }];
 }
@@ -110,7 +180,15 @@ function getFirstExample(payload, preferredPartOfSpeech) {
     : []).find(function (item) {
     return String(item.definition || "").trim();
   });
-  return String(definition?.example || "").trim();
+  return isUsefulExample(definition?.example)
+    ? String(definition.example).trim()
+    : "";
+}
+
+function isUsefulExample(example) {
+  const text = String(example || "").trim();
+  const words = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g) || [];
+  return words.length >= 4 && /[.!?]$/.test(text);
 }
 
 function createOpenDictionary(options) {
@@ -118,6 +196,8 @@ function createOpenDictionary(options) {
   const englishProvider = options.englishProvider;
   const fallbackEnglishProvider = options.fallbackEnglishProvider;
   const exampleProvider = options.exampleProvider;
+  const primarySourceName = options.englishProviderName || "Free Dictionary API";
+  const fallbackSourceName = options.fallbackEnglishProviderName || "Wiktionary";
 
   function isConfigured() {
     return true;
@@ -130,28 +210,88 @@ function createOpenDictionary(options) {
     }
 
     const isChinese = CHINESE_CHARACTER_PATTERN.test(query);
-    const cedictEntries = isChinese
+    let cedictEntries = isChinese
       ? cedict.findChinese(query)
       : cedict.findEnglish(query);
-    const headword = isChinese ? getEnglishHeadword(cedictEntries) : query.toLowerCase();
+    if (isChinese && cedictEntries.length === 0 && query.length > 1 &&
+        /[了过着]$/.test(query)) {
+      cedictEntries = cedict.findChinese(query.slice(0, -1));
+    }
+    const headwordCandidates = isChinese
+      ? getEnglishHeadwordCandidates(cedictEntries)
+      : [query.toLowerCase()];
+    let headword = headwordCandidates[0] || "";
 
     if (!headword) {
       throw createHttpError("没有在开源词典中找到这个词。", 404);
     }
 
     let payload;
-    let englishSource = "Free Dictionary API";
-    try {
-      payload = await englishProvider.lookup(headword);
-    } catch (primaryError) {
-      if (!fallbackEnglishProvider) {
-        throw primaryError;
+    let englishSource = primarySourceName;
+    async function lookupEnglish(candidate) {
+      try {
+        return {
+          payload: await englishProvider.lookup(candidate),
+          source: primarySourceName
+        };
+      } catch (primaryError) {
+        if (!fallbackEnglishProvider) {
+          throw primaryError;
+        }
+        return {
+          payload: await fallbackEnglishProvider.lookup(candidate),
+          source: fallbackSourceName
+        };
       }
-      payload = await fallbackEnglishProvider.lookup(headword);
-      englishSource = "Wiktionary";
     }
 
     const preferredPartOfSpeech = inferPreferredPartOfSpeech(cedictEntries);
+    let lookupResult;
+    let lookupError;
+    for (const candidate of headwordCandidates) {
+      try {
+        lookupResult = await lookupEnglish(candidate);
+        headword = candidate;
+        break;
+      } catch (error) {
+        lookupError = error;
+        if (!isChinese) {
+          throw error;
+        }
+      }
+    }
+    if (!lookupResult) {
+      throw lookupError;
+    }
+    payload = lookupResult.payload;
+    englishSource = lookupResult.source;
+    if (isChinese && isInflectionDefinition(
+      getBestDefinition(
+        getPrimaryMeaning(payload, preferredPartOfSpeech),
+        getGlossKeywords(cedictEntries, headword)
+      )?.definition
+    )) {
+      for (const candidate of headwordCandidates.filter(function (item) {
+        return item !== headword;
+      })) {
+        let alternative;
+        try {
+          alternative = await lookupEnglish(candidate);
+        } catch (error) {
+          continue;
+        }
+        const definition = getBestDefinition(
+          getPrimaryMeaning(alternative.payload, preferredPartOfSpeech),
+          getGlossKeywords(cedictEntries, candidate)
+        );
+        if (definition && !isInflectionDefinition(definition.definition)) {
+          headword = candidate;
+          payload = alternative.payload;
+          englishSource = alternative.source;
+          break;
+        }
+      }
+    }
     const builtInExample = getFirstExample(payload, preferredPartOfSpeech);
     const fallbackExample = !builtInExample && exampleProvider
       ? await exampleProvider.findExample(headword)
@@ -164,7 +304,8 @@ function createOpenDictionary(options) {
       payload,
       translations,
       fallbackExample,
-      preferredPartOfSpeech
+      preferredPartOfSpeech,
+      isChinese ? getGlossKeywords(cedictEntries, headword) : []
     );
     if (entries.length === 0) {
       throw createHttpError("没有找到可展示的核心释义。", 404);
@@ -188,6 +329,7 @@ module.exports = {
   createOpenDictionary,
   parseEnglishPayload,
   getEnglishHeadword,
+  getEnglishHeadwordCandidates,
   getFirstExample,
   inferPreferredPartOfSpeech
 };

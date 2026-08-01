@@ -12,6 +12,9 @@ FanP uses the following open dictionary projects:
 - Tatoeba: fallback English example sentences. Sentence licenses are returned
   by the API; current search results use CC BY 2.0 FR.
   Project: https://tatoeba.org/
+- Chinese Lexicon: modern Chinese movie and book frequency statistics used to
+  rank CC-CEDICT translation candidates. Licensed under ISC.
+  Project: https://github.com/peterolson/chinese-lexicon
 
 CC-CEDICT data is downloaded into `.data/` and is not committed to Git. Run
 `npm.cmd run dictionary:download` after cloning the project.
