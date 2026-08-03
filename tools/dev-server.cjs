@@ -1,11 +1,14 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
-const ChineseLexicon = require("chinese-lexicon");
 const { createAccountStore } = require("../server/account-store.cjs");
 const { createApiHandler } = require("../server/api-handler.cjs");
 const { createPushService } = require("../server/push-service.cjs");
 const { createCedictStore } = require("../server/cedict-store.cjs");
+const {
+  getChineseFrequencyRank
+} = require("../server/chinese-frequency.cjs");
+const { createEcdictProvider } = require("../server/ecdict-provider.cjs");
 const {
   createFreeDictionaryProvider
 } = require("../server/free-dictionary-provider.cjs");
@@ -27,26 +30,6 @@ const accountStore = createAccountStore(
   databasePath
 );
 
-function getChineseFrequencyRank(word) {
-  const entries = ChineseLexicon.getEntries(word) || [];
-  const ranks = entries.flatMap(
-    function (entry) {
-      const statistics = entry.statistics || {};
-      return [statistics.movieWordRank, statistics.bookWordRank]
-        .filter(Number.isFinite);
-    }
-  );
-  if (ranks.length > 0) {
-    return Math.min(...ranks);
-  }
-
-  const hskLevels = entries.map(function (entry) {
-    return entry.statistics?.hskLevel;
-  }).filter(Number.isFinite);
-  return hskLevels.length > 0
-    ? Math.min(...hskLevels) * 2500
-    : Number.POSITIVE_INFINITY;
-}
 const pushService = createPushService({
   subject: process.env.VAPID_SUBJECT,
   publicKey: process.env.VAPID_PUBLIC_KEY,
@@ -56,6 +39,7 @@ const cedict = createCedictStore({
   filePath: path.join(ROOT, ".data", "cedict_1_0_ts_utf-8_mdbg.txt.gz"),
   getFrequencyRank: getChineseFrequencyRank
 });
+const ecdict = createEcdictProvider();
 const englishDictionary = createFreeDictionaryProvider({
   cacheDirectory: path.join(ROOT, ".data", "dictionary-cache")
 });
@@ -67,6 +51,7 @@ const fallbackEnglishDictionary = createWiktionaryProvider({
 });
 const dictionaryService = createOpenDictionary({
   cedict,
+  translationProvider: ecdict,
   englishProvider: fallbackEnglishDictionary,
   englishProviderName: "Wiktionary",
   fallbackEnglishProvider: englishDictionary,

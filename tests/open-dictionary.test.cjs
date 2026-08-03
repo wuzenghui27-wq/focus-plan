@@ -160,7 +160,7 @@ const rankedSampleData = sampleData + "\n" + [
     exampleProvider
   });
   const fallbackResult = await fallbackDictionary.lookup("steal");
-  assert.strictEqual(fallbackResult.entries[0].meanings[0].chinese, "偷取");
+  assert.strictEqual(fallbackResult.entries[0].meanings[0].chinese, "偷窃");
   assert.strictEqual(
     fallbackResult.entries[0].meanings[0].example,
     "They stole all my money."

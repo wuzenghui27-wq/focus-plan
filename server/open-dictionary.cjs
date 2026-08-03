@@ -1,4 +1,8 @@
 const CHINESE_CHARACTER_PATTERN = /[\u3400-\u9fff\uf900-\ufaff]/;
+const {
+  getChineseTranslation
+} = require("./ecdict-provider.cjs");
+const { getCoreTranslation } = require("./core-translations.cjs");
 
 function createHttpError(message, statusCode) {
   const error = new Error(message);
@@ -111,7 +115,7 @@ function getBestDefinition(meaning, keywords) {
   })[0];
 }
 
-function getPrimaryMeaning(payload, preferredPartOfSpeech) {
+function getPrimaryMeaning(payload, preferredPartOfSpeech, keywords) {
   const meanings = (Array.isArray(payload) ? payload : []).flatMap(
     function (word) {
       return Array.isArray(word.meanings) ? word.meanings : [];
@@ -123,10 +127,27 @@ function getPrimaryMeaning(payload, preferredPartOfSpeech) {
       });
   });
 
-  return meanings.find(function (meaning) {
+  const matchingMeanings = meanings.filter(function (meaning) {
     return String(meaning.partOfSpeech || "").toLowerCase() ===
       preferredPartOfSpeech;
-  }) || meanings[0] || null;
+  });
+  const candidates = matchingMeanings.length > 0 ? matchingMeanings : meanings;
+  const semanticKeywords = keywords || [];
+
+  if (semanticKeywords.length === 0) {
+    return candidates[0] || null;
+  }
+  return candidates.slice().sort(function (left, right) {
+    function score(meaning) {
+      const text = (meaning.definitions || []).map(function (definition) {
+        return String(definition.definition || "").toLowerCase();
+      }).join(" ");
+      return semanticKeywords.reduce(function (total, keyword) {
+        return total + (text.includes(keyword) ? 1 : 0);
+      }, 0);
+    }
+    return score(right) - score(left);
+  })[0] || null;
 }
 
 function parseEnglishPayload(
@@ -136,7 +157,11 @@ function parseEnglishPayload(
   preferredPartOfSpeech,
   glossKeywords
 ) {
-  const meaning = getPrimaryMeaning(payload, preferredPartOfSpeech);
+  const meaning = getPrimaryMeaning(
+    payload,
+    preferredPartOfSpeech,
+    glossKeywords
+  );
   const definition = getBestDefinition(meaning, glossKeywords || []);
 
   if (!definition) {
@@ -173,13 +198,9 @@ function getPhonetic(payload) {
   return "";
 }
 
-function getFirstExample(payload, preferredPartOfSpeech) {
-  const meaning = getPrimaryMeaning(payload, preferredPartOfSpeech);
-  const definition = (Array.isArray(meaning?.definitions)
-    ? meaning.definitions
-    : []).find(function (item) {
-    return String(item.definition || "").trim();
-  });
+function getFirstExample(payload, preferredPartOfSpeech, keywords) {
+  const meaning = getPrimaryMeaning(payload, preferredPartOfSpeech, keywords);
+  const definition = getBestDefinition(meaning, keywords || []);
   return isUsefulExample(definition?.example)
     ? String(definition.example).trim()
     : "";
@@ -196,6 +217,7 @@ function createOpenDictionary(options) {
   const englishProvider = options.englishProvider;
   const fallbackEnglishProvider = options.fallbackEnglishProvider;
   const exampleProvider = options.exampleProvider;
+  const translationProvider = options.translationProvider;
   const primarySourceName = options.englishProviderName || "Free Dictionary API";
   const fallbackSourceName = options.fallbackEnglishProviderName || "Wiktionary";
 
@@ -213,6 +235,12 @@ function createOpenDictionary(options) {
     let cedictEntries = isChinese
       ? cedict.findChinese(query)
       : cedict.findEnglish(query);
+    const translationEntry = !isChinese && translationProvider
+      ? translationProvider.lookup(query)
+      : null;
+    const coreTranslation = !isChinese
+      ? getCoreTranslation(query, translationEntry?.lemma)
+      : null;
     if (isChinese && cedictEntries.length === 0 && query.length > 1 &&
         /[了过着]$/.test(query)) {
       cedictEntries = cedict.findChinese(query.slice(0, -1));
@@ -245,7 +273,9 @@ function createOpenDictionary(options) {
       }
     }
 
-    const preferredPartOfSpeech = inferPreferredPartOfSpeech(cedictEntries);
+    const preferredPartOfSpeech = isChinese
+      ? inferPreferredPartOfSpeech(cedictEntries)
+      : coreTranslation?.partOfSpeech || "";
     let lookupResult;
     let lookupError;
     for (const candidate of headwordCandidates) {
@@ -292,20 +322,41 @@ function createOpenDictionary(options) {
         }
       }
     }
-    const builtInExample = getFirstExample(payload, preferredPartOfSpeech);
+    const meaningKeywords = isChinese
+      ? getGlossKeywords(cedictEntries, headword)
+      : coreTranslation?.keywords || [];
+    const builtInExample = getFirstExample(
+      payload,
+      preferredPartOfSpeech,
+      meaningKeywords
+    );
     const fallbackExample = !builtInExample && exampleProvider
       ? await exampleProvider.findExample(headword)
       : "";
+    const selectedMeaning = getPrimaryMeaning(
+      payload,
+      preferredPartOfSpeech,
+      meaningKeywords
+    );
+    const selectedPartOfSpeech = String(
+      selectedMeaning?.partOfSpeech || preferredPartOfSpeech
+    ).toLowerCase();
+    const ecdictTranslation = getChineseTranslation(
+      translationEntry,
+      selectedPartOfSpeech
+    );
 
     const translations = isChinese
       ? [query]
-      : getChineseTranslations(cedictEntries);
+      : [coreTranslation?.chinese || ecdictTranslation]
+        .filter(Boolean)
+        .concat(getChineseTranslations(cedictEntries));
     const entries = parseEnglishPayload(
       payload,
       translations,
       fallbackExample,
       preferredPartOfSpeech,
-      isChinese ? getGlossKeywords(cedictEntries, headword) : []
+      meaningKeywords
     );
     if (entries.length === 0) {
       throw createHttpError("没有找到可展示的核心释义。", 404);
@@ -315,9 +366,10 @@ function createOpenDictionary(options) {
       query,
       direction: isChinese ? "zh-en" : "en-zh",
       headword,
-      phonetic: getPhonetic(payload),
+      phonetic: getPhonetic(payload) || String(translationEntry?.phonetic || ""),
       entries,
-      provider: "CC-CEDICT · " + englishSource +
+      provider: (translationEntry ? "ECDICT · " : "CC-CEDICT · ") +
+        englishSource +
         (fallbackExample ? " · Tatoeba" : "")
     };
   }
