@@ -127,9 +127,12 @@ function createCedictStore(options) {
         const frequencyPenalty = Number.isFinite(rank)
           ? Math.log10(rank + 1) * 4
           : 32;
+        const uncommonSingleCharacterPenalty = !Number.isFinite(rank) &&
+          Array.from(entry.simplified).length === 1 ? 12 : 0;
 
         return relevancePenalty + entry.definitions.length +
-          parentheticalPenalty + properNamePenalty + frequencyPenalty;
+          parentheticalPenalty + properNamePenalty + frequencyPenalty +
+          uncommonSingleCharacterPenalty;
       }
 
       return score(left) - score(right);

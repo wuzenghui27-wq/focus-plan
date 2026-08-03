@@ -26,6 +26,11 @@ const { createDictionaryApi } = require("../dictionary-api.js");
   });
   await assert.rejects(failingApi.lookup("missing"), /没有找到/);
 
+  const offlineApi = createDictionaryApi(async function () {
+    throw new TypeError("Failed to fetch");
+  });
+  await assert.rejects(offlineApi.lookup("heal"), /FanP/);
+
   console.log("Dictionary API: all tests passed");
 })().catch(function (error) {
   console.error(error);

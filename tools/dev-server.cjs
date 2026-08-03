@@ -28,14 +28,24 @@ const accountStore = createAccountStore(
 );
 
 function getChineseFrequencyRank(word) {
-  const ranks = (ChineseLexicon.getEntries(word) || []).flatMap(
+  const entries = ChineseLexicon.getEntries(word) || [];
+  const ranks = entries.flatMap(
     function (entry) {
       const statistics = entry.statistics || {};
       return [statistics.movieWordRank, statistics.bookWordRank]
         .filter(Number.isFinite);
     }
   );
-  return ranks.length > 0 ? Math.min(...ranks) : Number.POSITIVE_INFINITY;
+  if (ranks.length > 0) {
+    return Math.min(...ranks);
+  }
+
+  const hskLevels = entries.map(function (entry) {
+    return entry.statistics?.hskLevel;
+  }).filter(Number.isFinite);
+  return hskLevels.length > 0
+    ? Math.min(...hskLevels) * 2500
+    : Number.POSITIVE_INFINITY;
 }
 const pushService = createPushService({
   subject: process.env.VAPID_SUBJECT,

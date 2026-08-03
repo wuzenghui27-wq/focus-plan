@@ -11,10 +11,15 @@
     const apiBaseUrl = String(baseUrl || "/api").replace(/\/$/, "");
 
     async function lookup(query) {
-      const response = await fetchImpl(
-        apiBaseUrl + "/dictionary?q=" + encodeURIComponent(query),
-        { headers: { Accept: "application/json" } }
-      );
+      let response;
+      try {
+        response = await fetchImpl(
+          apiBaseUrl + "/dictionary?q=" + encodeURIComponent(query),
+          { headers: { Accept: "application/json" } }
+        );
+      } catch (error) {
+        throw new Error("无法连接查词服务，请确认 FanP 服务正在运行。");
+      }
       const body = await response.json().catch(function () {
         return {};
       });

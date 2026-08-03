@@ -26,6 +26,10 @@ const sampleData = [
   "蘋果 苹果 [ping2 guo3] /apple/",
   "偷取 偷取 [tou1 qu3] /to steal/"
 ].join("\n");
+const rankedSampleData = sampleData + "\n" + [
+  "\u7609 \u7609 [yu4] /to heal/",
+  "\u7642\u7652 \u7597\u6108 [liao2 yu4] /to heal/therapy/"
+].join("\n");
 
 (async function () {
   const parsed = parseCedictLine(
@@ -38,11 +42,24 @@ const sampleData = [
     path.join(os.tmpdir(), "fanp-dictionary-")
   );
   const cedictPath = path.join(temporaryDirectory, "cedict.txt.gz");
-  fs.writeFileSync(cedictPath, zlib.gzipSync(sampleData));
+  fs.writeFileSync(cedictPath, zlib.gzipSync(rankedSampleData));
 
-  const cedict = createCedictStore({ filePath: cedictPath });
+  const cedict = createCedictStore({
+    filePath: cedictPath,
+    getFrequencyRank: function (word) {
+      if (word === "\u7609") {
+        return 70239;
+      }
+      if (word === "\u7597\u6108") {
+        return 15000;
+      }
+      return Number.POSITIVE_INFINITY;
+    }
+  });
   assert.strictEqual(cedict.findChinese("专注")[0].traditional, "專注");
   assert.strictEqual(cedict.findEnglish("focus")[0].simplified, "专注");
+
+  assert.strictEqual(cedict.findEnglish("heal")[0].simplified, "\u7597\u6108");
 
   const payload = [{
     word: "apple",
