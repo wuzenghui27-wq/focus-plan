@@ -22,7 +22,7 @@ snoozedUntil: "2026-07-29T08:15:00.000Z"
 
 ## 第二步：编写纯规则
 
-`reminder-tools.js` 负责：
+`src/domain/reminders.js` 负责：
 
 - 只接受 5、15、60 分钟三个选项。
 - 根据当前时间计算新的提醒时间。
@@ -33,7 +33,7 @@ snoozedUntil: "2026-07-29T08:15:00.000Z"
 
 ## 第三步：添加用户操作
 
-`reminder-presenter.js` 在计划提醒中创建一个原生 `select` 菜单：
+`src/client/ui/reminder-presenter.js` 在计划提醒中创建一个原生 `select` 菜单：
 
 - 5 分钟后
 - 15 分钟后
@@ -43,7 +43,7 @@ snoozedUntil: "2026-07-29T08:15:00.000Z"
 
 ## 第四步：更新并保存计划
 
-`script.js` 中的 `snoozePlanReminder()`：
+`src/client/features/reminders.js` 中的 `snoozePlanReminder()`：
 
 1. 使用 `planId` 找到计划。
 2. 计算 `snoozedUntil`。

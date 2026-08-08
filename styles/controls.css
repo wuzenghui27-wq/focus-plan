@@ -1,0 +1,157 @@
+/* ===== 2. Controls ===== */
+
+button,
+input,
+select,
+textarea {
+  letter-spacing: 0;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.details-button,
+.edit-button,
+.postpone-button,
+.delete-button,
+.duration-button {
+  min-height: 42px;
+  border-radius: var(--fp-radius-sm);
+  font-weight: 650;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.primary-button {
+  border-color: var(--fp-brand);
+  background-color: var(--fp-brand);
+  box-shadow: 0 6px 16px rgba(23, 58, 99, 0.16);
+}
+
+.primary-button:hover {
+  border-color: var(--fp-brand-hover);
+  background-color: var(--fp-brand-hover);
+}
+
+.secondary-button {
+  border-color: var(--fp-line);
+  color: #344252;
+  background-color: var(--fp-surface);
+}
+
+.secondary-button:hover {
+  border-color: #aeb9c4;
+  background-color: var(--fp-surface-subtle);
+}
+
+.danger-button {
+  border-color: #e4aaa5;
+  color: var(--fp-danger);
+  background-color: var(--fp-surface);
+}
+
+.danger-button:hover {
+  border-color: var(--fp-danger);
+  background-color: var(--fp-danger-soft);
+}
+
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+.danger-button:active:not(:disabled),
+.duration-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button-icon,
+.app-tab-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+#createPlanButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.form-field label,
+.duration-fieldset legend,
+.history-plan-filter label {
+  color: #34404c;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.history-plan-filter select,
+.daily-goal-form input,
+.subtask-form input,
+.account-input-row input,
+.sound-preview-row select {
+  border-color: var(--fp-line-strong);
+  border-radius: var(--fp-radius-sm);
+  color: var(--fp-text);
+  background-color: var(--fp-surface);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.history-plan-filter select:focus,
+.daily-goal-form input:focus,
+.subtask-form input:focus,
+.account-input-row input:focus,
+.sound-preview-row select:focus {
+  border-color: var(--fp-brand-hover);
+  outline: 3px solid var(--fp-focus-ring);
+}
+
+.segmented-control {
+  border-color: var(--fp-line-strong);
+  border-radius: var(--fp-radius-sm);
+  background-color: var(--fp-surface);
+}
+
+.select-menu {
+  display: contents;
+}
+
+.select-menu-trigger,
+.select-menu-popup {
+  display: none;
+}
+
+.history-period-button {
+  border-color: var(--fp-line-strong);
+  color: #465566;
+  background-color: transparent;
+  font-weight: 600;
+}
+
+.history-period-button:hover {
+  background-color: var(--fp-surface-subtle);
+}
+
+.history-period-button.is-active {
+  color: #ffffff;
+  background-color: var(--fp-brand);
+}

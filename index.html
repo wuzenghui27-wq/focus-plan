@@ -15,15 +15,20 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/app-icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
-  <script src="theme-tools.js"></script>
   <script>
-    document.documentElement.dataset.theme = window.ThemeTools.loadTheme(
-      localStorage,
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
+    try {
+      const savedTheme = localStorage.getItem("focus-plan-theme");
+      document.documentElement.dataset.theme =
+        savedTheme === "dark" || savedTheme === "light"
+          ? savedTheme
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+    } catch (error) {
+      document.documentElement.dataset.theme = "light";
+    }
   </script>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="styles/visual-system.css">
+  <link rel="stylesheet" href="styles/app.css">
 </head>
 
 <body>
@@ -43,6 +48,7 @@
     </header>
 
     <div class="app-pages">
+      <!-- Plans page -->
       <section
         id="plansPage"
         class="app-page is-active"
@@ -235,6 +241,7 @@
       </section>
       </section>
 
+      <!-- Focus page -->
       <section
         id="focusPage"
         class="app-page"
@@ -434,6 +441,7 @@
 
       </section>
 
+      <!-- History page -->
       <section
         id="historyPage"
         class="app-page"
@@ -487,6 +495,7 @@
     </section>
       </section>
 
+      <!-- Dictionary page -->
       <section
         id="dictionaryPage"
         class="app-page"
@@ -542,6 +551,7 @@
         </section>
       </section>
 
+      <!-- Settings page -->
       <section
         id="settingsPage"
         class="app-page"
@@ -950,31 +960,7 @@
     aria-live="assertive"
   ></div>
 
-  <script src="session-tools.js"></script>
-  <script src="storage-tools.js"></script>
-  <script src="timer-tools.js"></script>
-  <script src="plan-tools.js"></script>
-  <script src="plan-form-tools.js"></script>
-  <script src="undo-tools.js"></script>
-  <script src="shortcut-tools.js"></script>
-  <script src="recurrence-tools.js"></script>
-  <script src="reminder-tools.js"></script>
-  <script src="reminder-presenter.js"></script>
-  <script src="text-tools.js"></script>
-  <script src="subtask-tools.js"></script>
-  <script src="goal-tools.js"></script>
-  <script src="pomodoro-tools.js"></script>
-  <script src="push-reminder-tools.js"></script>
-  <script src="timer-state-tools.js"></script>
-  <script src="sound-tools.js"></script>
-  <script src="dictionary-tools.js"></script>
-  <script src="dictionary-api.js"></script>
-  <script src="navigation-tools.js"></script>
-  <script src="sync-tools.js"></script>
-  <script src="sync-api.js"></script>
-  <script src="push-api.js"></script>
-  <script src="select-menu.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="src/client/app.js"></script>
 </body>
 
 </html>

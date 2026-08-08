@@ -26,7 +26,7 @@
 
 ## 共享任务规则
 
-`push-reminder-tools.js` 同时运行在浏览器和 Node：
+`src/domain/push-reminders.js` 同时运行在浏览器和 Node：
 
 - 排除已完成和已经提醒的计划。
 - 优先使用 `snoozedUntil`。
@@ -53,7 +53,7 @@ last_error       最近一次错误
 
 ## 调度器
 
-`server/reminder-scheduler.cjs` 每 15 秒运行一次：
+`src/server/reminders/reminder-scheduler.js` 每 15 秒运行一次：
 
 1. 查询 `reminder_at` 和 `next_attempt_at` 都已到达的任务。
 2. 每批最多处理 50 条。

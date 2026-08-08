@@ -1,0 +1,79 @@
+/* FanP visual system
+ * 1. Tokens and foundation
+ * 2. Controls
+ * 3. App shell and navigation
+ * 4. Page components
+ * 5. Responsive behavior
+ * 6. Dark theme
+ */
+
+/* ===== 1. Tokens and foundation ===== */
+
+:root {
+  --fp-bg: #f5f7fa;
+  --fp-surface: #ffffff;
+  --fp-surface-subtle: #f8fafc;
+  --fp-surface-active: #edf3f8;
+  --fp-text: #17212c;
+  --fp-text-muted: #657382;
+  --fp-text-soft: #8b96a2;
+  --fp-line: #e4e9ef;
+  --fp-line-strong: #ccd5de;
+  --fp-brand: #173a63;
+  --fp-brand-hover: #102f52;
+  --fp-brand-soft: #eaf3fb;
+  --fp-sky: #78b9e9;
+  --fp-sky-soft: #edf7ff;
+  --fp-mint: #4fb88d;
+  --fp-mint-soft: #eaf8f2;
+  --fp-coral: #ed7e6e;
+  --fp-coral-soft: #fff0ed;
+  --fp-success: #238261;
+  --fp-success-soft: #eaf7f1;
+  --fp-warning: #9a6200;
+  --fp-warning-soft: #fff4dc;
+  --fp-danger: #b42318;
+  --fp-danger-soft: #fff0ef;
+  --fp-focus-ring: rgba(23, 58, 99, 0.16);
+  --fp-shadow-card: 0 1px 2px rgba(20, 42, 65, 0.04), 0 10px 26px rgba(20, 42, 65, 0.06);
+  --fp-shadow-raised: 0 2px 4px rgba(20, 42, 65, 0.05), 0 18px 42px rgba(20, 42, 65, 0.09);
+  --fp-radius-sm: 6px;
+  --fp-radius-md: 8px;
+  --fp-content-width: 1060px;
+  color: var(--fp-text);
+  background-color: var(--fp-bg);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+html {
+  background-color: var(--fp-bg);
+}
+
+body {
+  color: var(--fp-text);
+  background-color: var(--fp-bg);
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+strong {
+  color: var(--fp-text);
+}
+
+p {
+  color: var(--fp-text-muted);
+}
+
+::selection {
+  color: #ffffff;
+  background-color: var(--fp-brand);
+}

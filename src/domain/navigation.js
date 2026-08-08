@@ -1,0 +1,37 @@
+const DEFAULT_PAGE = "plans";
+const PAGE_NAMES = ["plans", "focus", "history", "dictionary", "settings"];
+const PAGE_TITLES = {
+  plans: "我的计划表",
+  focus: "专注时长",
+  dictionary: "查词",
+  history: "专注历史",
+  settings: "设置"
+};
+
+function normalizePage(pageName) {
+  return PAGE_NAMES.includes(pageName) ? pageName : DEFAULT_PAGE;
+}
+
+function getPageFromHash(hash) {
+  const hashText = typeof hash === "string" ? hash : "";
+  return normalizePage(hashText.replace(/^#\/?/, ""));
+}
+
+function createPageHash(pageName) {
+  return "#" + normalizePage(pageName);
+}
+
+function getPageTitle(pageName) {
+  return PAGE_TITLES[normalizePage(pageName)];
+}
+
+
+export {
+  DEFAULT_PAGE,
+  PAGE_NAMES,
+  PAGE_TITLES,
+  normalizePage,
+  getPageFromHash,
+  createPageHash,
+  getPageTitle
+};

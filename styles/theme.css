@@ -1,0 +1,250 @@
+/* ===== Startup error ===== */
+
+.startup-error {
+  max-width: 1180px;
+  margin: 20px auto 0;
+  padding: 12px 16px;
+  border: 1px solid #dc6b6b;
+  border-radius: 6px;
+  background: #fff1f1;
+  color: #8b1e1e;
+  font-weight: 600;
+}
+
+.startup-error[hidden] {
+  display: none;
+}
+
+/* ===== Dark theme ===== */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  color: #edf1f5;
+  background-color: #171a1d;
+}
+
+html[data-theme="dark"] body {
+  background-color: #171a1d;
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] .plan-meta,
+html[data-theme="dark"] .statistic-item span,
+html[data-theme="dark"] .session-time,
+html[data-theme="dark"] .data-status {
+  color: #aeb7c0;
+}
+
+html[data-theme="dark"] .panel {
+  border-color: #3b4249;
+  background-color: #22272b;
+}
+
+html[data-theme="dark"] .plan-form,
+html[data-theme="dark"] .statistics-grid,
+html[data-theme="dark"] .history-toolbar,
+html[data-theme="dark"] .session-item {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .statistic-item {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .theme-switch,
+html[data-theme="dark"] .secondary-button,
+html[data-theme="dark"] .details-button,
+html[data-theme="dark"] .edit-button,
+html[data-theme="dark"] .postpone-button,
+html[data-theme="dark"] .delete-button,
+html[data-theme="dark"] .duration-button,
+html[data-theme="dark"] .history-period-button,
+html[data-theme="dark"] .danger-button,
+html[data-theme="dark"] .form-field input,
+html[data-theme="dark"] .form-field select,
+html[data-theme="dark"] .form-field textarea,
+html[data-theme="dark"] .history-plan-filter select {
+  border-color: #59636d;
+  color: #edf1f5;
+  background-color: #2b3136;
+}
+
+html[data-theme="dark"] .secondary-button:hover,
+html[data-theme="dark"] .details-button:hover,
+html[data-theme="dark"] .history-period-button:hover {
+  background-color: #384047;
+}
+
+html[data-theme="dark"] .form-field label,
+html[data-theme="dark"] .duration-fieldset legend,
+html[data-theme="dark"] .history-plan-filter label {
+  color: #dbe1e7;
+}
+
+html[data-theme="dark"] .plan-item {
+  border-color: #454d55;
+  background-color: #292f34;
+}
+
+html[data-theme="dark"] .plan-details-dialog,
+html[data-theme="dark"] .postpone-plan-dialog {
+  border-color: #59636d;
+  color: #edf1f5;
+  background-color: #22272b;
+}
+
+html[data-theme="dark"] .plan-details-header {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .plan-details-section + .plan-details-section,
+html[data-theme="dark"] .subtask-item {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .subtask-form input,
+html[data-theme="dark"] .subtask-delete-button {
+  border-color: #59636d;
+  color: #edf1f5;
+  background-color: #2b3136;
+}
+
+html[data-theme="dark"] .plan-tag {
+  border-color: #577da5;
+  color: #c9e0f7;
+  background-color: #293d51;
+}
+
+html[data-theme="dark"] .batch-action-bar {
+  border-color: #454d55;
+  background-color: #292f34;
+}
+
+html[data-theme="dark"] .plan-item.completed {
+  background-color: #252a2f;
+}
+
+html[data-theme="dark"] .plan-item.overdue {
+  background-color: #3a2527;
+}
+
+html[data-theme="dark"] .statistic-item strong,
+html[data-theme="dark"] .timer-display {
+  color: #8db8f0;
+}
+
+html[data-theme="dark"] .focus-trend-chart {
+  border-color: #59636d;
+}
+
+html[data-theme="dark"] .daily-goal-section {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .daily-goal-form input {
+  border-color: #59636d;
+  color: #edf1f5;
+  background-color: #2b3136;
+}
+
+html[data-theme="dark"] .daily-goal-progress {
+  background-color: #30363c;
+}
+
+html[data-theme="dark"] .daily-goal-progress-bar {
+  background-color: #69c99b;
+}
+
+html[data-theme="dark"] .focus-trend-track {
+  background-color: #30363c;
+}
+
+html[data-theme="dark"] .focus-trend-bar {
+  background-color: #69c99b;
+}
+
+html[data-theme="dark"] .weekly-comparison,
+html[data-theme="dark"] .weekly-comparison-item {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .weekly-comparison-item strong {
+  color: #8db8f0;
+}
+
+html[data-theme="dark"] .weekly-comparison-item strong.is-positive {
+  color: #69c99b;
+}
+
+html[data-theme="dark"] .weekly-comparison-item strong.is-negative {
+  color: #ff9b93;
+}
+
+html[data-theme="dark"] .history-period-button.is-active,
+html[data-theme="dark"] .duration-button.is-active {
+  border-color: #8db8f0;
+  color: #101820;
+  background-color: #8db8f0;
+}
+
+html[data-theme="dark"] .timer-panel.is-running .timer-display,
+html[data-theme="dark"] .session-duration,
+html[data-theme="dark"] .data-status.is-success {
+  color: #69c99b;
+}
+
+html[data-theme="dark"] .timer-phase-badge {
+  border-color: #577da5;
+  color: #c9e0f7;
+  background-color: #293d51;
+}
+
+html[data-theme="dark"] .timer-auto-options,
+html[data-theme="dark"] .timer-sound-settings {
+  border-color: #3b4249;
+}
+
+html[data-theme="dark"] .timer-cycle-indicators span {
+  border-color: #59636d;
+  background-color: #2b3136;
+}
+
+html[data-theme="dark"] .timer-cycle-indicators span.is-completed {
+  border-color: #69c99b;
+  background-color: #69c99b;
+}
+
+html[data-theme="dark"] .timer-auto-options label,
+html[data-theme="dark"] .sound-toggle,
+html[data-theme="dark"] .sound-volume-row label,
+html[data-theme="dark"] .sound-melody-name {
+  color: #dbe1e7;
+}
+
+html[data-theme="dark"] .sound-volume-row output,
+html[data-theme="dark"] .sound-playback-status {
+  color: #aeb7c0;
+}
+
+html[data-theme="dark"] .sound-playback-status.is-success {
+  color: #69c99b;
+}
+
+html[data-theme="dark"] .sound-playback-status.is-error {
+  color: #ff9b93;
+}
+
+html[data-theme="dark"] .timer-panel.is-break .timer-display {
+  color: #f0c674;
+}
+
+html[data-theme="dark"] .timer-panel.is-break .timer-phase-badge {
+  border-color: #9a783d;
+  color: #f5d99d;
+  background-color: #44371f;
+}
+
+html[data-theme="dark"] .data-status.is-error,
+html[data-theme="dark"] .plan-item.overdue .plan-meta {
+  color: #ff9b93;
+}

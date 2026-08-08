@@ -1,0 +1,248 @@
+/* ===== Responsive ===== */
+
+@media (max-width: 900px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timer-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .reminder-region {
+    top: calc(12px + env(safe-area-inset-top));
+    right: 12px;
+    bottom: auto;
+    left: 12px;
+    width: auto;
+  }
+
+  .app-reminder {
+    animation-name: reminder-slide-in-top;
+  }
+
+  .app-reminder.is-dismissing {
+    animation-name: reminder-slide-out-top;
+  }
+
+  .app {
+    width: 100%;
+    padding: 24px 16px;
+  }
+
+  .app-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .header-actions,
+  .form-actions {
+    width: 100%;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .header-actions button,
+  .form-actions button {
+    flex: 1;
+  }
+
+  .theme-switch {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .plans-panel,
+  .timer-panel,
+  .statistics-panel,
+  .history-panel,
+  .data-panel {
+    padding: 16px;
+  }
+
+  .plan-form {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-form .form-actions {
+    grid-column: auto;
+  }
+
+  .plan-form .form-field-wide {
+    grid-column: auto;
+  }
+
+  .plan-item {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-item.is-selecting {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .plan-content {
+    grid-column: 1 / -1;
+  }
+
+  .plan-item.is-selecting .plan-content {
+    grid-column: 2;
+  }
+
+  .plan-item.is-selecting .plan-select-checkbox {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .plan-item.is-selecting .plan-actions {
+    grid-column: 2;
+  }
+
+  .plan-actions {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    width: fit-content;
+    margin-left: auto;
+  }
+
+  .batch-action-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .batch-actions button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .details-button,
+  .edit-button,
+  .delete-button {
+    width: 100%;
+  }
+
+  .plan-actions .details-button,
+  .plan-actions .edit-button,
+  .plan-actions .postpone-button,
+  .plan-actions .delete-button {
+    width: 40px;
+    min-height: 40px;
+    flex: 0 0 auto;
+  }
+
+  .timer-display {
+    font-size: 54px;
+  }
+
+  .statistics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .daily-goal-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .daily-goal-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .daily-goal-form label {
+    grid-column: 1 / -1;
+  }
+
+  .daily-goal-form input {
+    width: 100%;
+  }
+
+  .weekly-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-comparison-item {
+    border-right: 0;
+    border-bottom: 1px solid #e5e8eb;
+  }
+
+  .weekly-comparison-item:last-child {
+    border-bottom: 0;
+  }
+
+  .statistic-item {
+    padding: 16px 12px;
+  }
+
+  .statistic-item:nth-child(2) {
+    border-right: 0;
+  }
+
+  .statistic-item:nth-child(-n + 2) {
+    border-bottom: 1px solid #e5e8eb;
+  }
+
+  .statistic-item strong {
+    font-size: 21px;
+  }
+
+  .action-toast {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .history-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .segmented-control,
+  .history-plan-filter {
+    width: 100%;
+  }
+
+  .history-plan-filter {
+    min-width: 0;
+  }
+
+  .data-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .data-actions button {
+    width: 100%;
+  }
+
+  .session-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+
+  .session-time,
+  .session-plan {
+    grid-column: 1;
+  }
+
+  .session-duration,
+  .session-item .delete-button {
+    grid-column: 2;
+  }
+
+  .session-time,
+  .session-duration {
+    grid-row: 1;
+  }
+
+  .session-plan,
+  .session-item .delete-button {
+    grid-row: 2;
+  }
+}

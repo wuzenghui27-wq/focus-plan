@@ -1,0 +1,262 @@
+/* ===== Base ===== */
+
+:root {
+  color-scheme: light;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  color: #202124;
+  background-color: #f3f5f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f3f5f7;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+p {
+  color: #687078;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ===== Layout ===== */
+
+.app {
+  width: min(1120px, 92%);
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.app-header h1 {
+  margin-bottom: 8px;
+  font-size: 32px;
+}
+
+.app-header p {
+  margin-bottom: 0;
+}
+
+.header-actions,
+.form-actions,
+.timer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-switch {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border: 1px solid #9aa7b5;
+  border-radius: 6px;
+  color: #34495e;
+  background-color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.theme-switch-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background-color: #9aa7b5;
+  transition: background-color 160ms ease;
+}
+
+.theme-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: transform 160ms ease;
+}
+
+.theme-switch input:checked + .theme-switch-track {
+  background-color: #16734b;
+}
+
+.theme-switch input:checked + .theme-switch-track .theme-switch-thumb {
+  transform: translateX(16px);
+}
+
+.theme-switch:has(input:focus-visible) {
+  outline: 2px solid rgba(11, 50, 104, 0.3);
+  outline-offset: 2px;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.panel {
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.plans-panel,
+.timer-panel {
+  padding: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section-heading h2 {
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.section-heading p {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+/* ===== Shared controls ===== */
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.details-button,
+.edit-button,
+.delete-button,
+.duration-button {
+  min-height: 40px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 10px 16px;
+  font-size: 15px;
+}
+
+.primary-button {
+  border: 1px solid #041936;
+  color: #ffffff;
+  background-color: #041936;
+}
+
+.primary-button:hover {
+  background-color: #0b3268;
+}
+
+.secondary-button {
+  border: 1px solid #9aa7b5;
+  color: #34495e;
+  background-color: #ffffff;
+}
+
+.secondary-button:hover {
+  background-color: #eef2f5;
+}
+
+.danger-button {
+  padding: 10px 16px;
+  border: 1px solid #c65a5a;
+  color: #9e2424;
+  background-color: #ffffff;
+}
+
+.danger-button:hover {
+  color: #ffffff;
+  background-color: #a12c2c;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.form-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label,
+.duration-fieldset legend {
+  color: #303841;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cbd1d8;
+  border-radius: 6px;
+  color: #202124;
+  background-color: #ffffff;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: #0b3268;
+  outline: 2px solid rgba(11, 50, 104, 0.15);
+}

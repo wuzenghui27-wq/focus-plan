@@ -30,23 +30,23 @@
 
 ## 代码分层
 
-- `reminder-tools.js`：计算提醒时间，判断计划是否到期。
-- `reminder-presenter.js`：网页提醒的位置、队列、动画和滑动关闭。
-- `script.js`：选择网页内提醒或系统通知，并更新计划的提醒状态。
+- `src/domain/reminders.js`：计算提醒时间，判断计划是否到期。
+- `src/client/ui/reminder-presenter.js`：网页提醒的位置、队列、动画和滑动关闭。
+- `src/client/features/reminders.js`：选择网页内提醒或系统通知，并更新计划的提醒状态。
 - `service-worker.js`：后台系统通知的点击行为。
 
 ## 稍后提醒的数据流
 
-1. `reminder-presenter.js` 显示稍后提醒菜单，只负责收集用户选择。
-2. `script.js` 根据提醒中的 `planId` 找到计划，写入 `snoozedUntil`，并把 `reminded` 恢复为 `false`。
+1. `src/client/ui/reminder-presenter.js` 显示稍后提醒菜单，只负责收集用户选择。
+2. `src/client/features/reminders.js` 根据提醒中的 `planId` 找到计划，写入 `snoozedUntil`，并把 `reminded` 恢复为 `false`。
 3. `savePlans()` 将新时间保存到本地存储，并参与已有的账号同步。
-4. `reminder-tools.js` 在后续检查中优先使用 `snoozedUntil`，到达时间后再次提醒。
+4. `src/domain/reminders.js` 在后续检查中优先使用 `snoozedUntil`，到达时间后再次提醒。
 5. 再次提醒成功后，`reminded` 变为 `true`，避免反复弹出。
 
 ## 后台调度的数据流
 
 1. `savePlans()` 防抖触发后台提醒同步。
-2. `push-reminder-tools.js` 过滤已完成或已提醒计划，并计算最终提醒时间。
+2. `src/domain/push-reminders.js` 过滤已完成或已提醒计划，并计算最终提醒时间。
 3. API 按设备 endpoint 把任务写入 SQLite 的 `push_reminder_jobs`。
 4. 服务器调度器每 15 秒读取到期任务并发送 Web Push。
 5. 成功任务标记为 `sent`；临时失败指数退避；失效订阅连同任务一起删除。

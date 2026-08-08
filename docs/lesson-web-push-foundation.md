@@ -32,7 +32,7 @@ npm.cmd run push:keys
 
 ## 前端订阅
 
-`push-api.js` 负责访问 Push API：
+`src/client/services/push-api.js` 负责访问 Push API：
 
 1. 从服务器获取 VAPID 公钥。
 2. 将 Base64 URL 公钥转换为 `Uint8Array`。
@@ -50,7 +50,7 @@ npm.cmd run push:keys
 
 ## 服务端发送
 
-`server/push-service.cjs` 使用 `web-push`：
+`src/server/reminders/push-service.js` 使用 `web-push`：
 
 - 验证订阅数据。
 - 配置 VAPID 身份。
@@ -61,7 +61,7 @@ npm.cmd run push:keys
 
 ## 后台接收
 
-页面关闭后，网页中的 `script.js` 不会运行，但浏览器可以按需启动
+页面关闭后，网页中的前端模块不会运行，但浏览器可以按需启动
 `service-worker.js`。其中的 `push` 事件读取服务器消息，并调用：
 
 ```js

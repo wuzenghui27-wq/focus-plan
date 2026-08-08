@@ -65,22 +65,16 @@ npm.cmd run check
 ## 代码结构
 
 - `index.html`：页面结构
-- `style.css`：页面样式和响应式布局
-- `script.js`：界面事件和应用流程
-- `*-tools.js`：可独立测试的业务规则模块
-- `tests/`：Node.js 自动测试
-- `sound-tools.js`：卡农旋律音符、声音设置和数据规则
-- `navigation-tools.js`：五页导航、地址哈希和页面标题规则
-- `dictionary-tools.js`：输入语言识别和词典结果规范化
-- `dictionary-api.js`：查词页的前端 API 边界
-- `server/cedict-store.cjs`：加载 CC-CEDICT 并建立中英文索引
-- `server/free-dictionary-provider.cjs`：英文释义请求和本地缓存
-- `server/open-dictionary.cjs`：自动识别方向并合并多个开源数据源
-- `sync-tools.js`：云同步快照和版本判断规则
-- `sync-api.js`：账号登录与云同步的前端 API 边界
-- `push-api.js`：Web Push 前端 API 与 VAPID 公钥转换
-- `push-reminder-tools.js`：把本地计划转换为后台提醒任务
-- `server/`：账号、会话、验证码和同步快照后端
-- `server/reminder-scheduler.cjs`：扫描并发送到期后台提醒
+- `styles/`：基础、页面、响应式、主题和视觉精修样式
+- `src/client/app.js`：浏览器应用入口与启动错误处理
+- `src/client/application.js`：功能控制器组装和公共事件绑定
+- `src/client/features/`：计划、专注、历史、词典、提醒和设置
+- `src/client/services/`：词典、同步和推送 API 客户端
+- `src/domain/`：可独立测试的计划、计时、提醒和同步规则
+- `src/server/http/`：静态文件服务、HTTP 工具和领域 API 路由
+- `src/server/dictionary/`：开源词典数据源、规范化与查询缓存
+- `src/server/reminders/`：Web Push 服务和后台提醒调度
+- `src/server/data/`：SQLite 账号、会话和同步数据存储
+- `tests/`：Node.js 原生测试运行器执行的自动测试
 - `service-worker.js`：离线缓存、后台推送接收和通知点击
-- `tools/dev-server.cjs`：本地静态文件服务器
+- `tools/`：语法检查、词典下载和 VAPID 密钥工具
