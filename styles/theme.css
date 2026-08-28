@@ -1,41 +1,37 @@
 html[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #171b21;
-  --color-surface: #20252c;
-  --color-surface-muted: #252b33;
-  --color-surface-strong: #2c333d;
-  --color-text: #edf1f6;
-  --color-text-muted: #aab4c1;
-  --color-text-soft: #828d9a;
-  --color-border: #343c47;
-  --color-border-strong: #46515e;
-  --color-accent: #82a5ff;
-  --color-accent-hover: #9ab6ff;
-  --color-accent-soft: #293655;
-  --color-success: #6fc39a;
-  --color-success-soft: #213a31;
-  --color-warning: #e2b665;
-  --color-warning-soft: #40341f;
-  --color-danger: #f08b84;
-  --color-danger-soft: #452a2b;
-  --color-overlay: rgb(0 0 0 / 0.68);
-  --focus-ring: 0 0 0 3px rgb(130 165 255 / 0.24);
-  --shadow-low: 0 1px 2px rgb(0 0 0 / 0.18), 0 10px 30px rgb(0 0 0 / 0.12);
-  --shadow-high: 0 20px 58px rgb(0 0 0 / 0.44);
+  --color-canvas: #171619;
+  --color-surface: #242326;
+  --color-surface-muted: #2d2b2e;
+  --color-surface-strong: #39363a;
+  --color-text: #e7e4d8;
+  --color-text-muted: #bbb6aa;
+  --color-text-soft: #8f8a82;
+  --color-border: #67625d;
+  --color-border-strong: #d2cec2;
+  --color-accent: #d43b5e;
+  --color-accent-hover: #e55172;
+  --color-accent-soft: #4b2730;
+  --color-success: #7bae91;
+  --color-success-soft: #243c31;
+  --color-warning: #d0a454;
+  --color-warning-soft: #443820;
+  --color-danger: #e85b73;
+  --color-danger-soft: #4d282f;
+  --color-action: #c72b4d;
+  --color-action-hover: #dc3c5e;
+  --color-overlay: rgb(0 0 0 / 0.74);
+  --focus-ring: 0 0 0 3px rgb(212 59 94 / 0.26);
+  --shadow-high: 8px 8px 0 rgb(0 0 0 / 0.45);
 }
 
 html[data-theme="dark"] .app-brand-mark {
-  border-color: var(--color-border-strong);
-}
-
-html[data-theme="dark"] .duration-button.is-active,
-html[data-theme="dark"] .history-period-button.is-active {
-  color: #15203a;
+  filter: saturate(0.7) brightness(0.82);
 }
 
 html[data-theme="dark"] .action-toast {
   color: var(--color-text);
-  background: #0f1318;
+  background: #111013;
 }
 
 html[data-theme="dark"] .action-toast button {

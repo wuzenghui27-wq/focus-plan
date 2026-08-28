@@ -1,13 +1,17 @@
 .app {
   width: min(var(--page-width), calc(100% - 40px));
-  margin: 0 auto;
-  padding: 28px 0 40px;
+  margin: 28px auto;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
 }
 
 .app-header {
   display: flex;
-  min-height: 64px;
+  min-height: 92px;
   align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .app-brand {
@@ -17,13 +21,13 @@
 }
 
 .app-brand-mark {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   flex: 0 0 auto;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.65);
-  border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-low);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  background: var(--color-surface-muted);
 }
 
 .app-brand-mark img {
@@ -35,7 +39,8 @@
 
 .app-brand h1 {
   margin: 0;
-  font-size: 21px;
+  font-size: 24px;
+  letter-spacing: 0;
   line-height: 1.2;
 }
 
@@ -51,7 +56,7 @@
 
 .app-page {
   display: none;
-  gap: 28px;
+  gap: 36px;
 }
 
 .app-page.is-active {
@@ -60,31 +65,34 @@
 
 .page-heading {
   display: flex;
-  min-height: 72px;
-  align-items: flex-end;
+  min-height: 108px;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
 .page-heading p {
-  margin: 0 0 6px;
-  color: var(--color-danger);
-  font-size: 13px;
-  font-weight: 750;
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 7px;
+  color: #ffffff;
+  background: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .page-heading h2 {
   margin: 0;
-  font-size: 36px;
-  line-height: 1.2;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1;
 }
 
 .panel {
   min-width: 0;
-  border: 0;
-  border-top: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   border-radius: 0;
-  background: transparent;
+  background: var(--color-surface);
   box-shadow: none;
 }
 
@@ -95,7 +103,7 @@
 .dictionary-panel,
 .settings-panel,
 .data-panel {
-  padding: 24px 0 0;
+  padding: 24px;
 }
 
 .section-heading {
@@ -103,12 +111,14 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .section-heading h2 {
   margin: 0 0 4px;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.35;
 }
 
@@ -125,7 +135,7 @@
   min-height: var(--control-height);
   padding: 9px 15px;
   border: 1px solid transparent;
-  border-radius: var(--radius-small);
+  border-radius: 0;
   font-weight: 650;
   line-height: 1.2;
   cursor: pointer;
@@ -250,7 +260,7 @@ textarea,
   min-height: var(--control-height);
   padding: 9px 12px;
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-medium);
+  border-radius: 0;
   color: var(--color-text);
   background: var(--color-surface);
 }
@@ -290,7 +300,7 @@ textarea:focus {
   gap: 10px;
   padding: 7px 10px;
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-medium);
+  border-radius: 0;
   color: var(--color-text);
   background: var(--color-surface);
   cursor: pointer;
@@ -335,7 +345,7 @@ textarea:focus {
 
 .app-tabbar {
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
 .app-tab {
@@ -345,8 +355,8 @@ textarea:focus {
   align-items: center;
   gap: 11px;
   padding: 10px 12px;
-  border: 0;
-  border-radius: var(--radius-small);
+  border: 1px solid transparent;
+  border-radius: 0;
   color: var(--color-text-muted);
   background: transparent;
   font-size: 13px;
@@ -356,12 +366,14 @@ textarea:focus {
 
 .app-tab:hover {
   color: var(--color-text);
-  background: var(--color-surface-muted);
+  border-color: var(--color-border-strong);
+  background: transparent;
 }
 
 .app-tab.is-active {
-  color: var(--color-accent);
-  background: #ffffff;
+  color: #ffffff;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
 }
 
 .app-tab-icon {
@@ -386,7 +398,7 @@ textarea:focus {
   padding: 0;
   overflow: auto;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border-radius: 0;
   color: var(--color-text);
   background: var(--color-surface);
   box-shadow: var(--shadow-high);

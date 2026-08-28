@@ -13,6 +13,7 @@
   padding: 24px;
   overflow-y: auto;
   background: var(--color-surface);
+  border-left: 2px solid var(--color-border-strong);
   box-shadow: var(--shadow-high);
 }
 
@@ -79,8 +80,8 @@ body.plan-form-open {
   gap: 12px;
   margin-bottom: 18px;
   padding: 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
   background: var(--color-accent-soft);
 }
 
@@ -134,10 +135,10 @@ body.plan-form-open {
   align-items: center;
   gap: 12px;
   padding: 16px 14px 16px 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
-  background: var(--color-surface);
-  box-shadow: 0 5px 18px rgb(17 24 39 / 0.05);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  background: var(--color-surface-muted);
+  box-shadow: none;
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
@@ -175,7 +176,8 @@ body.plan-form-open {
 .plan-title {
   overflow-wrap: anywhere;
   font-size: 15px;
-  font-weight: 720;
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 .plan-state,
@@ -184,14 +186,16 @@ body.plan-form-open {
 .dictionary-result-direction {
   width: fit-content;
   max-width: 100%;
-  border-radius: 4px;
+  border-radius: 0;
+  font-family: var(--font-display);
   font-size: 11px;
   font-weight: 700;
 }
 
 .plan-state {
   flex: 0 0 auto;
-  padding: 2px 0;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
 }
 
 .plan-state.is-pending {
@@ -214,7 +218,7 @@ body.plan-form-open {
   padding: 3px 7px;
   color: var(--color-accent);
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -240,7 +244,7 @@ body.plan-form-open {
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-small);
+  border-radius: 0;
   color: var(--color-text-muted);
   background: transparent;
   cursor: pointer;
@@ -266,15 +270,15 @@ body.plan-form-open {
 }
 
 .plan-item.priority-low {
-  border-left: 5px solid var(--color-success);
+  border-left: 10px solid var(--color-success);
 }
 
 .plan-item.priority-medium {
-  border-left: 5px solid #e0a21d;
+  border-left: 10px solid #a97921;
 }
 
 .plan-item.priority-high {
-  border-left: 5px solid var(--color-danger);
+  border-left: 10px solid var(--color-danger);
 }
 
 .plan-item.completed {
@@ -366,9 +370,9 @@ body.plan-form-open {
 
 .timer-panel {
   padding: 30px;
-  border: 0;
-  border-radius: var(--radius-medium);
-  background: var(--color-accent-soft);
+  border: 2px solid var(--color-border-strong);
+  border-radius: 0;
+  background: var(--color-surface-muted);
 }
 
 .timer-heading-row {
@@ -385,6 +389,8 @@ body.plan-form-open {
 .dictionary-result-direction {
   padding: 4px 8px;
   color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: 0;
   background: var(--color-accent-soft);
 }
 
@@ -431,9 +437,10 @@ body.plan-form-open {
 .timer-display {
   margin: 34px 0 24px;
   color: var(--color-text);
-  font-size: clamp(64px, 9vw, 98px);
+  font-family: var(--font-display);
+  font-size: clamp(64px, 9vw, 104px);
   font-variant-numeric: tabular-nums;
-  font-weight: 720;
+  font-weight: 700;
   line-height: 1;
   text-align: center;
 }
@@ -482,7 +489,7 @@ body.plan-form-open {
   width: 10px;
   height: 10px;
   border: 1px solid var(--color-border-strong);
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--color-surface);
 }
 
@@ -570,8 +577,8 @@ body.plan-form-open {
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border: 0;
-  background: #111827;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-muted);
 }
 
 .statistic-item {
@@ -579,7 +586,7 @@ body.plan-form-open {
   min-width: 0;
   gap: 7px;
   padding: 18px;
-  border-right: 1px solid rgb(255 255 255 / 0.16);
+  border-right: 1px solid var(--color-border-strong);
 }
 
 .statistic-item:last-child {
@@ -587,12 +594,13 @@ body.plan-form-open {
 }
 
 .statistic-item span {
-  color: rgb(255 255 255 / 0.66);
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
   font-size: 12px;
 }
 
 .statistic-item strong {
-  color: #ffffff;
+  color: var(--color-text);
   overflow-wrap: anywhere;
   font-size: 23px;
   font-variant-numeric: tabular-nums;
@@ -650,7 +658,8 @@ body.plan-form-open {
 .daily-goal-progress {
   height: 8px;
   overflow: hidden;
-  border-radius: 4px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
   background: var(--color-surface-strong);
 }
 
@@ -677,7 +686,7 @@ body.plan-form-open {
   display: grid;
   aspect-ratio: 1;
   place-items: center;
-  border-radius: var(--radius-small);
+  border-radius: 0;
   font-size: 12px;
 }
 
@@ -696,14 +705,14 @@ body.plan-form-open {
 }
 
 .focus-calendar-day.has-focus {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
+  color: #ffffff;
+  background: var(--color-accent);
   font-weight: 700;
 }
 
 .focus-calendar-day.focus-level-2 {
   color: #ffffff;
-  background: color-mix(in srgb, var(--color-accent) 72%, #ffffff);
+  background: var(--color-accent);
 }
 
 .focus-calendar-day.focus-level-3,
@@ -726,8 +735,8 @@ body.plan-form-open {
   display: grid;
   gap: 4px;
   padding: 12px;
-  border-radius: var(--radius-medium);
-  border-left: 3px solid var(--color-accent);
+  border: 1px solid var(--color-border-strong);
+  border-left: 8px solid var(--color-accent);
   border-radius: 0;
   background: var(--color-surface-muted);
 }
@@ -757,7 +766,7 @@ body.plan-form-open {
   display: inline-flex;
   padding: 3px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border-radius: 0;
   background: var(--color-surface-strong);
 }
 
@@ -786,7 +795,7 @@ body.plan-form-open {
   gap: 16px;
   min-height: 52px;
   padding: 8px 4px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .session-time {
@@ -831,9 +840,9 @@ body.plan-form-open {
   align-items: center;
   gap: 10px;
   padding: 0 13px;
-  border: 2px solid var(--color-text);
-  border-radius: var(--radius-medium);
-  background: var(--color-surface);
+  border: 2px solid var(--color-border-strong);
+  border-radius: 0;
+  background: var(--color-surface-muted);
 }
 
 .dictionary-search-field:focus-within {
@@ -878,7 +887,7 @@ body.plan-form-open {
 
 .dictionary-result {
   margin-top: 20px;
-  border-top: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-border-strong);
 }
 
 .dictionary-result-header {
@@ -891,7 +900,8 @@ body.plan-form-open {
 
 .dictionary-result-header h3 {
   margin: 0;
-  font-size: 38px;
+  font-family: var(--font-display);
+  font-size: 46px;
   line-height: 1.2;
 }
 
@@ -903,12 +913,15 @@ body.plan-form-open {
 
 .dictionary-entry {
   padding: 18px 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border-strong);
 }
 
 .dictionary-entry h4 {
   margin: 0 0 14px;
-  color: var(--color-danger);
+  display: inline-block;
+  padding: 3px 7px;
+  color: #ffffff;
+  background: var(--color-accent);
   font-size: 13px;
 }
 
@@ -943,7 +956,7 @@ body.plan-form-open {
 
 .dictionary-example {
   padding-left: 11px;
-  border-left: 3px solid var(--color-danger);
+  border-left: 8px solid var(--color-danger);
 }
 
 .dictionary-provider {
@@ -953,7 +966,7 @@ body.plan-form-open {
 
 /* Settings */
 .settings-list {
-  border-top: 2px solid var(--color-text);
+  border-top: 2px solid var(--color-border-strong);
 }
 
 .setting-row {
@@ -963,7 +976,7 @@ body.plan-form-open {
   justify-content: space-between;
   gap: 24px;
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .setting-row > div:first-child {
@@ -1009,7 +1022,7 @@ body.plan-form-open {
 
 .data-panel {
   padding-bottom: 28px;
-  border-top-color: var(--color-danger);
+  border: 2px solid var(--color-danger);
 }
 
 .data-status {
