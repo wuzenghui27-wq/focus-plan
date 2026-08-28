@@ -81,7 +81,7 @@ body.plan-form-open {
   padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
-  background: var(--color-surface-muted);
+  background: var(--color-accent-soft);
 }
 
 .batch-select-all,
@@ -121,7 +121,7 @@ body.plan-form-open {
 .session-list,
 .subtask-list {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -133,16 +133,17 @@ body.plan-form-open {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  padding: 14px;
+  padding: 16px 14px 16px 18px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
   background: var(--color-surface);
+  box-shadow: 0 5px 18px rgb(17 24 39 / 0.05);
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
 .plan-item:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-muted);
+  border-color: var(--color-accent);
+  background: var(--color-surface);
 }
 
 .plan-item.is-selecting {
@@ -173,7 +174,8 @@ body.plan-form-open {
 
 .plan-title {
   overflow-wrap: anywhere;
-  font-weight: 650;
+  font-size: 15px;
+  font-weight: 720;
 }
 
 .plan-state,
@@ -189,17 +191,17 @@ body.plan-form-open {
 
 .plan-state {
   flex: 0 0 auto;
-  padding: 3px 7px;
+  padding: 2px 0;
 }
 
 .plan-state.is-pending {
   color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: transparent;
 }
 
 .plan-state.is-completed {
   color: var(--color-success);
-  background: var(--color-success-soft);
+  background: transparent;
 }
 
 .plan-meta {
@@ -211,7 +213,8 @@ body.plan-form-open {
   overflow: hidden;
   padding: 3px 7px;
   color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: transparent;
+  border: 1px solid var(--color-border);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -263,15 +266,15 @@ body.plan-form-open {
 }
 
 .plan-item.priority-low {
-  border-left: 3px solid var(--color-success);
+  border-left: 5px solid var(--color-success);
 }
 
 .plan-item.priority-medium {
-  border-left: 3px solid #d09430;
+  border-left: 5px solid #e0a21d;
 }
 
 .plan-item.priority-high {
-  border-left: 3px solid var(--color-danger);
+  border-left: 5px solid var(--color-danger);
 }
 
 .plan-item.completed {
@@ -361,6 +364,13 @@ body.plan-form-open {
   gap: 18px;
 }
 
+.timer-panel {
+  padding: 30px;
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-accent-soft);
+}
+
 .timer-heading-row {
   display: flex;
   align-items: center;
@@ -376,6 +386,11 @@ body.plan-form-open {
   padding: 4px 8px;
   color: var(--color-accent);
   background: var(--color-accent-soft);
+}
+
+.timer-phase-badge {
+  color: #ffffff;
+  background: var(--color-accent);
 }
 
 .duration-fieldset {
@@ -414,9 +429,9 @@ body.plan-form-open {
 }
 
 .timer-display {
-  margin: 28px 0 18px;
+  margin: 34px 0 24px;
   color: var(--color-text);
-  font-size: clamp(56px, 8vw, 84px);
+  font-size: clamp(64px, 9vw, 98px);
   font-variant-numeric: tabular-nums;
   font-weight: 720;
   line-height: 1;
@@ -432,7 +447,7 @@ body.plan-form-open {
 }
 
 .timer-actions button {
-  min-width: 112px;
+  min-width: 124px;
 }
 
 .timer-panel.is-running {
@@ -481,7 +496,7 @@ body.plan-form-open {
   display: grid;
   gap: 11px;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border));
 }
 
 .timer-auto-options label,
@@ -555,7 +570,8 @@ body.plan-form-open {
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-block: 1px solid var(--color-border);
+  border: 0;
+  background: #111827;
 }
 
 .statistic-item {
@@ -563,7 +579,7 @@ body.plan-form-open {
   min-width: 0;
   gap: 7px;
   padding: 18px;
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid rgb(255 255 255 / 0.16);
 }
 
 .statistic-item:last-child {
@@ -571,11 +587,12 @@ body.plan-form-open {
 }
 
 .statistic-item span {
-  color: var(--color-text-muted);
+  color: rgb(255 255 255 / 0.66);
   font-size: 12px;
 }
 
 .statistic-item strong {
+  color: #ffffff;
   overflow-wrap: anywhere;
   font-size: 23px;
   font-variant-numeric: tabular-nums;
@@ -674,7 +691,7 @@ body.plan-form-open {
 .focus-calendar-day {
   border: 1px solid transparent;
   color: var(--color-text-muted);
-  background: var(--color-surface-muted);
+  background: transparent;
   font-variant-numeric: tabular-nums;
 }
 
@@ -710,6 +727,8 @@ body.plan-form-open {
   gap: 4px;
   padding: 12px;
   border-radius: var(--radius-medium);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0;
   background: var(--color-surface-muted);
 }
 
@@ -739,7 +758,7 @@ body.plan-form-open {
   padding: 3px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-medium);
-  background: var(--color-surface-muted);
+  background: var(--color-surface-strong);
 }
 
 .history-period-button {
@@ -796,6 +815,7 @@ body.plan-form-open {
 /* Dictionary */
 .dictionary-panel {
   width: min(100%, 840px);
+  padding-top: 28px;
 }
 
 .dictionary-form {
@@ -807,11 +827,11 @@ body.plan-form-open {
 .dictionary-search-field {
   display: flex;
   min-width: 0;
-  min-height: 50px;
+  min-height: 58px;
   align-items: center;
   gap: 10px;
   padding: 0 13px;
-  border: 1px solid var(--color-border-strong);
+  border: 2px solid var(--color-text);
   border-radius: var(--radius-medium);
   background: var(--color-surface);
 }
@@ -871,7 +891,7 @@ body.plan-form-open {
 
 .dictionary-result-header h3 {
   margin: 0;
-  font-size: 30px;
+  font-size: 38px;
   line-height: 1.2;
 }
 
@@ -888,7 +908,7 @@ body.plan-form-open {
 
 .dictionary-entry h4 {
   margin: 0 0 14px;
-  color: var(--color-accent);
+  color: var(--color-danger);
   font-size: 13px;
 }
 
@@ -923,7 +943,7 @@ body.plan-form-open {
 
 .dictionary-example {
   padding-left: 11px;
-  border-left: 2px solid var(--color-accent);
+  border-left: 3px solid var(--color-danger);
 }
 
 .dictionary-provider {
@@ -933,12 +953,12 @@ body.plan-form-open {
 
 /* Settings */
 .settings-list {
-  border-top: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-text);
 }
 
 .setting-row {
   display: flex;
-  min-height: 78px;
+  min-height: 86px;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -985,6 +1005,11 @@ body.plan-form-open {
 .data-actions {
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+.data-panel {
+  padding-bottom: 28px;
+  border-top-color: var(--color-danger);
 }
 
 .data-status {

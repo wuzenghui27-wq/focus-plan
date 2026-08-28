@@ -51,7 +51,7 @@
 
 .app-page {
   display: none;
-  gap: 18px;
+  gap: 28px;
 }
 
 .app-page.is-active {
@@ -60,31 +60,32 @@
 
 .page-heading {
   display: flex;
-  min-height: 58px;
+  min-height: 72px;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
 }
 
 .page-heading p {
-  margin: 0 0 2px;
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 750;
 }
 
 .page-heading h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 36px;
   line-height: 1.2;
 }
 
 .panel {
   min-width: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-low);
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .plans-panel,
@@ -94,7 +95,7 @@
 .dictionary-panel,
 .settings-panel,
 .data-panel {
-  padding: 24px;
+  padding: 24px 0 0;
 }
 
 .section-heading {
@@ -107,7 +108,7 @@
 
 .section-heading h2 {
   margin: 0 0 4px;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.35;
 }
 
@@ -133,13 +134,13 @@
 
 .primary-button {
   color: #ffffff;
-  border-color: var(--color-accent);
-  background: var(--color-accent);
+  border-color: var(--color-action);
+  background: var(--color-action);
 }
 
 .primary-button:hover {
-  border-color: var(--color-accent-hover);
-  background: var(--color-accent-hover);
+  border-color: var(--color-action-hover);
+  background: var(--color-action-hover);
 }
 
 .secondary-button,
@@ -360,7 +361,7 @@ textarea:focus {
 
 .app-tab.is-active {
   color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: #ffffff;
 }
 
 .app-tab-icon {

@@ -28,7 +28,6 @@ html[data-theme="dark"] .app-brand-mark {
   border-color: var(--color-border-strong);
 }
 
-html[data-theme="dark"] .primary-button,
 html[data-theme="dark"] .duration-button.is-active,
 html[data-theme="dark"] .history-period-button.is-active {
   color: #15203a;
