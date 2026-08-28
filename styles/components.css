@@ -1,0 +1,596 @@
+.app {
+  width: min(var(--page-width), calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.app-header {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-brand-mark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.65);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-low);
+}
+
+.app-brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-brand h1 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.app-brand p {
+  margin: 3px 0 0;
+  font-size: 12px;
+}
+
+.app-pages,
+.app-page {
+  min-width: 0;
+}
+
+.app-page {
+  display: none;
+  gap: 18px;
+}
+
+.app-page.is-active {
+  display: grid;
+}
+
+.page-heading {
+  display: flex;
+  min-height: 58px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-heading p {
+  margin: 0 0 2px;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.page-heading h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.panel {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-low);
+}
+
+.plans-panel,
+.timer-panel,
+.statistics-panel,
+.history-panel,
+.dictionary-panel,
+.settings-panel,
+.data-panel {
+  padding: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.section-heading h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.section-heading p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.duration-button,
+.history-period-button {
+  min-height: var(--control-height);
+  padding: 9px 15px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.primary-button {
+  color: #ffffff;
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.primary-button:hover {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+.secondary-button,
+.history-period-button {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.secondary-button:hover,
+.history-period-button:hover {
+  border-color: var(--color-text-soft);
+  background: var(--color-surface-muted);
+}
+
+.danger-button {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 42%, var(--color-border));
+  background: var(--color-surface);
+}
+
+.danger-button:hover {
+  background: var(--color-danger-soft);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+label:has(input:focus-visible) {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+
+#createPlanButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.button-icon,
+.app-tab-icon,
+.plan-action-icon,
+.plan-form-close-button svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.form-field > span,
+.form-field-label,
+.duration-fieldset legend,
+.history-plan-filter label,
+.daily-goal-form label {
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-label-row output {
+  color: var(--color-text-soft);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.form-label-row output.is-near-limit {
+  color: var(--color-warning);
+}
+
+input,
+select,
+textarea,
+.select-menu-trigger {
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: 9px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-soft);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-accent);
+  outline: 0;
+}
+
+.form-actions,
+.timer-actions,
+.data-actions,
+.postpone-plan-actions,
+.plan-details-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.theme-switch {
+  display: inline-flex;
+  min-height: var(--control-height);
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.theme-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.theme-switch-track {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  background: var(--color-border-strong);
+}
+
+.theme-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.22);
+  transition: transform 150ms ease;
+}
+
+.theme-switch input:checked + .theme-switch-track {
+  background: var(--color-accent);
+}
+
+.theme-switch input:checked + .theme-switch-track .theme-switch-thumb {
+  transform: translateX(16px);
+}
+
+.app-tabbar {
+  display: grid;
+  gap: 4px;
+}
+
+.app-tab {
+  display: flex;
+  min-width: 0;
+  min-height: 46px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-text-muted);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.app-tab:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.app-tab.is-active {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.app-tab-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+
+.select-menu {
+  display: contents;
+}
+
+.select-menu-trigger,
+.select-menu-popup {
+  display: none;
+}
+
+.plan-details-dialog,
+.postpone-plan-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-height: min(760px, calc(100dvh - 40px));
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-high);
+}
+
+.postpone-plan-dialog {
+  width: min(440px, calc(100% - 32px));
+}
+
+.plan-details-dialog::backdrop,
+.postpone-plan-dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+.plan-details-header,
+.postpone-plan-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.plan-details-header {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plan-details-header h2,
+.postpone-plan-header h2,
+.postpone-plan-header p {
+  margin: 0;
+}
+
+.plan-details-header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+
+.plan-details-section {
+  padding: 20px 22px;
+}
+
+.plan-details-section + .plan-details-section {
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-details-section h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.plan-details-notes {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.plan-details-actions {
+  padding: 0 22px 22px;
+}
+
+.postpone-plan-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.postpone-plan-header p {
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.postpone-plan-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 650;
+}
+
+.plan-form-close-button {
+  display: grid;
+  width: 40px;
+  min-height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.plan-form-close-button:hover {
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+}
+
+.plan-form-close-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.action-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 70;
+  display: flex;
+  max-width: min(420px, calc(100% - 32px));
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-medium);
+  color: #ffffff;
+  background: #202832;
+  box-shadow: var(--shadow-high);
+}
+
+.action-toast button {
+  padding: 4px;
+  border: 0;
+  color: #a9c0ff;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reminder-region {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 60;
+  display: grid;
+  width: min(360px, calc(100% - 32px));
+  gap: 10px;
+}
+
+.app-reminder {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-high);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.app-reminder.is-dismissing {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.app-reminder-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-small);
+  background: var(--color-accent-soft);
+}
+
+.app-reminder-icon img {
+  width: 100%;
+  height: 100%;
+}
+
+.app-reminder-content,
+.app-reminder-content p {
+  min-width: 0;
+  margin: 0;
+}
+
+.app-reminder-content p {
+  font-size: 13px;
+}
+
+.app-reminder-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  color: var(--color-text-soft);
+  font-size: 11px;
+}
+
+.app-reminder-close {
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-reminder-snooze {
+  min-height: 34px;
+  margin-top: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+}

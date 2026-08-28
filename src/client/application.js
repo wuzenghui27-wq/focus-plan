@@ -34,9 +34,6 @@ import {
 } from "./features/reminders.js";
 import {
   bindSettingsEvents,
-  markLocalDataChanged,
-  refreshAccount,
-  renderAccount,
   showDataManagementStatus
 } from "./features/settings.js";
 
@@ -53,7 +50,6 @@ function bindEvents() {
 
 function initializeApp() {
   configurePersistenceCallbacks({
-    onDataChanged: markLocalDataChanged,
     onPlansSaved: schedulePushReminderSync,
     onStorageError: function () {
       showDataManagementStatus(
@@ -73,8 +69,6 @@ function initializeApp() {
   }
   updateNotificationButton();
   refreshPushSubscription();
-  renderAccount();
-  refreshAccount();
   renderPlans();
   renderSessionData();
   updateSoundControls();

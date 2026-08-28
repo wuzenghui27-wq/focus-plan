@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createAccountStore } from "./data/account-store.js";
+import { createReminderStore } from "./data/reminder-store.js";
 import { createCedictStore } from "./dictionary/cedict-store.js";
 import { getChineseFrequencyRank } from "./dictionary/chinese-frequency.js";
 import { createEcdictProvider } from "./dictionary/ecdict-provider.js";
@@ -11,7 +11,7 @@ import { createPushService } from "./reminders/push-service.js";
 import { createReminderScheduler } from "./reminders/reminder-scheduler.js";
 
 function createDependencies(config) {
-  const store = createAccountStore(config.databasePath);
+  const store = createReminderStore(config.databasePath);
   const pushService = createPushService(config.vapid);
   const cacheDirectory = path.join(config.projectRoot, ".data", "dictionary-cache");
   const dictionaryService = createOpenDictionary({

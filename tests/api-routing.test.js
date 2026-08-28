@@ -18,8 +18,6 @@ function createResponse() {
 
 const handler = createApiHandler({
   store: {},
-  secret: "routing-test",
-  isDevelopment: true,
   pushService: null,
   dictionaryService: {
     isConfigured: function () {

@@ -8,7 +8,6 @@ import * as GoalTools from "../../domain/goals.js";
 import * as PomodoroTools from "../../domain/pomodoro.js";
 import * as TimerStateTools from "../../domain/timer-state.js";
 import * as SoundTools from "../../domain/sound.js";
-import * as SyncTools from "../../domain/sync.js";
 import * as NavigationTools from "../../domain/navigation.js";
 import { createPersistenceEvents } from "./persistence-events.js";
 const STORAGE_KEY = "focus-plan-plans";
@@ -18,7 +17,6 @@ const MIN_TIMER_MINUTES = 1;
 const MAX_TIMER_MINUTES = 180;
 const REMINDER_CHECK_MS = 30000;
 const SESSION_PAGE_SIZE = 10;
-const AUTO_SYNC_DELAY_MS = 1500;
 const TIMER_STATE_OPTIONS = {
   minimumFocusMinutes: MIN_TIMER_MINUTES,
   maximumFocusMinutes: MAX_TIMER_MINUTES,
@@ -90,17 +88,6 @@ const elements = {
   testPushButton: document.querySelector("#testPushButton"),
   pushStatus: document.querySelector("#pushStatus"),
   reminderRegion: document.querySelector("#reminderRegion"),
-  accountSignedOut: document.querySelector("#accountSignedOut"),
-  accountSignedIn: document.querySelector("#accountSignedIn"),
-  phoneLoginForm: document.querySelector("#phoneLoginForm"),
-  accountPhoneInput: document.querySelector("#accountPhone"),
-  accountPhoneCodeInput: document.querySelector("#accountPhoneCode"),
-  sendPhoneCodeButton: document.querySelector("#sendPhoneCodeButton"),
-  accountSummary: document.querySelector("#accountSummary"),
-  accountStatus: document.querySelector("#accountStatus"),
-  uploadSyncButton: document.querySelector("#uploadSyncButton"),
-  downloadSyncButton: document.querySelector("#downloadSyncButton"),
-  signOutButton: document.querySelector("#signOutButton"),
   planForm: document.querySelector("#planForm"),
   planFormBackdrop: document.querySelector("#planFormBackdrop"),
   planFormHeading: document.querySelector("#planFormHeading"),
@@ -228,14 +215,6 @@ const state = {
   plans: loadPlans(),
   focusSessions: loadFocusSessions(),
   dailyGoalMinutes: GoalTools.loadDailyGoal(localStorage),
-  account: null,
-  sync: {
-    metadata: SyncTools.loadSyncMetadata(localStorage),
-    timeoutId: null,
-    isSyncing: false,
-    isApplyingRemote: false,
-    hasConflict: false
-  },
   editingPlanId: null,
   viewingPlanId: null,
   postponingPlanId: null,
@@ -389,7 +368,6 @@ function saveStoredArray(key, value) {
   }
 }
 export {
-  AUTO_SYNC_DELAY_MS,
   DEFAULT_TIMER_MINUTES,
   MAX_TIMER_MINUTES,
   MIN_TIMER_MINUTES,

@@ -7,7 +7,6 @@ import {
   state
 } from "../core/context.js";
 import { showActionFeedback } from "./plans.js";
-import { markLocalDataChanged } from "./settings.js";
 
 function formatSessionTime(completedAt) {
   const date = new Date(completedAt);
@@ -265,7 +264,6 @@ function saveDailyGoalSetting(event) {
   }
 
   state.dailyGoalMinutes = minutes;
-  markLocalDataChanged();
   renderDailyGoal();
   showActionFeedback("每日专注目标已保存。", null);
 }

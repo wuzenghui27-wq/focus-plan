@@ -18,9 +18,6 @@
 - 英中输入自动识别、双语释义、英文词性和例句查词页
 - CC-CEDICT 英汉词库、开源英文释义和本地查询缓存
 - PWA 主屏幕图标和离线应用外壳
-- 微信、QQ、手机号登录所需的云同步数据层和 API 契约
-- Node.js + SQLite 本地账号服务、手机号开发登录和手动云同步
-- 延迟自动同步、网络恢复同步和多设备版本冲突保护
 
 ## 本地运行
 
@@ -69,12 +66,12 @@ npm.cmd run check
 - `src/client/app.js`：浏览器应用入口与启动错误处理
 - `src/client/application.js`：功能控制器组装和公共事件绑定
 - `src/client/features/`：计划、专注、历史、词典、提醒和设置
-- `src/client/services/`：词典、同步和推送 API 客户端
-- `src/domain/`：可独立测试的计划、计时、提醒和同步规则
+- `src/client/services/`：词典和推送 API 客户端
+- `src/domain/`：可独立测试的计划、计时和提醒规则
 - `src/server/http/`：静态文件服务、HTTP 工具和领域 API 路由
 - `src/server/dictionary/`：开源词典数据源、规范化与查询缓存
 - `src/server/reminders/`：Web Push 服务和后台提醒调度
-- `src/server/data/`：SQLite 账号、会话和同步数据存储
+- `src/server/data/`：SQLite 后台提醒数据存储
 - `tests/`：Node.js 原生测试运行器执行的自动测试
 - `service-worker.js`：离线缓存、后台推送接收和通知点击
 - `tools/`：语法检查、词典下载和 VAPID 密钥工具

@@ -8,8 +8,6 @@ const config = loadConfig();
 const dependencies = createDependencies(config);
 const handleApi = createApiHandler({
   store: dependencies.store,
-  secret: config.sessionSecret,
-  isDevelopment: true,
   pushService: dependencies.pushService,
   dictionaryService: dependencies.dictionaryService
 });

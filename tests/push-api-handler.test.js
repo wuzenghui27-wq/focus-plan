@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import http from "node:http";
-import { createAccountStore } from "../src/server/data/account-store.js";
+import { createReminderStore } from "../src/server/data/reminder-store.js";
 import { createApiHandler } from "../src/server/http/api-handler.js";
 
-const store = createAccountStore(":memory:");
+const store = createReminderStore(":memory:");
 const sentPayloads = [];
 const pushService = {
   isConfigured: () => true,
@@ -15,8 +15,6 @@ const pushService = {
 };
 const handler = createApiHandler({
   store,
-  secret: "test-secret",
-  isDevelopment: true,
   pushService
 });
 const server = http.createServer(async function (request, response) {

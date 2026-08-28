@@ -1,25 +1,11 @@
-import { createAccountRoutes } from "./routes/account-routes.js";
 import { createDictionaryRoutes } from "./routes/dictionary-routes.js";
 import { createPushRoutes } from "./routes/push-routes.js";
 import { sendJson } from "./http.js";
-import {
-  createSessionReader,
-  hashValue,
-  normalizePhone
-} from "./session.js";
 
-function createApiHandler({
-  store,
-  secret,
-  isDevelopment,
-  pushService,
-  dictionaryService
-}) {
-  const getSession = createSessionReader(store, secret);
+function createApiHandler({ store, pushService, dictionaryService }) {
   const routeHandlers = [
     createDictionaryRoutes(dictionaryService),
-    createPushRoutes({ store, pushService }),
-    createAccountRoutes({ store, secret, isDevelopment, getSession })
+    createPushRoutes({ store, pushService })
   ];
 
   return async function handleApi(request, response, url) {
@@ -38,4 +24,4 @@ function createApiHandler({
   };
 }
 
-export { createApiHandler, hashValue, normalizePhone };
+export { createApiHandler };

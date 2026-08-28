@@ -12,8 +12,7 @@ function loadConfig(environment = process.env) {
     port: Number(environment.PORT) || 5500,
     projectRoot,
     databasePath: environment.DATABASE_PATH ||
-      path.join(projectRoot, ".data", "focus-plan.db"),
-    sessionSecret: environment.SESSION_SECRET || "local-development-secret",
+      path.join(projectRoot, ".data", "reminders.db"),
     vapid: {
       subject: environment.VAPID_SUBJECT,
       publicKey: environment.VAPID_PUBLIC_KEY,

@@ -1,17 +1,8 @@
-@layer fanp;
+@layer tokens, base, components, pages, responsive, theme;
 
-@import url("./foundation.css") layer(fanp);
-@import url("./features.css") layer(fanp);
-@import url("./responsive.css") layer(fanp);
-@import url("./theme.css") layer(fanp);
-@import url("./layout.css") layer(fanp);
-@import url("./tokens.css") layer(fanp);
-@import url("./controls.css") layer(fanp);
-@import url("./shell-refinements.css") layer(fanp);
-@import url("./plan-refinements.css") layer(fanp);
-@import url("./focus-refinements.css") layer(fanp);
-@import url("./history-refinements.css") layer(fanp);
-@import url("./settings-refinements.css") layer(fanp);
-@import url("./dialog-refinements.css") layer(fanp);
-@import url("./mobile-refinements.css") layer(fanp);
-@import url("./dark-refinements.css") layer(fanp);
+@import url("./tokens.css") layer(tokens);
+@import url("./base.css") layer(base);
+@import url("./components.css") layer(components);
+@import url("./pages.css") layer(pages);
+@import url("./responsive.css") layer(responsive);
+@import url("./theme.css") layer(theme);
