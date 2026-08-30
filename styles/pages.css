@@ -475,11 +475,17 @@ body.plan-form-open {
 }
 
 .timer-actions {
-  justify-content: center;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .timer-actions button {
-  min-width: 124px;
+  min-width: 0;
+}
+
+.timer-panel.is-break .timer-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .timer-panel.is-running {

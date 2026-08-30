@@ -449,19 +449,6 @@
     font-size: 58px;
   }
 
-  .timer-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .timer-panel.is-break .timer-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .timer-actions button {
-    min-width: 0;
-  }
-
   .daily-goal-form {
     grid-template-columns: 1fr 90px;
   }
