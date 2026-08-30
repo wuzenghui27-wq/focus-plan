@@ -323,7 +323,7 @@ body.plan-form-open {
   margin-bottom: 20px;
   border: 3px solid #b9c9f5;
   border-radius: 20px;
-  background: #eaf5ff url("../assets/icons/app-icon-192.png") center / 86px 86px no-repeat;
+  background: #eaf5ff url("../assets/icons/fanp-logo.png") center / 112px 112px no-repeat;
   box-shadow: 5px 6px 0 rgb(105 123 194 / 0.14);
   content: "";
 }

@@ -29,7 +29,7 @@ html[data-theme="dark"] .app-tabbar {
   background: #18204a;
 }
 
-html[data-theme="dark"] .app-brand-logo img {
+html[data-theme="dark"] .app-brand-mark img {
   filter: brightness(1.08);
 }
 

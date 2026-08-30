@@ -13,21 +13,39 @@
 .app-brand {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
-.app-brand-logo {
+.app-brand-mark {
   display: block;
-  width: 174px;
-  height: 58px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
   overflow: hidden;
+  border: 2px solid #c6d8ff;
+  border-radius: 14px;
+  background: #eaf5ff;
 }
 
-.app-brand-logo img {
+.app-brand-mark img {
   display: block;
-  width: 150%;
-  height: 150%;
-  margin: -15% 0 0 -25%;
+  width: 125%;
+  height: 125%;
+  margin: -12.5%;
   object-fit: contain;
+}
+
+.app-brand-copy h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.app-brand-copy p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .app-pages,
