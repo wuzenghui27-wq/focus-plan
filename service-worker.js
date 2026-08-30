@@ -1,10 +1,11 @@
-const CACHE_NAME = "focus-plan-shell-v29";
+const CACHE_NAME = "focus-plan-shell-v30";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./assets/icons/app-icon-192.png",
   "./assets/icons/app-icon-512.png",
+  "./assets/icons/fanp-logo.png",
   "./assets/icons/apple-touch-icon.png",
   "./styles/app.css",
   "./styles/base.css",

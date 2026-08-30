@@ -13,6 +13,7 @@
   padding: 24px;
   overflow-y: auto;
   background: var(--color-surface);
+  border-left: 2px solid var(--color-border);
   box-shadow: var(--shadow-high);
 }
 
@@ -79,7 +80,7 @@ body.plan-form-open {
   gap: 12px;
   margin-bottom: 18px;
   padding: 12px;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-medium);
   background: var(--color-accent-soft);
 }
@@ -134,10 +135,10 @@ body.plan-form-open {
   align-items: center;
   gap: 12px;
   padding: 16px 14px 16px 18px;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-medium);
   background: var(--color-surface);
-  box-shadow: 0 5px 18px rgb(17 24 39 / 0.05);
+  box-shadow: var(--shadow-low);
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
@@ -184,7 +185,7 @@ body.plan-form-open {
 .dictionary-result-direction {
   width: fit-content;
   max-width: 100%;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
 }
@@ -214,7 +215,7 @@ body.plan-form-open {
   padding: 3px 7px;
   color: var(--color-accent);
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid #9eb7f2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -266,15 +267,15 @@ body.plan-form-open {
 }
 
 .plan-item.priority-low {
-  border-left: 5px solid var(--color-success);
+  border-left: 7px solid var(--color-success);
 }
 
 .plan-item.priority-medium {
-  border-left: 5px solid #e0a21d;
+  border-left: 7px solid #f2b84b;
 }
 
 .plan-item.priority-high {
-  border-left: 5px solid var(--color-danger);
+  border-left: 7px solid var(--color-danger);
 }
 
 .plan-item.completed {
@@ -310,7 +311,35 @@ body.plan-form-open {
 }
 
 .empty-message {
-  padding: 52px 16px;
+  min-height: 300px;
+  align-content: center;
+  justify-items: center;
+  padding: 36px 16px;
+}
+
+#planEmptyMessage::before {
+  width: 108px;
+  height: 108px;
+  margin-bottom: 20px;
+  border: 3px solid #b9c9f5;
+  border-radius: 20px;
+  background: #eaf5ff url("../assets/icons/app-icon-192.png") center / 86px 86px no-repeat;
+  box-shadow: 5px 6px 0 rgb(105 123 194 / 0.14);
+  content: "";
+}
+
+#planEmptyMessage {
+  position: relative;
+  display: grid;
+}
+
+#planEmptyMessage::after {
+  position: absolute;
+  right: 20%;
+  bottom: 76px;
+  color: #ff6ca0;
+  content: "♥";
+  font-size: 24px;
 }
 
 .subtask-heading {
@@ -366,9 +395,10 @@ body.plan-form-open {
 
 .timer-panel {
   padding: 30px;
-  border: 0;
+  border: 2px solid #b9c9f5;
   border-radius: var(--radius-medium);
-  background: var(--color-accent-soft);
+  background: #f6f9ff;
+  box-shadow: 5px 6px 0 rgb(87 104 183 / 0.12);
 }
 
 .timer-heading-row {
@@ -426,6 +456,7 @@ body.plan-form-open {
   color: #ffffff;
   border-color: var(--color-accent);
   background: var(--color-accent);
+  box-shadow: 2px 3px 0 #2f3c8f;
 }
 
 .timer-display {
@@ -433,7 +464,8 @@ body.plan-form-open {
   color: var(--color-text);
   font-size: clamp(64px, 9vw, 98px);
   font-variant-numeric: tabular-nums;
-  font-weight: 720;
+  font-family: "Courier New", monospace;
+  font-weight: 700;
   line-height: 1;
   text-align: center;
 }
@@ -570,8 +602,9 @@ body.plan-form-open {
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border: 0;
-  background: #111827;
+  border: 2px solid #b9c9f5;
+  border-radius: var(--radius-medium);
+  background: #eef4ff;
 }
 
 .statistic-item {
@@ -579,7 +612,7 @@ body.plan-form-open {
   min-width: 0;
   gap: 7px;
   padding: 18px;
-  border-right: 1px solid rgb(255 255 255 / 0.16);
+  border-right: 1px solid #c3d3f7;
 }
 
 .statistic-item:last-child {
@@ -587,12 +620,12 @@ body.plan-form-open {
 }
 
 .statistic-item span {
-  color: rgb(255 255 255 / 0.66);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .statistic-item strong {
-  color: #ffffff;
+  color: var(--color-text);
   overflow-wrap: anywhere;
   font-size: 23px;
   font-variant-numeric: tabular-nums;
@@ -651,6 +684,7 @@ body.plan-form-open {
   height: 8px;
   overflow: hidden;
   border-radius: 4px;
+  border: 1px solid #b5c7f1;
   background: var(--color-surface-strong);
 }
 
@@ -689,7 +723,7 @@ body.plan-form-open {
 }
 
 .focus-calendar-day {
-  border: 1px solid transparent;
+  border: 1px solid #d5e1fb;
   color: var(--color-text-muted);
   background: transparent;
   font-variant-numeric: tabular-nums;
@@ -697,7 +731,7 @@ body.plan-form-open {
 
 .focus-calendar-day.has-focus {
   color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: #dce9ff;
   font-weight: 700;
 }
 
@@ -727,7 +761,8 @@ body.plan-form-open {
   gap: 4px;
   padding: 12px;
   border-radius: var(--radius-medium);
-  border-left: 3px solid var(--color-accent);
+  border: 1px solid #c8d8f8;
+  border-left: 5px solid var(--color-accent);
   border-radius: 0;
   background: var(--color-surface-muted);
 }
@@ -756,7 +791,7 @@ body.plan-form-open {
 .segmented-control {
   display: inline-flex;
   padding: 3px;
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-medium);
   background: var(--color-surface-strong);
 }
@@ -786,7 +821,7 @@ body.plan-form-open {
   gap: 16px;
   min-height: 52px;
   padding: 8px 4px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px dashed #b8c9ef;
 }
 
 .session-time {
@@ -831,9 +866,10 @@ body.plan-form-open {
   align-items: center;
   gap: 10px;
   padding: 0 13px;
-  border: 2px solid var(--color-text);
+  border: 2px solid #899bd8;
   border-radius: var(--radius-medium);
-  background: var(--color-surface);
+  background: #ffffff;
+  box-shadow: var(--shadow-low);
 }
 
 .dictionary-search-field:focus-within {
@@ -891,6 +927,7 @@ body.plan-form-open {
 
 .dictionary-result-header h3 {
   margin: 0;
+  color: #22358e;
   font-size: 38px;
   line-height: 1.2;
 }
@@ -903,7 +940,7 @@ body.plan-form-open {
 
 .dictionary-entry {
   padding: 18px 0;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px dashed #b8c9ef;
 }
 
 .dictionary-entry h4 {
@@ -943,7 +980,7 @@ body.plan-form-open {
 
 .dictionary-example {
   padding-left: 11px;
-  border-left: 3px solid var(--color-danger);
+  border-left: 4px solid #ff84b2;
 }
 
 .dictionary-provider {
@@ -953,7 +990,7 @@ body.plan-form-open {
 
 /* Settings */
 .settings-list {
-  border-top: 2px solid var(--color-text);
+  border-top: 2px solid #8798d4;
 }
 
 .setting-row {
@@ -963,7 +1000,7 @@ body.plan-form-open {
   justify-content: space-between;
   gap: 24px;
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px dashed #b8c9ef;
 }
 
 .setting-row > div:first-child {
@@ -1009,7 +1046,8 @@ body.plan-form-open {
 
 .data-panel {
   padding-bottom: 28px;
-  border-top-color: var(--color-danger);
+  border-color: #ffc1d5;
+  background: #fff8fb;
 }
 
 .data-status {

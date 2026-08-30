@@ -1,65 +1,58 @@
 @media (min-width: 901px) {
   .app {
     display: grid;
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    grid-template-columns: 260px minmax(0, 1fr);
     grid-template-rows: auto 1fr;
     grid-template-areas:
-      "header pages"
-      "tabs pages";
+      "header tabs"
+      "pages pages";
     min-height: calc(100dvh - 40px);
     margin: 20px auto;
     padding: 0;
     overflow: clip;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-medium);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
     background: var(--color-surface);
     box-shadow: var(--shadow-high);
   }
 
   .app-header {
     grid-area: header;
-    align-items: flex-start;
-    padding: 28px 24px 18px;
-    background: var(--color-accent);
-  }
-
-  .app-brand h1,
-  .app-brand p {
-    color: #ffffff;
-  }
-
-  .app-brand p {
-    opacity: 0.72;
+    padding: 16px 22px;
+    border-bottom: 2px solid var(--color-border);
+    background: #ffffff;
   }
 
   .app-pages {
     grid-area: pages;
-    padding: 38px 44px 52px;
+    padding: 38px 48px 56px;
     background: var(--color-surface);
   }
 
   .app-tabbar {
     grid-area: tabs;
-    align-self: stretch;
-    align-content: start;
-    padding: 8px 14px 28px;
+    grid-template-columns: repeat(5, minmax(90px, 1fr));
+    align-content: center;
+    padding: 14px 20px;
     border: 0;
+    border-bottom: 2px solid var(--color-border);
     border-radius: 0;
-    background: var(--color-accent);
+    background: #ffffff;
     box-shadow: none;
   }
 
   .app-tab {
-    color: rgb(255 255 255 / 0.72);
+    justify-content: center;
+    color: var(--color-text-muted);
   }
 
   .app-tab:hover {
-    color: #ffffff;
-    background: rgb(255 255 255 / 0.12);
+    color: var(--color-accent);
+    background: var(--color-surface-muted);
   }
 
   .app-tab.is-active {
-    color: var(--color-accent);
+    color: #3157b8;
     background: #ffffff;
   }
 }
@@ -74,43 +67,40 @@
     position: sticky;
     top: 0;
     z-index: 30;
-    min-height: 64px;
-    padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
-    border-bottom: 0;
-    background: var(--color-accent);
-    box-shadow: 0 8px 22px rgb(36 71 249 / 0.18);
+    min-height: 92px;
+    padding: 12px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+    border-bottom: 2px solid var(--color-border);
+    background: #ffffff;
+    box-shadow: none;
   }
 
-  .app-brand h1,
-  .app-brand p {
-    color: #ffffff;
+  .app-header::after {
+    width: 54px;
+    height: 24px;
+    margin-left: auto;
+    border-bottom: 4px solid #82b6f6;
+    border-radius: 22px 22px 3px 3px;
+    background: #dceeff;
+    content: "";
   }
 
-  .app-brand p {
-    opacity: 0.72;
-  }
-
-  .app-brand-mark {
-    width: 40px;
-    height: 40px;
-  }
-
-  .app-brand h1 {
-    font-size: 18px;
+  .app-brand-logo {
+    width: 190px;
+    height: 64px;
   }
 
   .app-pages {
-    min-height: calc(100dvh - 64px);
-    padding: 24px 18px calc(92px + env(safe-area-inset-bottom));
+    min-height: calc(100dvh - 92px);
+    padding: 28px 24px calc(104px + env(safe-area-inset-bottom));
     background: var(--color-surface);
   }
 
   .page-heading {
-    min-height: 56px;
+    min-height: 82px;
   }
 
   .page-heading h2 {
-    font-size: 30px;
+    font-size: 32px;
   }
 
   .plans-panel,
@@ -120,13 +110,20 @@
   .dictionary-panel,
   .settings-panel,
   .data-panel {
-    padding: 20px 0 0;
+    padding: 20px;
   }
 
   .timer-panel {
-    margin-inline: -18px;
-    padding: 28px 22px;
-    border-radius: 0;
+    margin-inline: 0;
+    padding: 26px 20px;
+    border-radius: var(--radius-medium);
+  }
+
+  .plans-panel {
+    padding-inline: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .app-tabbar {
@@ -138,11 +135,11 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 2px;
     padding: 7px max(10px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-    border-top: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 97%, transparent);
-    box-shadow: 0 -8px 24px rgb(32 40 50 / 0.07);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    border: 2px solid #bdd4ff;
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background: #ffffff;
+    box-shadow: 0 -4px 0 rgb(103 123 195 / 0.08);
   }
 
   .app-tab {
@@ -160,9 +157,9 @@
   }
 
   .app-tab.is-active {
-    color: var(--color-accent);
+    color: #3157b8;
     background: transparent;
-    box-shadow: inset 0 2px 0 var(--color-accent);
+    box-shadow: inset 0 -4px 0 #3157b8;
   }
 
   .dictionary-form {
@@ -425,15 +422,15 @@
 
 @media (max-width: 430px) {
   .app-pages {
-    padding-inline: 12px;
+    padding-inline: 18px;
   }
 
   .timer-panel {
-    margin-inline: -12px;
+    margin-inline: 0;
   }
 
   .page-heading h2 {
-    font-size: 23px;
+    font-size: 30px;
   }
 
   .page-heading .primary-button {

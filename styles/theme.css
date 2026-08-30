@@ -1,17 +1,17 @@
 html[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #171b21;
-  --color-surface: #20252c;
-  --color-surface-muted: #252b33;
-  --color-surface-strong: #2c333d;
-  --color-text: #edf1f6;
-  --color-text-muted: #aab4c1;
-  --color-text-soft: #828d9a;
-  --color-border: #343c47;
-  --color-border-strong: #46515e;
-  --color-accent: #82a5ff;
-  --color-accent-hover: #9ab6ff;
-  --color-accent-soft: #293655;
+  --color-canvas: #11183d;
+  --color-surface: #18204a;
+  --color-surface-muted: #202a58;
+  --color-surface-strong: #283568;
+  --color-text: #f2f6ff;
+  --color-text-muted: #bac7e9;
+  --color-text-soft: #8998c8;
+  --color-border: #40558f;
+  --color-border-strong: #6075b6;
+  --color-accent: #91b8ff;
+  --color-accent-hover: #b0ccff;
+  --color-accent-soft: #293b73;
   --color-success: #6fc39a;
   --color-success-soft: #213a31;
   --color-warning: #e2b665;
@@ -20,12 +20,21 @@ html[data-theme="dark"] {
   --color-danger-soft: #452a2b;
   --color-overlay: rgb(0 0 0 / 0.68);
   --focus-ring: 0 0 0 3px rgb(130 165 255 / 0.24);
-  --shadow-low: 0 1px 2px rgb(0 0 0 / 0.18), 0 10px 30px rgb(0 0 0 / 0.12);
-  --shadow-high: 0 20px 58px rgb(0 0 0 / 0.44);
+  --shadow-low: 3px 3px 0 rgb(0 0 0 / 0.24);
+  --shadow-high: 6px 6px 0 rgb(0 0 0 / 0.38);
 }
 
-html[data-theme="dark"] .app-brand-mark {
-  border-color: var(--color-border-strong);
+html[data-theme="dark"] .app-header,
+html[data-theme="dark"] .app-tabbar {
+  background: #18204a;
+}
+
+html[data-theme="dark"] .app-brand-logo img {
+  filter: brightness(1.08);
+}
+
+html[data-theme="dark"] .plans-panel {
+  background: transparent;
 }
 
 html[data-theme="dark"] .duration-button.is-active,

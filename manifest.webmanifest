@@ -6,8 +6,8 @@
   "start_url": "./#plans",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2447f9",
+  "background_color": "#fbfcff",
+  "theme_color": "#fbfcff",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
