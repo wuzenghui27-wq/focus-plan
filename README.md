@@ -1,77 +1,84 @@
 # FanP
 
-一个使用原生 HTML、CSS 和 JavaScript 制作的计划管理与专注计时 Web
-项目，也是从零学习前端开发的课程项目。
+<img src="assets/icons/fanp-logo.png" alt="FanP Logo" width="120">
+
+今天也向目标靠近一点。
+
+FanP 是一款本地运行的计划管理与专注计时应用，集计划清单、番茄计时、专注统计和中英查词于一体。采用像素风格界面，支持电脑和手机尺寸布局、深色模式，无需注册或登录。
 
 ## 功能
 
-- 创建、编辑、延期、完成、删除和批量管理计划
-- 标签、优先级、截止时间、重复计划、提前提醒和子任务
-- 自定义专注时间、短休息、长休息和自动开始
-- 计时状态恢复、专注历史、统计图表和每日目标
-- 浏览器通知、卡农旋律提示、音量和静音设置
-- 手机顶部滑入提醒、上滑关闭和电脑左下角提醒
-- Web Push 设备订阅、后台接收和测试推送
-- SQLite 后台提醒任务、到期调度和失败重试
-- 深色模式、本地数据管理和响应式布局
-- 五页移动端导航和 iPhone 安全区域适配
-- 英中输入自动识别、双语释义、英文词性和例句查词页
-- CC-CEDICT 英汉词库、开源英文释义和本地查询缓存
-- PWA 主屏幕图标和离线应用外壳
+- **计划管理**：创建、编辑、完成、延期和删除计划，支持标签、优先级、截止时间、重复计划、子任务与批量操作。
+- **专注计时**：选择快捷时长或自定义分钟，支持暂停、恢复、刷新恢复、短休息、长休息和自动开始下一阶段。
+- **专注统计**：查看今日与累计专注时长、专注次数、月度日历、每周对比和每日目标进度。
+- **历史记录**：按时间范围和关联计划筛选已完成的专注记录。
+- **中英查词**：自动识别中英文输入，展示中文词义、英文释义、词性和例句。
+- **提醒与设置**：计划到期提醒、浏览器通知、提示音、音量控制、主题切换，以及清除历史和重置全部数据。
 
 ## 本地运行
 
-需要先安装 Node.js，然后在项目目录执行：
+安装 Node.js 24，打开终端执行：
+
+```bash
+git clone https://github.com/wuzenghui27-wq/focus-plan.git
+cd focus-plan
+npm install
+npm run dictionary:download
+npm run dev
+```
+
+浏览器打开 [http://127.0.0.1:5500](http://127.0.0.1:5500)。使用期间保持终端中的服务运行；按 `Ctrl+C` 停止服务。
+
+以后启动时，只需在项目目录运行：
+
+```bash
+npm run dev
+```
+
+Windows PowerShell 若提示禁止运行 `npm.ps1`，可将命令中的 `npm` 替换为 `npm.cmd`。
+
+如果端口被占用，可在 PowerShell 中指定其他端口：
 
 ```powershell
-npm.cmd install
-npm.cmd run push:keys
-npm.cmd run dictionary:download
-npm.cmd run dev
+$env:PORT = "5501"
+npm run dev
 ```
 
-打开：
+然后打开 [http://127.0.0.1:5501](http://127.0.0.1:5501)。
 
-```text
-http://127.0.0.1:5500
+## 使用方式
+
+1. 在「计划」页创建计划，填写时间和内容。点击计划的完成控件打勾，需要延后时填写延期原因并选择新的时间。
+2. 在「专注」页选择时长，可关联一条计划，然后点击「开始」。完成的专注会自动计入统计和历史。
+3. 在「历史」页查看记录，使用时间范围和计划筛选找到对应的专注。
+4. 在「查词」页输入中文或英文，查看词义、词性和例句。
+5. 在「设置」页调整外观、通知和提示音，或管理本地数据。
+
+## 数据与提醒
+
+计划、专注记录、计时状态和个人设置保存在当前浏览器的本地存储中，不提供账号或跨设备同步。清除浏览器站点数据、使用无痕窗口或更换浏览器会影响这些数据的保留与访问；不同端口的数据也互相独立。
+
+应用无需云平台部署。查词的在线释义与例句需要网络，已缓存的查询和本地词库可减少重复请求；浏览器推送也需要网络，不能视为完全离线功能。
+
+页面内提醒需要应用保持打开。浏览器通知需要用户授权，实际显示取决于浏览器和系统设置。
+
+如需使用后台 Web Push，在项目目录执行以下命令，然后重新启动服务，并在设置中开启后台提醒：
+
+```bash
+npm run push:keys
+npm run dev
 ```
 
-如果 `5500` 端口已被 Live Server 占用，可以临时改用其他端口：
+密钥保存在本地 `.env` 中，提醒任务保存在 `.data/` 中。后台提醒需要本地服务持续运行；电脑关机或服务停止时无法继续调度提醒。
 
-```powershell
-$env:PORT="5501"
-npm.cmd run dev
+## 检查项目
+
+```bash
+npm run check
 ```
 
-## 开源查词数据
+执行 JavaScript 语法检查和自动测试，包括计划、计时、提醒及词典查询相关测试。
 
-首次运行前执行 `npm.cmd run dictionary:download`，下载 CC-CEDICT 到本地
-`.data/` 目录。它负责中英翻译；英文释义、词性、音标和例句来自 Free
-Dictionary API，并在查询后缓存到本地。查词功能不需要账号或 API 密钥。
+## 词典数据
 
-数据来源和许可证说明见 `docs/open-dictionary-data.md`。
-
-## 自动测试
-
-```powershell
-npm.cmd run check
-```
-
-该命令会检查 JavaScript 语法并运行全部模块测试。
-
-## 代码结构
-
-- `index.html`：页面结构
-- `styles/`：基础、页面、响应式、主题和视觉精修样式
-- `src/client/app.js`：浏览器应用入口与启动错误处理
-- `src/client/application.js`：功能控制器组装和公共事件绑定
-- `src/client/features/`：计划、专注、历史、词典、提醒和设置
-- `src/client/services/`：词典和推送 API 客户端
-- `src/domain/`：可独立测试的计划、计时和提醒规则
-- `src/server/http/`：静态文件服务、HTTP 工具和领域 API 路由
-- `src/server/dictionary/`：开源词典数据源、规范化与查询缓存
-- `src/server/reminders/`：Web Push 服务和后台提醒调度
-- `src/server/data/`：SQLite 后台提醒数据存储
-- `tests/`：Node.js 原生测试运行器执行的自动测试
-- `service-worker.js`：离线缓存、后台推送接收和通知点击
-- `tools/`：语法检查、词典下载和 VAPID 密钥工具
+FanP 使用 ECDICT、CC-CEDICT、Wiktionary、Free Dictionary API、Tatoeba 和 Chinese Lexicon 提供词典数据，无需 Oxford API 凭据。数据来源与许可证见 [词典数据说明](docs/open-dictionary-data.md)。
