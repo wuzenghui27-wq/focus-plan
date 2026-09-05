@@ -17,11 +17,9 @@ FanP 是一款本地运行的计划管理与专注计时应用，集计划清单
 
 ## 本地运行
 
-安装 Node.js 24，打开终端执行：
+安装 Node.js 24，在仓库页面选择 **Code → Download ZIP** 下载并解压项目，然后在解压后的项目目录打开终端执行：
 
 ```bash
-git clone https://github.com/wuzenghui27-wq/focus-plan.git
-cd focus-plan
 npm install
 npm run dictionary:download
 npm run dev
